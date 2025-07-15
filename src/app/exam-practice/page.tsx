@@ -38,23 +38,50 @@ export default function ExamPracticePage() {
                       {subject.title}
                     </AccordionTrigger>
                     <AccordionContent>
-                      <div className="space-y-6 pl-2 pt-2">
-                        {subject.questions.map((q, index) => (
-                          <div key={index} className="border-l-2 border-primary/50 pl-4">
-                            <p className="font-semibold mb-2">
-                              {index + 1}. {q.question}
-                            </p>
-                            <ul className="space-y-1 text-muted-foreground list-disc list-inside">
-                              {q.options.map((opt, i) => (
-                                <li key={i}>{opt}</li>
+                      <div className="space-y-8 pl-2 pt-2">
+                        {subject.multipleChoice.length > 0 && (
+                          <div>
+                            <h3 className="text-md font-bold mb-4 text-primary">I. Soal Pilihan Ganda</h3>
+                            <div className="space-y-6">
+                              {subject.multipleChoice.map((q, index) => (
+                                <div key={index} className="border-l-2 border-primary/50 pl-4">
+                                  <p className="font-semibold mb-2">
+                                    {index + 1}. {q.question}
+                                  </p>
+                                  <ul className="space-y-1 text-muted-foreground list-disc list-inside">
+                                    {q.options.map((opt, i) => (
+                                      <li key={i}>{opt}</li>
+                                    ))}
+                                  </ul>
+                                  <p className="mt-2 text-sm">
+                                    <strong>Jawaban Benar:</strong>{' '}
+                                    <span className="text-primary font-bold">{q.correctAnswer}</span>
+                                  </p>
+                                </div>
                               ))}
-                            </ul>
-                            <p className="mt-2 text-sm">
-                              <strong>Jawaban Benar:</strong>{' '}
-                              <span className="text-primary font-bold">{q.correctAnswer}</span>
-                            </p>
+                            </div>
                           </div>
-                        ))}
+                        )}
+                        
+                        {subject.essay.length > 0 && (
+                           <div>
+                            <h3 className="text-md font-bold mb-4 text-primary">II. Soal Esai</h3>
+                            <div className="space-y-6">
+                              {subject.essay.map((q, index) => (
+                                <div key={index} className="border-l-2 border-primary/50 pl-4">
+                                  <p className="font-semibold mb-2">
+                                    {index + 1}. {q.question}
+                                  </p>
+                                  <div className="prose prose-sm max-w-none text-muted-foreground dark:prose-invert">
+                                    <strong>Kunci Jawaban:</strong>
+                                    <p>{q.answer}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
                       </div>
                     </AccordionContent>
                   </AccordionItem>
