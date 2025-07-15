@@ -82,7 +82,7 @@ export function QuizView({ subjectId, subjectContent }: { subjectId: string; sub
                     <BrainCircuit className="text-primary"/>
                     Uji Pemahamanmu!
                 </CardTitle>
-                <CardDescription>Buat kuis acak dengan Ayah untuk menguji pengetahuanmu tentang materi ini.</CardDescription>
+                <CardDescription>Buat kuis acak dengan Ayah Tirta untuk menguji pengetahuanmu tentang materi ini.</CardDescription>
             </CardHeader>
             <CardFooter>
                 <Button onClick={handleStartQuiz}>
@@ -97,7 +97,7 @@ export function QuizView({ subjectId, subjectContent }: { subjectId: string; sub
     return (
       <div className="flex flex-col items-center justify-center text-center p-8 rounded-lg bg-secondary">
         <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-        <p className="font-semibold text-lg">Ayah sedang menyiapkan kuis...</p>
+        <p className="font-semibold text-lg">Ayah Tirta sedang menyiapkan kuis...</p>
         <p className="text-muted-foreground">Mohon tunggu sebentar.</p>
       </div>
     );

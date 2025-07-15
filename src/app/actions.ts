@@ -15,13 +15,13 @@ export async function generateQuizAction(
     });
 
     if (!quizData || !quizData.quiz || !Array.isArray(quizData.quiz)) {
-      throw new Error('Received invalid quiz format from Ayah.');
+      throw new Error('Menerima format kuis yang tidak valid dari Ayah Tirta.');
     }
 
     return { data: quizData };
   } catch (e) {
     console.error(e);
-    const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred while generating the quiz.';
+    const errorMessage = e instanceof Error ? e.message : 'Terjadi kesalahan tidak dikenal saat membuat kuis.';
     return {
       error: `Maaf, terjadi kesalahan saat membuat kuis. Silakan coba lagi.`,
     };
@@ -34,7 +34,7 @@ export async function homeworkHelperAction(
     try {
         const result = await answerHomeworkFlow(input);
         if (!result || !result.answer) {
-            throw new Error('Ayah gagal memberikan jawaban.');
+            throw new Error('Ayah Tirta gagal memberikan jawaban.');
         }
         return { data: result };
     } catch (e) {

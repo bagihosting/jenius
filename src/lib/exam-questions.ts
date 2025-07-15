@@ -19,7 +19,7 @@ export const examQuestions = [
         correctAnswer: 'C. 60',
       },
       {
-        question: 'Ayah mengendarai mobil dengan kecepatan 60 km/jam. Jika Ayah menempuh jarak 180 km, berapa lama waktu yang dibutuhkan?',
+        question: 'Ayah Tirta mengendarai mobil dengan kecepatan 60 km/jam. Jika Ayah Tirta menempuh jarak 180 km, berapa lama waktu yang dibutuhkan?',
         options: ['A. 2 jam', 'B. 2,5 jam', 'C. 3 jam', 'D. 3,5 jam'],
         correctAnswer: 'C. 3 jam',
       },
@@ -311,8 +311,8 @@ export const examQuestions = [
       },
       {
         question: 'Kata depan "di" yang penulisannya benar terdapat pada kalimat...',
-        options: ['A. Bola ditendang oleh Budi.', 'B. Ibu memasak didapur.', 'C. Ayah bekerja di kantor.', 'D. Buku itu ditaruh diatas meja.'],
-        correctAnswer: 'C. Ayah bekerja di kantor.',
+        options: ['A. Bola ditendang oleh Budi.', 'B. Ibu memasak didapur.', 'C. Ayah Tirta bekerja di kantor.', 'D. Buku itu ditaruh diatas meja.'],
+        correctAnswer: 'C. Ayah Tirta bekerja di kantor.',
       },
       {
         question: 'Puisi yang berisi tentang kesedihan atau duka cita disebut...',
@@ -438,6 +438,19 @@ export const examQuestions = [
         correctAnswer: 'A. legs',
       },
     ],
-    essay: []
+    essay: [
+        {
+            question: 'Describe your classroom in three sentences!',
+            answer: 'My classroom is big and clean. There are twenty tables and chairs for the students. The whiteboard is on the wall, in front of the class.'
+        },
+        {
+            question: 'What is your favorite hobby? Why do you like it?',
+            answer: 'My favorite hobby is reading books. I like it because I can learn many new things and imagine different worlds.'
+        },
+        {
+            question: 'Write a short instruction on how to make a cup of tea!',
+            answer: 'First, boil some water. Second, put a teabag in a cup. Then, pour the hot water into the cup. Finally, add some sugar and stir it.'
+        }
+    ]
   },
 ];

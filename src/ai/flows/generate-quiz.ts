@@ -43,10 +43,10 @@ const prompt = ai.definePrompt({
   name: 'generateQuizPrompt',
   input: {schema: GenerateQuizInputSchema},
   output: {schema: GenerateQuizOutputSchema},
-  prompt: `You are an expert quiz generator for elementary school students. Generate a quiz based on the provided subject content. Each question should have the question text, at least 3 options, and the correct answer.
+  prompt: `Anda adalah seorang ahli pembuat kuis untuk siswa sekolah dasar. Buatlah kuis berdasarkan konten mata pelajaran yang diberikan. Setiap pertanyaan harus memiliki teks pertanyaan, minimal 3 pilihan jawaban, dan jawaban yang benar. Semua konten harus dalam Bahasa Indonesia.
 
-Subject Content: {{{subjectContent}}}
-Number of Questions: {{{numberOfQuestions}}}
+Konten Mata Pelajaran: {{{subjectContent}}}
+Jumlah Pertanyaan: {{{numberOfQuestions}}}
 `,
 });
 
@@ -59,7 +59,7 @@ const generateQuizFlow = ai.defineFlow(
   async input => {
     const {output} = await prompt(input);
     if (!output) {
-        throw new Error("Ayah failed to generate quiz content.");
+        throw new Error("Ayah Tirta gagal membuat konten kuis.");
     }
     return output;
   }
