@@ -3,7 +3,7 @@ import { SubjectCard } from '@/components/SubjectCard';
 import { subjects } from '@/lib/subjects';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Lightbulb } from 'lucide-react';
+import { Lightbulb, Edit } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -15,15 +15,21 @@ export default function Home() {
             Selamat Datang di Pintar Elementary!
           </h1>
           <p className="text-md md:text-xl text-muted-foreground mt-2">
-            Pilih pelajaran untuk mulai belajar dan berlatih, atau dapatkan bantuan PR.
+            Pilih pelajaran untuk mulai belajar dan berlatih, atau gunakan fitur di bawah ini.
           </p>
         </div>
 
-        <div className="text-center mb-8">
+        <div className="flex justify-center gap-4 mb-8">
           <Button asChild size="lg">
             <Link href="/pr-helper">
               <Lightbulb className="mr-2" />
               Bantuan PR Cerdas
+            </Link>
+          </Button>
+           <Button asChild size="lg" variant="secondary">
+            <Link href="/exam-practice">
+              <Edit className="mr-2" />
+              Latihan Soal Ujian
             </Link>
           </Button>
         </div>
