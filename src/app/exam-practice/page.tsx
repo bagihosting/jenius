@@ -1,5 +1,7 @@
+'use client';
+
 import Link from 'next/link';
-import { ArrowLeft, Edit } from 'lucide-react';
+import { ArrowLeft, Edit, Loader2, AlertCircle } from 'lucide-react';
 import { Header } from '@/components/Header';
 import {
   Accordion,
@@ -8,10 +10,51 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { examQuestions } from '@/lib/exam-questions';
 import { Separator } from '@/components/ui/separator';
+import { subjects } from '@/lib/subjects';
+import { useState, useCallback } from 'react';
+import type { ExamData, Subject } from '@/lib/types';
+import { generateExamAction } from '../actions';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
+type ExamState = 'idle' | 'loading' | 'success' | 'error';
+
+interface SubjectExam {
+  state: ExamState;
+  data?: ExamData;
+  error?: string;
+}
 
 export default function ExamPracticePage() {
+  const [examData, setExamData] = useState<Record<string, SubjectExam>>({});
+
+  const fetchExam = useCallback(async (subject: Subject) => {
+    // Don't refetch if already loading or successful
+    if (examData[subject.id]?.state === 'loading' || examData[subject.id]?.state === 'success') {
+      return;
+    }
+
+    setExamData(prev => ({
+      ...prev,
+      [subject.id]: { state: 'loading' }
+    }));
+
+    const result = await generateExamAction(subject.content);
+
+    if (result.error) {
+      setExamData(prev => ({
+        ...prev,
+        [subject.id]: { state: 'error', error: result.error }
+      }));
+    } else if (result.data) {
+      setExamData(prev => ({
+        ...prev,
+        [subject.id]: { state: 'success', data: result.data }
+      }));
+    }
+  }, [examData]);
+
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -25,65 +68,84 @@ export default function ExamPracticePage() {
             <CardHeader>
               <CardTitle className="text-3xl font-headline flex items-center gap-3">
                 <Edit className="h-8 w-8 text-primary" />
-                Latihan Soal Ujian
+                Latihan Soal Ujian Harian
               </CardTitle>
               <CardDescription>
-                Berikut adalah contoh soal ujian untuk membantumu berlatih. Klik mata pelajaran untuk melihat soalnya.
+                Soal-soal ini dibuat baru oleh Ayah Tirta setiap hari! Klik mata pelajaran untuk mulai berlatih.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Accordion type="single" collapsible className="w-full">
-                {examQuestions.map((subject) => (
+              <Accordion type="single" collapsible className="w-full" onValueChange={(value) => {
+                if (value) {
+                  const subject = subjects.find(s => s.id === value);
+                  if (subject) fetchExam(subject);
+                }
+              }}>
+                {subjects.map((subject) => (
                   <AccordionItem value={subject.id} key={subject.id}>
                     <AccordionTrigger className="text-lg font-semibold hover:no-underline text-left">
                       {subject.title}
                     </AccordionTrigger>
                     <AccordionContent>
                       <div className="space-y-8 pl-2 pt-2">
-                        {subject.multipleChoice.length > 0 && (
-                          <div>
-                            <h3 className="text-md font-bold mb-4 text-primary">I. Soal Pilihan Ganda</h3>
-                            <ol className="space-y-6 list-decimal list-inside">
-                              {subject.multipleChoice.map((q, index) => (
-                                <li key={index} className="pl-2 border-l-2 border-primary/50">
-                                  <p className="font-semibold mb-2 inline">
-                                    {q.question}
-                                  </p>
-                                  <ul className="space-y-1 text-muted-foreground list-alpha list-inside pl-4 mt-2">
-                                    {q.options.map((opt, i) => (
-                                      <li key={i}>{opt}</li>
-                                    ))}
-                                  </ul>
-                                  <p className="mt-2 text-sm">
-                                    <strong>Jawaban Benar:</strong>{' '}
-                                    <span className="text-primary font-bold">{q.correctAnswer}</span>
-                                  </p>
-                                </li>
-                              ))}
-                            </ol>
+                        {examData[subject.id]?.state === 'loading' && (
+                           <div className="flex flex-col items-center justify-center text-center p-8 rounded-lg bg-secondary">
+                            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+                            <p className="font-semibold text-lg">Ayah Tirta sedang menyiapkan soal harian...</p>
+                            <p className="text-muted-foreground">Mohon tunggu sebentar.</p>
                           </div>
                         )}
-                        
-                        {subject.essay.length > 0 && (
-                           <div>
-                             <Separator className="my-8" />
-                            <h3 className="text-md font-bold mb-4 text-primary">II. Soal Esai</h3>
-                            <ol className="space-y-6 list-decimal list-inside">
-                              {subject.essay.map((q, index) => (
-                                <li key={index} className="pl-2 border-l-2 border-primary/50">
-                                  <p className="font-semibold mb-2 inline">
-                                    {q.question}
-                                  </p>
-                                  <div className="prose prose-sm max-w-none text-muted-foreground dark:prose-invert mt-2"
-                                    dangerouslySetInnerHTML={{ __html: q.answer.replace(/\n/g, '<br />') }}
-                                  >
-                                  </div>
-                                </li>
-                              ))}
-                            </ol>
-                          </div>
+                        {examData[subject.id]?.state === 'error' && (
+                          <Alert variant="destructive">
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertTitle>Gagal Membuat Soal</AlertTitle>
+                            <AlertDescription>
+                              {examData[subject.id]?.error}
+                            </AlertDescription>
+                          </Alert>
                         )}
-
+                        {examData[subject.id]?.state === 'success' && (
+                          <>
+                            <div>
+                              <h3 className="text-md font-bold mb-4 text-primary">I. Soal Pilihan Ganda</h3>
+                              <ol className="space-y-6 list-decimal list-inside">
+                                {examData[subject.id]?.data?.multipleChoice.map((q, index) => (
+                                  <li key={index} className="pl-2 border-l-2 border-primary/50">
+                                    <p className="font-semibold mb-2 inline">
+                                      {q.question}
+                                    </p>
+                                    <ul className="space-y-1 text-muted-foreground list-alpha list-inside pl-4 mt-2">
+                                      {q.options.map((opt, i) => (
+                                        <li key={i}>{opt}</li>
+                                      ))}
+                                    </ul>
+                                    <p className="mt-2 text-sm">
+                                      <strong>Jawaban Benar:</strong>{' '}
+                                      <span className="text-primary font-bold">{q.correctAnswer}</span>
+                                    </p>
+                                  </li>
+                                ))}
+                              </ol>
+                            </div>
+                            <div>
+                              <Separator className="my-8" />
+                              <h3 className="text-md font-bold mb-4 text-primary">II. Soal Esai</h3>
+                              <ol className="space-y-6 list-decimal list-inside">
+                                {examData[subject.id]?.data?.essay.map((q, index) => (
+                                  <li key={index} className="pl-2 border-l-2 border-primary/50">
+                                    <p className="font-semibold mb-2 inline">
+                                      {q.question}
+                                    </p>
+                                    <div className="prose prose-sm max-w-none text-muted-foreground dark:prose-invert mt-2"
+                                      dangerouslySetInnerHTML={{ __html: q.answer.replace(/\n/g, '<br />') }}
+                                    >
+                                    </div>
+                                  </li>
+                                ))}
+                              </ol>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </AccordionContent>
                   </AccordionItem>

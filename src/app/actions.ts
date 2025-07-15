@@ -2,7 +2,8 @@
 
 import { generateQuiz as generateQuizFlow } from '@/ai/flows/generate-quiz';
 import { answerHomework as answerHomeworkFlow } from '@/ai/flows/homework-helper-flow';
-import type { QuizData } from '@/lib/types';
+import { generateDailyExam as generateDailyExamFlow } from '@/ai/flows/generate-exam-flow';
+import type { QuizData, ExamData } from '@/lib/types';
 import type { HomeworkHelpInput, HomeworkHelpOutput } from '@/ai/flows/homework-helper-flow';
 
 export async function generateQuizAction(
@@ -44,4 +45,27 @@ export async function homeworkHelperAction(
             error: `Maaf, terjadi kesalahan saat memproses permintaanmu. ${errorMessage}`,
         };
     }
+}
+
+export async function generateExamAction(
+  subjectContent: string
+): Promise<{ data?: ExamData; error?: string }> {
+  try {
+    const dateSeed = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const examData = await generateDailyExamFlow({
+      subjectContent,
+      dateSeed,
+    });
+
+    if (!examData || !examData.multipleChoice || !examData.essay) {
+      throw new Error('Menerima format soal ujian yang tidak valid dari Ayah Tirta.');
+    }
+
+    return { data: examData };
+  } catch (e) {
+    console.error(e);
+    return {
+      error: `Maaf, Ayah Tirta sedang kesulitan membuat soal ujian harian. Silakan coba beberapa saat lagi.`,
+    };
+  }
 }

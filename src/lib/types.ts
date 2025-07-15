@@ -14,3 +14,19 @@ export interface Question {
 export interface QuizData {
   quiz: Question[];
 }
+
+export interface MultipleChoiceQuestion {
+  question: string;
+  options: string[];
+  correctAnswer: string;
+}
+
+export interface EssayQuestion {
+  question: string;
+  answer: string;
+}
+
+export interface ExamData {
+  multipleChoice: MultipleChoiceQuestion[];
+  essay: EssayQuestion[];
+}
