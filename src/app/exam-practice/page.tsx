@@ -7,7 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { examQuestions } from '@/lib/exam-questions';
 
 export default function ExamPracticePage() {
@@ -26,15 +26,15 @@ export default function ExamPracticePage() {
                 <Edit className="h-8 w-8 text-primary" />
                 Latihan Soal Ujian
               </CardTitle>
-              <p className="text-muted-foreground">
+              <CardDescription>
                 Berikut adalah contoh soal ujian untuk membantumu berlatih. Klik mata pelajaran untuk melihat soalnya.
-              </p>
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Accordion type="single" collapsible className="w-full">
                 {examQuestions.map((subject) => (
                   <AccordionItem value={subject.id} key={subject.id}>
-                    <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                    <AccordionTrigger className="text-lg font-semibold hover:no-underline text-left">
                       {subject.title}
                     </AccordionTrigger>
                     <AccordionContent>
