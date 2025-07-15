@@ -128,11 +128,9 @@ export default function PrHelperPage() {
                     </div>
                     <div className="space-y-4">
                         <h3 className="font-semibold text-lg">Penjelasan dari AI:</h3>
-                        <div className="p-4 bg-primary/10 rounded-md border border-primary/20 prose prose-sm max-w-none dark:prose-invert">
-                           {answer.split('\\n').map((line, index) => (
-                                <p key={index}>{line}</p>
-                            ))}
-                        </div>
+                        <div className="p-4 bg-primary/10 rounded-md border border-primary/20 prose prose-sm max-w-none dark:prose-invert"
+                          dangerouslySetInnerHTML={{ __html: answer.replace(/\n/g, '<br />') }}
+                        />
                     </div>
                   <div className="text-right">
                     <Button onClick={handleReset}>Tanya Lagi</Button>
