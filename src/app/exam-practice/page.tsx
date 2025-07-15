@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/accordion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { examQuestions } from '@/lib/exam-questions';
+import { Separator } from '@/components/ui/separator';
 
 export default function ExamPracticePage() {
   return (
@@ -42,13 +43,13 @@ export default function ExamPracticePage() {
                         {subject.multipleChoice.length > 0 && (
                           <div>
                             <h3 className="text-md font-bold mb-4 text-primary">I. Soal Pilihan Ganda</h3>
-                            <div className="space-y-6">
+                            <ol className="space-y-6 list-decimal list-inside">
                               {subject.multipleChoice.map((q, index) => (
-                                <div key={index} className="border-l-2 border-primary/50 pl-4">
-                                  <p className="font-semibold mb-2">
-                                    {index + 1}. {q.question}
+                                <li key={index} className="pl-2 border-l-2 border-primary/50">
+                                  <p className="font-semibold mb-2 inline">
+                                    {q.question}
                                   </p>
-                                  <ul className="space-y-1 text-muted-foreground list-disc list-inside">
+                                  <ul className="space-y-1 text-muted-foreground list-alpha list-inside pl-4 mt-2">
                                     {q.options.map((opt, i) => (
                                       <li key={i}>{opt}</li>
                                     ))}
@@ -57,28 +58,29 @@ export default function ExamPracticePage() {
                                     <strong>Jawaban Benar:</strong>{' '}
                                     <span className="text-primary font-bold">{q.correctAnswer}</span>
                                   </p>
-                                </div>
+                                </li>
                               ))}
-                            </div>
+                            </ol>
                           </div>
                         )}
                         
                         {subject.essay.length > 0 && (
                            <div>
+                             <Separator className="my-8" />
                             <h3 className="text-md font-bold mb-4 text-primary">II. Soal Esai</h3>
-                            <div className="space-y-6">
+                            <ol className="space-y-6 list-decimal list-inside">
                               {subject.essay.map((q, index) => (
-                                <div key={index} className="border-l-2 border-primary/50 pl-4">
-                                  <p className="font-semibold mb-2">
-                                    {index + 1}. {q.question}
+                                <li key={index} className="pl-2 border-l-2 border-primary/50">
+                                  <p className="font-semibold mb-2 inline">
+                                    {q.question}
                                   </p>
-                                  <div className="prose prose-sm max-w-none text-muted-foreground dark:prose-invert">
-                                    <strong>Kunci Jawaban:</strong>
-                                    <p>{q.answer}</p>
+                                  <div className="prose prose-sm max-w-none text-muted-foreground dark:prose-invert mt-2"
+                                    dangerouslySetInnerHTML={{ __html: q.answer.replace(/\n/g, '<br />') }}
+                                  >
                                   </div>
-                                </div>
+                                </li>
                               ))}
-                            </div>
+                            </ol>
                           </div>
                         )}
 
@@ -93,4 +95,19 @@ export default function ExamPracticePage() {
       </main>
     </div>
   );
+}
+
+// Helper CSS in case prose doesn't have it
+const listAlpha = `
+.list-alpha { 
+  list-style-type: lower-alpha;
+}
+`;
+
+// Injecting the style into the head
+if (typeof window !== 'undefined') {
+    const styleSheet = document.createElement("style");
+    styleSheet.type = "text/css";
+    styleSheet.innerText = listAlpha;
+    document.head.appendChild(styleSheet);
 }
