@@ -1,7 +1,7 @@
 export interface Subject {
   id: string;
   title: string;
-  icon: string; // Changed from React.ComponentType to string
+  icon: string;
   content: string;
 }
 
