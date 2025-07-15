@@ -1,6 +1,9 @@
 import { Header } from '@/components/Header';
 import { SubjectCard } from '@/components/SubjectCard';
 import { subjects } from '@/lib/subjects';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { Lightbulb } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -12,9 +15,19 @@ export default function Home() {
             Selamat Datang di Pintar Elementary!
           </h1>
           <p className="text-md md:text-xl text-muted-foreground mt-2">
-            Pilih pelajaran untuk mulai belajar dan berlatih.
+            Pilih pelajaran untuk mulai belajar dan berlatih, atau dapatkan bantuan PR.
           </p>
         </div>
+
+        <div className="text-center mb-8">
+          <Button asChild size="lg">
+            <Link href="/pr-helper">
+              <Lightbulb className="mr-2" />
+              Bantuan PR Cerdas
+            </Link>
+          </Button>
+        </div>
+
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6 max-w-6xl mx-auto">
           {subjects.map((subject) => (
             <SubjectCard key={subject.id} subject={subject} />
