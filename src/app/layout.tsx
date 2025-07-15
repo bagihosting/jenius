@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'Pintar Elementary',
+  title: 'Ayah Jenius',
   description: 'Aplikasi belajar untuk semua pelajaran kelas 5 SD',
 };
 

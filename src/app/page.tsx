@@ -12,7 +12,7 @@ export default function Home() {
       <main className="flex-grow p-4 md:p-8">
         <div className="text-center mb-8 md:mb-12">
           <h1 className="text-4xl sm:text-5xl font-bold font-headline text-gray-800 dark:text-gray-200">
-            Selamat Datang di Pintar Elementary!
+            Selamat Datang di Ayah Jenius!
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground mt-2 max-w-2xl mx-auto">
             Pilih pelajaran untuk mulai belajar dan berlatih, atau gunakan fitur di bawah ini.
@@ -41,7 +41,7 @@ export default function Home() {
         </div>
       </main>
       <footer className="text-center p-4 text-muted-foreground text-sm">
-        © 2024 Pintar Elementary. All rights reserved.
+        © 2024 Ayah Jenius. All rights reserved.
       </footer>
     </div>
   );
