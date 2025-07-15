@@ -15,7 +15,7 @@ export async function generateQuizAction(
     });
 
     if (!quizData || !quizData.quiz || !Array.isArray(quizData.quiz)) {
-      throw new Error('Received invalid quiz format from AI.');
+      throw new Error('Received invalid quiz format from Ayah.');
     }
 
     return { data: quizData };
@@ -34,7 +34,7 @@ export async function homeworkHelperAction(
     try {
         const result = await answerHomeworkFlow(input);
         if (!result || !result.answer) {
-            throw new Error('AI gagal memberikan jawaban.');
+            throw new Error('Ayah gagal memberikan jawaban.');
         }
         return { data: result };
     } catch (e) {
