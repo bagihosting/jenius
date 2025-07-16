@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/accordion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { getSubjects, isValidSubject } from '@/lib/subjects';
+import { getSubjects } from '@/lib/subjects';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import type { ExamData, Subject, SchoolType, Grade, Semester } from '@/lib/types';
 import { generateExamAction } from '../actions';
@@ -69,12 +69,6 @@ export default function ExamPracticePage() {
       return;
     }
     
-    // Validate if the subject is valid for the current context
-    if (!isValidSubject(schoolType, grade, semester, subject.id)) {
-        setExamData(prev => ({ ...prev, [subject.id]: { state: 'error', error: 'Mata pelajaran ini tidak tersedia untuk kelas/semester ini.' } }));
-        return;
-    }
-
     setExamData(prev => ({ ...prev, [subject.id]: { state: 'loading' } }));
 
     const dateSeed = new Date().toISOString().split('T')[0];
