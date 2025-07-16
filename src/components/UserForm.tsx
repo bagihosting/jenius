@@ -36,6 +36,8 @@ export const userSchema = z.object({
   schoolType: z.enum(['SDN', 'SDIT', 'MI']),
   schoolName: z.string().min(3, { message: 'Nama sekolah harus diisi.' }),
   password: z.string().optional(),
+  photoUrl: z.string().optional(),
+  badge: z.string().optional(),
 }).refine(data => data.role === 'admin' || (data.schoolType && data.schoolName), {
     message: "School type and name are required for users.",
     path: ["schoolName"],
@@ -192,3 +194,5 @@ export function UserForm({ form, onSubmit, editingUser, children }: UserFormProp
         </FormProvider>
     )
 }
+
+    

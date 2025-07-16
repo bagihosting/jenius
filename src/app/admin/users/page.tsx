@@ -45,6 +45,18 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 type UserFormValues = z.infer<typeof userSchema>;
 
+const defaultFormValues: UserFormValues = {
+  name: '',
+  username: '',
+  email: '',
+  schoolType: 'SDN',
+  schoolName: '',
+  role: 'user',
+  password: '',
+  photoUrl: '',
+  badge: '',
+};
+
 export default function UsersPage() {
   const { toast } = useToast();
   const { user: activeUser, updateUser: updateActiveUser } = useAuth();
@@ -58,15 +70,7 @@ export default function UsersPage() {
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userSchema),
-    defaultValues: {
-      name: '',
-      username: '',
-      email: '',
-      schoolType: 'SDN',
-      schoolName: '',
-      role: 'user',
-      password: '',
-    },
+    defaultValues: defaultFormValues,
   });
 
   const loadUsers = () => {
@@ -100,7 +104,7 @@ export default function UsersPage() {
 
   const handleAddNew = () => {
     setEditingUser(null);
-    form.reset({ name: '', username: '', email: '', schoolType: 'SDN', schoolName: '', role: 'user', password: '' });
+    form.reset(defaultFormValues);
     setIsSheetOpen(true);
   };
 
@@ -108,6 +112,8 @@ export default function UsersPage() {
     setEditingUser(user);
     form.reset({
         ...user,
+        photoUrl: user.photoUrl || '',
+        badge: user.badge || '',
         password: '',
     });
     setIsSheetOpen(true);
@@ -184,9 +190,9 @@ export default function UsersPage() {
 
   const filteredUsers = useMemo(() => {
     return users.filter(user =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.username.toLowerCase().includes(searchTerm.toLowerCase())
+      (user.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (user.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (user.username?.toLowerCase() || '').includes(searchTerm.toLowerCase())
     );
   }, [users, searchTerm]);
 
