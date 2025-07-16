@@ -1,11 +1,10 @@
 
 'use client';
 
-import { BookHeart, LogIn, UserCircle, User } from 'lucide-react';
+import { BookHeart, LogIn, LayoutDashboard, User } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ProfileDialog } from './ProfileDialog';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -34,16 +33,24 @@ export function Header() {
             {isClient && !loading && (
               <>
                 {isAuthenticated && user ? (
-                   <ProfileDialog>
-                    <Button variant="ghost" className="rounded-full h-10 w-10 p-0">
-                      <Avatar>
-                        <AvatarImage src={user.photoUrl} alt={user.name} />
-                        <AvatarFallback>
-                          <User className="h-5 w-5"/>
-                        </AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </ProfileDialog>
+                    <>
+                        <Button asChild>
+                            <Link href="/belajar">
+                                <LayoutDashboard />
+                                Masuk ke Dasbor
+                            </Link>
+                        </Button>
+                        <ProfileDialog>
+                            <Button variant="ghost" className="rounded-full h-10 w-10 p-0">
+                            <Avatar>
+                                <AvatarImage src={user.photoUrl} alt={user.name} />
+                                <AvatarFallback>
+                                <User className="h-5 w-5"/>
+                                </AvatarFallback>
+                            </Avatar>
+                            </Button>
+                        </ProfileDialog>
+                   </>
                 ) : (
                   <>
                     <Button variant="ghost" asChild>
