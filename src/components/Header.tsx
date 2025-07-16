@@ -18,6 +18,8 @@ export function Header() {
     setIsClient(true);
   }, []);
 
+  const dashboardHref = user?.role === 'admin' ? '/admin/dashboard' : '/belajar';
+
   return (
     <header className="bg-card shadow-sm sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -35,7 +37,7 @@ export function Header() {
                 {isAuthenticated && user ? (
                     <>
                         <Button asChild>
-                            <Link href="/belajar">
+                            <Link href={dashboardHref}>
                                 <LayoutDashboard />
                                 Masuk ke Dasbor
                             </Link>
