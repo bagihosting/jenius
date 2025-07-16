@@ -14,7 +14,13 @@ export default function SubjectPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const params = useParams();
-  const { user, loading, isAuthenticated } = useAuth();
+  const { user, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [loading, user, router]);
 
   const grade = searchParams.get('grade') as Grade;
   const semester = searchParams.get('semester') as Semester;
@@ -24,12 +30,6 @@ export default function SubjectPage() {
   const [subject, setSubject] = useState<Subject | null | undefined>(undefined);
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.push('/login');
-    }
-  }, [loading, isAuthenticated, router]);
-
-  useEffect(() => {
     if (schoolType && grade && semester) {
       const foundSubject = getSubjectById(schoolType, grade, semester, subjectId);
       setSubject(foundSubject);
@@ -37,7 +37,7 @@ export default function SubjectPage() {
   }, [schoolType, grade, semester, subjectId]);
 
 
-  if (loading || subject === undefined || !isAuthenticated) {
+  if (loading || subject === undefined || !user) {
     return (
       <div className="flex flex-col min-h-screen">
         <Header />
@@ -56,7 +56,7 @@ export default function SubjectPage() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow p-4 md:p-8">
-        <SubjectDetails subject={subject} schoolInfo={{ schoolType, grade, semester }} />
+        <SubjectDetails subject={subject} schoolInfo={{ schoolType: user.schoolType, grade, semester }} />
       </main>
     </div>
   );

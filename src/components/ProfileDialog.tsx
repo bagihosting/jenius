@@ -176,11 +176,11 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
             <div className="flex flex-col items-center sm:items-start w-full">
                 {isEditingName ? (
                    <div className="w-full flex items-center gap-2">
-                      <Input value={name} onChange={(e) => setName(e.target.value)} className="text-xl h-10" />
+                      <Input value={name} onChange={(e) => setName(e.target.value)} className="text-xl h-10 font-headline" />
                       <Button onClick={handleSaveName} size="icon"><Save className="h-4 w-4"/></Button>
                    </div>
                 ) : (
-                   <h2 className="text-2xl font-bold cursor-pointer" onClick={() => setIsEditingName(true)}>
+                   <h2 className="text-2xl font-bold cursor-pointer font-headline" onClick={() => setIsEditingName(true)}>
                       {user.name}
                   </h2>
                 )}

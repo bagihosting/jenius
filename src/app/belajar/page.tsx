@@ -29,20 +29,15 @@ const semesters = [
 
 function BelajarSelection() {
   const router = useRouter();
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, loading } = useAuth();
   const [grade, setGrade] = useState('');
   const [semester, setSemester] = useState('');
-  const [isClient, setIsClient] = useState(false);
   
   useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
-    if (!loading && isClient && !isAuthenticated) {
+    if (!loading && !user) {
       router.push('/login');
     }
-  }, [isAuthenticated, loading, router, isClient]);
+  }, [user, loading, router]);
 
 
   const handleStartLearning = () => {
@@ -51,7 +46,7 @@ function BelajarSelection() {
     }
   };
 
-  if (!isClient || loading || !isAuthenticated || !user) {
+  if (loading || !user) {
     return (
         <div className="flex-grow flex items-center justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary"/>

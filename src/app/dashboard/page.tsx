@@ -16,23 +16,18 @@ import { useAuth } from '@/context/AuthContext';
 function DashboardContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { user, loading, isAuthenticated } = useAuth();
-    const [isClient, setIsClient] = useState(false);
-
+    const { user, loading } = useAuth();
+    
     useEffect(() => {
-        setIsClient(true);
-    }, []);
+        if (!loading && !user) {
+            router.push('/login');
+        }
+    }, [loading, user, router]);
 
     const grade = (searchParams.get('grade') as Grade) || '1';
     const semester = (searchParams.get('semester') as Semester) || '1';
     
-    useEffect(() => {
-        if (!loading && isClient && !isAuthenticated) {
-            router.push('/login');
-        }
-    }, [loading, isAuthenticated, isClient, router]);
-    
-    if (!isClient || loading || !isAuthenticated) {
+    if (loading || !user) {
         return (
             <main className="flex-grow flex items-center justify-center">
                 <Loader2 className="h-12 w-12 animate-spin text-primary"/>

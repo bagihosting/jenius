@@ -82,7 +82,7 @@ function generateSubjectContent(school: SchoolType, grade: Grade, semester: Seme
     const topicsForSemester = semesterTopics[semester][title] || semesterTopics[semester === '1' ? '2' : '1'][title] || ['Topik umum sesuai Kurikulum Merdeka'];
     const selectedTopics = topicsForSemester.slice(0, 3 + Math.floor(gradeNumber / 2)); // More topics for higher grades
 
-    return `Materi pelajaran "${title}" untuk Semester ${semester}, Fase ${fase} (Kelas ${grade}) di ${schoolName}, sesuai Kurikulum Merdeka. Fokus utama mencakup: ${selectedTopics.join(', ')}. "Ayah Tirta" akan menggunakan ringkasan ini untuk membuat konten belajar yang lebih detail, dengan tingkat kesulitan yang disesuaikan untuk kelas ${grade}.`;
+    return `Materi pelajaran "${title}" untuk Semester ${semester}, Fase ${fase} (Kelas ${grade}) di ${schoolName}, sesuai Kurikulum Merdeka. Fokus utama mencakup: ${selectedTopics.join(', ')}. "Ayah Jenius" akan menggunakan ringkasan ini untuk membuat konten belajar yang lebih detail, dengan tingkat kesulitan yang disesuaikan untuk kelas ${grade}.`;
 }
 
 
@@ -135,3 +135,8 @@ export const getSubjectById = (school: SchoolType, grade: Grade, semester: Semes
   const subjects = getSubjects(school, grade, semester);
   return subjects.find((subject) => subject.id === id);
 };
+
+export const isValidSubject = (school: SchoolType, grade: Grade, semester: Semester, subjectId: string): boolean => {
+    const subjects = getSubjects(school, grade, semester);
+    return subjects.some(subject => subject.id === subjectId);
+}

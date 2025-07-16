@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/accordion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { getSubjects } from '@/lib/subjects';
+import { getSubjects, isValidSubject } from '@/lib/subjects';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import type { ExamData, Subject, SchoolType, Grade, Semester } from '@/lib/types';
 import { generateExamAction } from '../actions';
@@ -45,16 +45,16 @@ export default function ExamPracticePage() {
   const searchParams = useSearchParams();
   const { user, loading, isAuthenticated } = useAuth();
 
-  const grade = (searchParams.get('grade') as Grade) || '5';
-  const semester = (searchParams.get('semester') as Semester) || '1';
-  const schoolType = user?.schoolType;
-  const userEmail = user?.email;
-
   useEffect(() => {
     if (!loading && !isAuthenticated) {
       router.push('/login');
     }
   }, [loading, isAuthenticated, router]);
+
+  const grade = (searchParams.get('grade') as Grade) || '5';
+  const semester = (searchParams.get('semester') as Semester) || '1';
+  const schoolType = user?.schoolType;
+  const userEmail = user?.email;
 
   const subjects = useMemo(() => {
       if (!schoolType) return [];
@@ -66,6 +66,12 @@ export default function ExamPracticePage() {
   const fetchExam = useCallback(async (subject: Subject) => {
     if (examData[subject.id]?.state === 'loading' || examData[subject.id]?.state === 'success' || !schoolType || !userEmail) {
       return;
+    }
+    
+    // Validate if the subject is valid for the current context
+    if (!isValidSubject(schoolType, grade, semester, subject.id)) {
+        setExamData(prev => ({ ...prev, [subject.id]: { state: 'error', error: 'Mata pelajaran ini tidak tersedia untuk kelas/semester ini.' } }));
+        return;
     }
 
     setExamData(prev => ({ ...prev, [subject.id]: { state: 'loading' } }));

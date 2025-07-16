@@ -36,7 +36,7 @@ const EssayQuestionSchema = z.object({
 });
 
 const GenerateExamOutputSchema = z.object({
-  multipleChoice: z.array(MultipleChoiceQuestionSchema).describe('An array of around 30 multiple-choice questions.'),
+  multipleChoice: z.array(MultipleChoiceQuestionSchema).min(10).describe('An array of at least 10 multiple-choice questions.'),
   essay: z.array(EssayQuestionSchema).min(5).max(5).describe('An array of 5 essay questions with detailed answers.'),
 });
 export type ExamData = z.infer<typeof GenerateExamOutputSchema>;
@@ -61,7 +61,7 @@ PENTING: Sesuaikan kompleksitas soal dan bahasa dengan tingkatan kelas:
 - Kelas 3-4 (Fase B): Gunakan bahasa yang jelas dan mulai perkenalkan soal yang membutuhkan penalaran sederhana. Jawaban mungkin memerlukan satu atau dua langkah pemikiran.
 - Kelas 5-6 (Fase C): Buat soal yang lebih analitis dan membutuhkan pemikiran tingkat tinggi (HOTS). Boleh menyertakan soal cerita atau studi kasus singkat.
 
-Buat sekitar 30 soal pilihan ganda dengan 4 pilihan jawaban (A, B, C, D). Untuk setiap soal pilihan ganda, berikan penjelasan singkat, cerdas, dan mudah dimengerti. Dalam penjelasan, **tebalkan (gunakan Markdown: **kata**) kata-kata kunci atau jawaban yang benar** agar mudah dikenali.
+Buat setidaknya 10 soal pilihan ganda dengan 4 pilihan jawaban (A, B, C, D). Untuk setiap soal pilihan ganda, berikan penjelasan singkat, cerdas, dan mudah dimengerti. Dalam penjelasan, **tebalkan (gunakan Markdown: **kata**) kata-kata kunci atau jawaban yang benar** agar mudah dikenali.
 Buat juga 5 soal esai dengan jawaban penjelasan yang cerdas dan mendalam.
 Jawaban esai harus mengikuti format: Analisis Masalah, Langkah-langkah Penyelesaian, dan Kesimpulan.
 Semua konten harus dalam Bahasa Indonesia, kecuali jika mata pelajarannya adalah Bahasa Inggris atau Bahasa Arab.
