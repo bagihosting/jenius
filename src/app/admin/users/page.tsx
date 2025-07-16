@@ -67,34 +67,43 @@ export default function AdminUsersPage() {
 
     const loadUsers = useCallback(() => {
         setIsLoading(true);
-        const loadedUsers: User[] = [];
-        // Add default admin if not present
-        if (!localStorage.getItem('user_admin@ayahjenius.com')) {
-            localStorage.setItem('user_admin@ayahjenius.com', JSON.stringify({
-                name: 'Admin Jenius',
-                email: 'admin@ayahjenius.com',
-                schoolType: 'SDN',
-                role: 'admin'
-            }));
-        }
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && key.startsWith('user_')) {
-                try {
-                    const userData = JSON.parse(localStorage.getItem(key) || '{}');
-                    // Ensure the essential fields are present
-                    if (userData.email && userData.name && userData.schoolType && userData.role) {
-                         loadedUsers.push(userData);
+        try {
+            const loadedUsers: User[] = [];
+            // Add default admin if not present
+            if (!localStorage.getItem('user_admin@ayahjenius.com')) {
+                localStorage.setItem('user_admin@ayahjenius.com', JSON.stringify({
+                    name: 'Admin Jenius',
+                    email: 'admin@ayahjenius.com',
+                    schoolType: 'SDN',
+                    role: 'admin'
+                }));
+            }
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('user_')) {
+                    try {
+                        const userData = JSON.parse(localStorage.getItem(key) || '{}');
+                        if (userData.email && userData.name && userData.schoolType && userData.role) {
+                             loadedUsers.push(userData);
+                        }
+                    } catch (e) {
+                        console.error("Could not parse user data from local storage", e);
                     }
-                } catch (e) {
-                    console.error("Could not parse user data from local storage", e);
                 }
             }
+            const uniqueUsers = Array.from(new Map(loadedUsers.map(user => [user.email, user])).values());
+            setUsers(uniqueUsers);
+        } catch (error) {
+            console.error("Error loading users from local storage", error);
+            toast({
+                title: 'Gagal Memuat Pengguna',
+                description: 'Terjadi kesalahan saat mengakses data dari local storage.',
+                variant: 'destructive',
+            });
+        } finally {
+            setIsLoading(false);
         }
-        const uniqueUsers = Array.from(new Map(loadedUsers.map(user => [user.email, user])).values());
-        setUsers(uniqueUsers);
-        setIsLoading(false);
-    }, []);
+    }, [toast]);
 
     useEffect(() => {
         loadUsers();
@@ -217,7 +226,7 @@ export default function AdminUsersPage() {
                                         {user.badge && badgeMap[user.badge] ? (
                                             <span className="flex items-center gap-2" title={badgeMap[user.badge].label}>
                                                 <badgeMap[user.badge].icon className={`h-5 w-5 ${badgeMap[user.badge].color}`} />
-                                                <span className="md:hidden lg:inline">{badgeMap[user.badge].label}</span>
+                                                <span className="hidden md:inline">{badgeMap[user.badge].label}</span>
                                             </span>
                                         ) : (
                                             '-'
