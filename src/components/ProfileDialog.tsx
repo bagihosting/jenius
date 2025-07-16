@@ -193,7 +193,9 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
 
                 <p className="text-muted-foreground">{user.email}</p>
                 <div className="flex items-center gap-2 mt-2">
-                    <Badge variant="secondary">{schoolTypeMap[user.schoolType] || user.schoolType}</Badge>
+                    {user.role === 'user' && (
+                        <Badge variant="secondary">{schoolTypeMap[user.schoolType] || user.schoolType}</Badge>
+                    )}
                     {userBadge && (
                        <div className="flex items-center gap-1.5 p-1 px-2 bg-secondary rounded-full">
                           <userBadge.icon className={`h-4 w-4 ${userBadge.color}`} />
