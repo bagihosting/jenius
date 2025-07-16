@@ -26,8 +26,6 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const { state } = useSidebar();
 
-    const dashboardHref = user?.role === 'admin' ? '/admin/dashboard' : '/belajar';
-
     return (
         <div className="flex min-h-screen w-full">
             <Sidebar>
