@@ -47,6 +47,12 @@ const prompt = ai.definePrompt({
   output: {schema: GenerateQuizOutputSchema},
   prompt: `Anda adalah seorang ahli pembuat kuis untuk siswa sekolah dasar di Indonesia.
 Buatlah kuis berdasarkan konteks yang diberikan. Pastikan tingkat kesulitan soal sesuai untuk siswa kelas {{{grade}}} di sekolah jenis {{{schoolType}}}.
+
+PENTING: Sesuaikan kompleksitas soal dan bahasa dengan tingkatan kelas:
+- Kelas 1-2 (Fase A): Gunakan bahasa yang sangat sederhana dan pertanyaan yang sangat mendasar. Pilihan jawaban harus jelas dan tidak membingungkan.
+- Kelas 3-4 (Fase B): Gunakan bahasa yang jelas. Pertanyaan boleh menguji pemahaman konsep dasar, bukan hanya hafalan.
+- Kelas 5-6 (Fase C): Buat pertanyaan yang menguji penerapan konsep atau analisis sederhana.
+
 Setiap pertanyaan harus memiliki teks pertanyaan, minimal 3 pilihan jawaban, dan jawaban yang benar. Semua konten harus dalam Bahasa Indonesia.
 
 Konten Mata Pelajaran: {{{subjectContent}}}

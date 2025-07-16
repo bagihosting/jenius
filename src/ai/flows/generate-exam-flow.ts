@@ -51,6 +51,11 @@ const prompt = ai.definePrompt({
 Buat satu set soal latihan ujian berdasarkan konteks yang diberikan. Pastikan tingkat kesulitan soal sesuai untuk siswa kelas {{{grade}}} di sekolah jenis {{{schoolType}}}.
 Gunakan string tanggal berikut sebagai 'benih' untuk memastikan soal yang Anda buat bervariasi setiap harinya: {{{dateSeed}}}
 
+PENTING: Sesuaikan kompleksitas soal dan bahasa dengan tingkatan kelas:
+- Kelas 1-2 (Fase A): Gunakan bahasa yang sangat sederhana dan pertanyaan konkret. Fokus pada pemahaman dasar. Contoh soal harus mudah divisualisasikan.
+- Kelas 3-4 (Fase B): Gunakan bahasa yang jelas dan mulai perkenalkan soal yang membutuhkan penalaran sederhana. Jawaban mungkin memerlukan satu atau dua langkah pemikiran.
+- Kelas 5-6 (Fase C): Buat soal yang lebih analitis dan membutuhkan pemikiran tingkat tinggi (HOTS). Boleh menyertakan soal cerita atau studi kasus singkat.
+
 Buat 5 soal pilihan ganda dengan 4 pilihan jawaban (A, B, C, D). Untuk setiap soal pilihan ganda, sertakan penjelasan singkat dan cerdas untuk jawaban yang benar.
 Buat juga 2 soal esai dengan jawaban penjelasan yang cerdas dan mendalam.
 Jawaban esai harus mengikuti format: Analisis Masalah, Langkah-langkah Penyelesaian, dan Kesimpulan.
