@@ -48,6 +48,7 @@ export default function ExamPracticePage() {
   const grade = (searchParams.get('grade') as Grade) || '5';
   const semester = (searchParams.get('semester') as Semester) || '1';
   const schoolType = user?.schoolType;
+  const userEmail = user?.email;
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -63,7 +64,7 @@ export default function ExamPracticePage() {
   const [examData, setExamData] = useState<Record<string, SubjectExam>>({});
 
   const fetchExam = useCallback(async (subject: Subject) => {
-    if (examData[subject.id]?.state === 'loading' || examData[subject.id]?.state === 'success' || !schoolType) {
+    if (examData[subject.id]?.state === 'loading' || examData[subject.id]?.state === 'success' || !schoolType || !userEmail) {
       return;
     }
 
@@ -76,6 +77,7 @@ export default function ExamPracticePage() {
       schoolType,
       grade,
       semester,
+      userEmail: userEmail,
     });
 
     if (result.error) {
@@ -83,7 +85,7 @@ export default function ExamPracticePage() {
     } else if (result.data) {
       setExamData(prev => ({ ...prev, [subject.id]: { state: 'success', data: result.data } }));
     }
-  }, [examData, schoolType, grade, semester]);
+  }, [examData, schoolType, grade, semester, userEmail]);
 
   if (loading || !isAuthenticated || !schoolType) {
     return (

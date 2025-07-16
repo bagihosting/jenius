@@ -17,7 +17,8 @@ const GenerateExamInputSchema = z.object({
   dateSeed: z.string().describe('The current date (YYYY-MM-DD) to ensure daily variety.'),
   schoolType: z.string().describe('The type of school (e.g., SDN, MI).'),
   grade: z.string().describe('The grade level (e.g., 1, 5).'),
-  semester: z.string().describe('The semester (1 or 2).')
+  semester: z.string().describe('The semester (1 or 2).'),
+  userEmail: z.string().describe('The email of the user to ensure question uniqueness per user.'),
 });
 export type GenerateExamInput = z.infer<typeof GenerateExamInputSchema>;
 
@@ -50,7 +51,9 @@ const prompt = ai.definePrompt({
   output: {schema: GenerateExamOutputSchema},
   prompt: `Anda adalah seorang ahli pembuat soal ujian yang jenius untuk siswa di Indonesia. Anda mengikuti Kurikulum Merdeka.
 Buat satu set soal latihan ujian berdasarkan konteks yang diberikan. Pastikan tingkat kesulitan soal sesuai untuk siswa kelas {{{grade}}} di sekolah jenis {{{schoolType}}} untuk semester {{{semester}}}.
-Gunakan string tanggal berikut sebagai 'benih' untuk memastikan soal yang Anda buat bervariasi setiap harinya: {{{dateSeed}}}
+Gunakan kombinasi string tanggal dan email pengguna berikut sebagai 'benih' untuk memastikan soal yang Anda buat unik dan bervariasi setiap harinya untuk setiap pengguna:
+- Tanggal: {{{dateSeed}}}
+- Email Pengguna: {{{userEmail}}}
 
 PENTING: Sesuaikan kompleksitas soal dan bahasa dengan tingkatan kelas:
 - Kelas 1-2 (Fase A): Gunakan bahasa yang sangat sederhana dan pertanyaan konkret. Fokus pada pemahaman dasar. Contoh soal harus mudah divisualisasikan.
