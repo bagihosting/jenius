@@ -130,7 +130,7 @@ export default function AdminUsersPage() {
     
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData(prev => ({...prev, [e.target.name]: e.target.value}));
-    }
+    };
 
     const handleFormSubmit = () => {
         const { name, email, schoolType, password, badge } = formData;
