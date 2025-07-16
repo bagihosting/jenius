@@ -2,6 +2,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Edit, Loader2, AlertCircle, Sparkles } from 'lucide-react';
 import { Header } from '@/components/Header';
@@ -187,6 +188,17 @@ export default function ExamPracticePage() {
                                     <p className="font-semibold mb-2 inline">
                                       {q.question}
                                     </p>
+                                    {q.imageUrl && (
+                                       <div className="my-3 relative w-full aspect-video max-w-sm mx-auto">
+                                            <Image
+                                                src={q.imageUrl}
+                                                alt={`Ilustrasi untuk soal ${index + 1}`}
+                                                layout="fill"
+                                                objectFit="contain"
+                                                className="rounded-lg"
+                                            />
+                                        </div>
+                                    )}
                                     <ul className="space-y-1 text-muted-foreground list-alpha list-inside pl-4 mt-2">
                                       {q.options.map((opt, i) => (
                                         <li key={i}>{opt}</li>
@@ -212,6 +224,17 @@ export default function ExamPracticePage() {
                                     <p className="font-semibold mb-2 inline">
                                       {q.question}
                                     </p>
+                                    {q.imageUrl && (
+                                       <div className="my-3 relative w-full aspect-video max-w-sm mx-auto">
+                                            <Image
+                                                src={q.imageUrl}
+                                                alt={`Ilustrasi untuk soal esai ${index + 1}`}
+                                                layout="fill"
+                                                objectFit="contain"
+                                                className="rounded-lg"
+                                            />
+                                        </div>
+                                    )}
                                     <div className="prose prose-sm max-w-none text-muted-foreground dark:prose-invert mt-2"
                                       dangerouslySetInnerHTML={{ __html: q.answer.replace(/\n/g, '<br />') }}
                                     >

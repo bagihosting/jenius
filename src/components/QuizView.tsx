@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { generateQuizAction } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -116,15 +117,18 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
     const percentageScore = Math.round((finalScore / quiz!.quiz.length) * 100);
     setScore(percentageScore);
     updateSubjectProgress(subjectId, percentageScore);
-    recordQuizCompletion(user);
+    
+    if (user) {
+        recordQuizCompletion(user);
+    }
     
     if (percentageScore >= 60) {
         const badgeInfo = getBadgeInfo(user);
         const bonusGiven = updateBonus(badgeInfo.bonusPerQuiz);
         if(bonusGiven) {
             toast({
-                title: `Selamat, Kamu Dapat Bonus!`,
-                description: `Kamu mendapatkan ${badgeInfo.bonusPerQuiz} Poin Bonus Robux karena nilaimu hebat! Terus tingkatkan!`,
+                title: "Selamat, Kamu Dapat Bonus!",
+                description: `Kamu mendapatkan ${badgeInfo.bonusPerQuiz.toFixed(4)} Poin Bonus Robux karena nilaimu hebat! Terus tingkatkan!`,
             });
         }
     }
@@ -170,6 +174,17 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
                 <CardTitle>Kuis: Pertanyaan {currentQuestionIndex + 1}/{quiz!.quiz.length}</CardTitle>
                 <Progress value={((currentQuestionIndex + 1) / quiz!.quiz.length) * 100} className="mt-2" />
                 <CardDescription className="pt-4 text-lg text-foreground">{currentQuestion.question}</CardDescription>
+                {currentQuestion.imageUrl && (
+                    <div className="mt-4 relative w-full aspect-video rounded-lg overflow-hidden border">
+                        <Image
+                            src={currentQuestion.imageUrl}
+                            alt={`Ilustrasi untuk pertanyaan ${currentQuestionIndex + 1}`}
+                            layout="fill"
+                            objectFit="contain"
+                            className="bg-gray-100"
+                        />
+                    </div>
+                )}
             </CardHeader>
             <CardContent>
                 <RadioGroup value={userAnswers[currentQuestionIndex]} onValueChange={handleSelectAnswer} className="gap-4">

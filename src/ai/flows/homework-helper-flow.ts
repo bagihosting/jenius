@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -22,6 +23,8 @@ export type HomeworkHelpInput = z.infer<typeof HomeworkHelpInputSchema>;
 
 const HomeworkHelpOutputSchema = z.object({
   answer: z.string().describe('The explanation and answer to the homework question.'),
+  imagePrompt: z.string().optional().describe("If the answer is best explained with an image, provide a concise, descriptive prompt for an image generation model. E.g., 'Diagram of the water cycle', 'Map of ancient Indonesian kingdoms'. Otherwise, this field should be omitted."),
+  imageUrl: z.string().optional().describe("URL of the generated image, if any."),
 });
 export type HomeworkHelpOutput = z.infer<typeof HomeworkHelpOutputSchema>;
 
@@ -37,6 +40,10 @@ const prompt = ai.definePrompt({
 Anda akan menjawab pertanyaan untuk siswa kelas {{{grade}}} di sekolah jenis {{{schoolType}}} pada semester {{{semester}}}.
 Tujuan Anda adalah menjelaskan konsep dan membimbing mereka menuju jawaban, bukan hanya memberikan jawaban langsung.
 Pengguna akan memberikan mata pelajaran dan sebuah pertanyaan.
+
+PENTING: Secara cerdas tentukan apakah penjelasan Anda akan lebih baik dengan bantuan gambar.
+- Jika YA, berikan deskripsi singkat dan jelas untuk membuat gambar tersebut di kolom 'imagePrompt'. Contoh: "Diagram siklus air", "Peta kerajaan Majapahit", "Ilustrasi metamorfosis kupu-kupu".
+- Jika TIDAK, jangan sertakan kolom 'imagePrompt'.
 
 PENTING: Sesuaikan gaya penjelasan dengan tingkatan kelas:
 - Kelas 1-2 (Fase A): Gunakan bahasa yang sangat sederhana, analogi, dan contoh konkret. Pecah penjelasan menjadi langkah-langkah yang sangat kecil.
@@ -64,6 +71,25 @@ const homeworkHelperFlow = ai.defineFlow(
   },
   async (input) => {
     const { output } = await prompt(input);
-    return output!;
+    if (!output) {
+      throw new Error("Ayah Jenius gagal memberikan jawaban.");
+    }
+
+    if (output.imagePrompt) {
+        try {
+            const {media} = await ai.generate({
+                model: 'googleai/gemini-2.0-flash-preview-image-generation',
+                prompt: `sebuah gambar ilustrasi datar yang mendidik dan sederhana untuk anak-anak: ${output.imagePrompt}`,
+                config: { responseModalities: ['IMAGE'] },
+            });
+            output.imageUrl = media.url;
+        } catch (e) {
+            console.error("Image generation failed for prompt:", output.imagePrompt, e);
+            // Don't block the answer if image fails
+            output.imageUrl = undefined;
+        }
+    }
+
+    return output;
   }
 );

@@ -33,6 +33,8 @@ const QuestionSchema = z.object({
     question: z.string().describe("The text of the question."),
     options: z.array(z.string()).min(3).describe("An array of possible answers."),
     correctAnswer: z.string().describe("The correct answer to the question."),
+    imagePrompt: z.string().optional().describe("If the question is best explained with an image, provide a concise, descriptive prompt for an image generation model. E.g., 'Diagram of a plant cell', 'Map of Indonesia provinces'. Otherwise, this field should be omitted."),
+    imageUrl: z.string().optional().describe("URL of the generated image, if any."),
 });
 
 const GenerateQuizOutputSchema = z.object({
@@ -54,6 +56,10 @@ Buatlah kuis berdasarkan konteks yang diberikan. Pastikan tingkat kesulitan soal
 Gunakan string berikut sebagai 'benih' untuk memastikan soal yang Anda buat UNIK dan BERBEDA setiap kali diminta:
 - Tanggal: {{{dateSeed}}}
 - Email Pengguna: {{{userEmail}}}
+
+PENTING: Untuk setiap pertanyaan, secara cerdas tentukan apakah pertanyaan tersebut akan lebih mudah dipahami dengan bantuan gambar.
+- Jika YA, berikan deskripsi singkat dan jelas untuk membuat gambar tersebut di kolom 'imagePrompt'. Contoh: "Ilustrasi rantai makanan di sawah", "Gambar bangun ruang kubus", "Bendera negara-negara ASEAN".
+- Jika TIDAK, jangan sertakan kolom 'imagePrompt'.
 
 PENTING: Sesuaikan kompleksitas soal dan bahasa dengan tingkatan kelas:
 - Kelas 1-2 (Fase A): Gunakan bahasa yang sangat sederhana dan pertanyaan yang sangat mendasar. Pilihan jawaban harus jelas dan tidak membingungkan.
@@ -78,6 +84,26 @@ const generateQuizFlow = ai.defineFlow(
     if (!output) {
         throw new Error("Ayah Tirta gagal membuat konten kuis.");
     }
+    
+    // Process questions to generate images if needed
+    output.quiz = await Promise.all(output.quiz.map(async (q) => {
+      if (q.imagePrompt) {
+        try {
+          const {media} = await ai.generate({
+            model: 'googleai/gemini-2.0-flash-preview-image-generation',
+            prompt: `sebuah gambar ilustrasi datar yang mendidik dan sederhana untuk anak-anak: ${q.imagePrompt}`,
+            config: { responseModalities: ['IMAGE'] },
+          });
+          q.imageUrl = media.url;
+        } catch (e) {
+          console.error("Image generation failed for prompt:", q.imagePrompt, e);
+          // Don't block the question if image fails
+          q.imageUrl = undefined;
+        }
+      }
+      return q;
+    }));
+
     return output;
   }
 );

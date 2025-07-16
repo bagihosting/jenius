@@ -28,11 +28,15 @@ const MultipleChoiceQuestionSchema = z.object({
   options: z.array(z.string()).min(4).max(4).describe("An array of 4 possible answers in 'A. ...', 'B. ...' format."),
   correctAnswer: z.string().describe("The correct answer to the question, matching one of the options exactly."),
   explanation: z.string().describe("A short and genius-level explanation for the correct answer, using Markdown for bolding important words (e.g., **kata penting**)."),
+  imagePrompt: z.string().optional().describe("If the question is best explained with an image, provide a concise, descriptive prompt for an image generation model. E.g., 'Diagram of the water cycle', 'Map of ancient Indonesian kingdoms'. Otherwise, this field should be omitted."),
+  imageUrl: z.string().optional().describe("URL of the generated image, if any."),
 });
 
 const EssayQuestionSchema = z.object({
     question: z.string().describe("The text of the essay question."),
-    answer: z.string().describe("A simple, smart, and genius explanation for the answer. Format: 'Konsep Kunci: [explanation]\n\nJawaban Cerdas: [answer]'."),
+    answer: z.string().describe("A simple, smart, and genius explanation for the answer. Format: 'Konsep Kunci: [explanation]\\n\\nJawaban Cerdas: [answer]'."),
+    imagePrompt: z.string().optional().describe("If the question is best explained with an image, provide a concise, descriptive prompt for an image generation model. E.g., 'Illustration of tectonic plates moving', 'Chart of government branches'. Otherwise, this field should be omitted."),
+    imageUrl: z.string().optional().describe("URL of the generated image, if any."),
 });
 
 const GenerateExamOutputSchema = z.object({
@@ -55,6 +59,10 @@ Buat satu set soal latihan ujian berdasarkan konteks yang diberikan. Pastikan ti
 Gunakan string tanggal berikut sebagai 'benih' untuk memastikan soal yang Anda buat UNIK dan BERBEDA setiap harinya:
 - Tanggal: {{{dateSeed}}}
 - Email Pengguna (untuk variasi per pengguna): {{{userEmail}}}
+
+PENTING: Untuk setiap soal (pilihan ganda dan esai), secara cerdas tentukan apakah soal tersebut akan lebih mudah dipahami dengan bantuan gambar.
+- Jika YA, berikan deskripsi singkat dan jelas untuk membuat gambar tersebut di kolom 'imagePrompt'. Contoh: "Diagram siklus air", "Peta kerajaan Majapahit", "Ilustrasi metamorfosis kupu-kupu".
+- Jika TIDAK, jangan sertakan kolom 'imagePrompt'.
 
 PENTING: Sesuaikan kompleksitas soal dan bahasa dengan tingkatan kelas:
 - Kelas 1-2 (Fase A): Gunakan bahasa yang sangat sederhana dan pertanyaan konkret. Fokus pada pemahaman dasar. Contoh soal harus mudah divisualisasikan.
@@ -86,6 +94,30 @@ const generateExamFlow = ai.defineFlow(
     if (!output) {
         throw new Error("Ayah Jenius gagal membuat soal ujian harian.");
     }
+    
+    const processQuestions = async (questions: (MultipleChoiceQuestion | EssayQuestion)[]) => {
+      return Promise.all(questions.map(async (q) => {
+        if (q.imagePrompt) {
+          try {
+            const {media} = await ai.generate({
+              model: 'googleai/gemini-2.0-flash-preview-image-generation',
+              prompt: `sebuah gambar ilustrasi datar yang mendidik dan sederhana untuk anak-anak: ${q.imagePrompt}`,
+              config: { responseModalities: ['IMAGE'] },
+            });
+            q.imageUrl = media.url;
+          } catch (e) {
+            console.error("Image generation failed for prompt:", q.imagePrompt, e);
+            // Don't block the question if image fails, just skip it.
+            q.imageUrl = undefined;
+          }
+        }
+        return q;
+      }));
+    };
+
+    output.multipleChoice = await processQuestions(output.multipleChoice) as MultipleChoiceQuestion[];
+    output.essay = await processQuestions(output.essay) as EssayQuestion[];
+    
     return output;
   }
 );

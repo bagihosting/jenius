@@ -20,6 +20,7 @@ export interface Question {
   question: string;
   options: string[];
   correctAnswer: string;
+  imageUrl?: string;
 }
 
 export interface QuizData {
@@ -41,11 +42,13 @@ export interface MultipleChoiceQuestion {
   options: string[];
   correctAnswer: string;
   explanation: string;
+  imageUrl?: string;
 }
 
 export interface EssayQuestion {
   question: string;
   answer: string;
+  imageUrl?: string;
 }
 
 export interface ExamData {

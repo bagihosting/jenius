@@ -3,8 +3,9 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, Send } from 'lucide-react';
+import { ArrowLeft, Loader2, Send, Sparkles } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { getSubjects } from '@/lib/subjects';
 import { homeworkHelperAction } from '@/app/actions';
-import type { HomeworkHelpInput } from '@/ai/flows/homework-helper-flow';
+import type { HomeworkHelpInput, HomeworkHelpOutput } from '@/ai/flows/homework-helper-flow';
 import type { SchoolType, Grade, Semester } from '@/lib/types';
 import { useAuth } from '@/context/AuthContext';
 
@@ -43,7 +44,7 @@ export default function PrHelperPage() {
   const [state, setState] = useState<PrHelperState>('idle');
   const [subject, setSubject] = useState('');
   const [question, setQuestion] = useState('');
-  const [answer, setAnswer] = useState('');
+  const [result, setResult] = useState<HomeworkHelpOutput | null>(null);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,17 +61,17 @@ export default function PrHelperPage() {
 
     setState('loading');
     const input: HomeworkHelpInput = { subject, question, schoolType, grade, semester };
-    const result = await homeworkHelperAction(input);
+    const response = await homeworkHelperAction(input);
 
-    if (result.error) {
+    if (response.error) {
       toast({
         title: 'Gagal Mendapatkan Jawaban',
-        description: result.error,
+        description: response.error,
         variant: 'destructive',
       });
       setState('idle');
-    } else if (result.data) {
-      setAnswer(result.data.answer);
+    } else if (response.data) {
+      setResult(response.data);
       setState('answered');
     }
   };
@@ -78,7 +79,7 @@ export default function PrHelperPage() {
   const handleReset = () => {
     setSubject('');
     setQuestion('');
-    setAnswer('');
+    setResult(null);
     setState('idle');
   };
   
@@ -161,9 +162,19 @@ export default function PrHelperPage() {
                         </div>
                     </div>
                     <div className="space-y-4">
-                        <h3 className="font-semibold text-lg">Penjelasan dari Ayah Jenius:</h3>
+                        <h3 className="font-semibold text-lg flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" />Penjelasan dari Ayah Jenius:</h3>
+                         {result?.imageUrl && (
+                            <div className="relative w-full aspect-video rounded-lg overflow-hidden border">
+                                <Image
+                                    src={result.imageUrl}
+                                    alt="Ilustrasi untuk jawaban PR"
+                                    layout="fill"
+                                    objectFit="contain"
+                                />
+                            </div>
+                        )}
                         <div className="p-4 bg-primary/10 rounded-md border border-primary/20 prose prose-sm max-w-none dark:prose-invert"
-                          dangerouslySetInnerHTML={{ __html: answer.replace(/\n/g, '<br />') }}
+                          dangerouslySetInnerHTML={{ __html: result?.answer.replace(/\n/g, '<br />') || '' }}
                         />
                     </div>
                   <div className="text-right">
