@@ -6,10 +6,15 @@ import Link from 'next/link';
 import { Button } from './ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export function Header() {
-  const { isAuthenticated, user, logout, loading } = useAuth();
-  const router = useRouter();
+  const { isAuthenticated, user, loading } = useAuth();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   return (
     <header className="bg-card shadow-sm">
@@ -23,7 +28,7 @@ export function Header() {
             <p className="text-sm text-muted-foreground hidden md:block">Platform belajar cerdas untuk siswa SD & MI</p>
           </div>
           <div className="flex items-center gap-2">
-            {!loading && (
+            {isClient && !loading && (
               <>
                 {isAuthenticated ? (
                   <>
