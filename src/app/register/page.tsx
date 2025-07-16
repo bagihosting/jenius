@@ -36,7 +36,8 @@ export default function RegisterPage() {
   const handleSchoolTypeChange = (value: SchoolType) => {
     setSchoolType(value);
     setSchoolName(''); // Reset school name when type changes
-    const schools = getSchoolsByCityAndType('Tangerang', value);
+    // Pass null for city to get all schools of that type from Indonesia
+    const schools = getSchoolsByCityAndType(null, value); 
     setAvailableSchools(schools);
   };
 
@@ -186,7 +187,7 @@ export default function RegisterPage() {
                       {availableSchools.length > 0 ? (
                         availableSchools.map((s) => (
                           <SelectItem key={s.name} value={s.name}>
-                            {s.name}
+                            {s.name} ({s.city})
                           </SelectItem>
                         ))
                       ) : (

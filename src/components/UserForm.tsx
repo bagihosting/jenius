@@ -60,7 +60,8 @@ function InnerUserForm({ form, onSubmit, editingUser, children }: UserFormProps)
 
     const availableSchools = useMemo(() => {
         if (role === 'user' && schoolType) {
-            return getSchoolsByCityAndType('Tangerang', schoolType);
+            // Pass null to get all schools of that type
+            return getSchoolsByCityAndType(null, schoolType);
         }
         return [];
     }, [role, schoolType]);
@@ -200,7 +201,7 @@ function InnerUserForm({ form, onSubmit, editingUser, children }: UserFormProps)
                                 <SelectContent>
                                 {availableSchools.map((s) => (
                                     <SelectItem key={s.name} value={s.name}>
-                                    {s.name}
+                                      {s.name} ({s.city})
                                     </SelectItem>
                                 ))}
                                 </SelectContent>
