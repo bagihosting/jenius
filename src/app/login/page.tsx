@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -28,9 +29,9 @@ export default function LoginPage() {
         console.log('Login attempt with:', { email, password });
         toast({
             title: "Login Berhasil (Simulasi)",
-            description: "Anda akan diarahkan ke halaman utama.",
+            description: "Anda akan diarahkan untuk memilih kelas.",
         });
-        router.push('/');
+        router.push('/belajar');
         setIsLoading(false);
     }, 1500);
   };
