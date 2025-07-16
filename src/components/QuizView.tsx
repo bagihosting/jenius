@@ -17,6 +17,8 @@ import { useAuth } from '@/context/AuthContext';
 
 type QuizState = 'idle' | 'loading' | 'active' | 'finished';
 
+const ROBUX_PER_QUIZ = 0.01;
+
 interface QuizViewProps {
   subjectId: string;
   subjectContent: string;
@@ -88,6 +90,21 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
     }
   };
 
+  const updateBonus = () => {
+    if (typeof window === 'undefined' || !user) return;
+    const bonusStatus = localStorage.getItem('bonus_feature_status');
+    if (bonusStatus !== 'active') return;
+
+    const bonusKey = `bonus_points_${user.email}`;
+    try {
+        const currentBonus = parseFloat(localStorage.getItem(bonusKey) || '0');
+        const newBonus = currentBonus + ROBUX_PER_QUIZ;
+        localStorage.setItem(bonusKey, newBonus.toFixed(4));
+    } catch(e) {
+        console.error("Failed to update bonus points", e);
+    }
+  };
+
   const handleSubmitQuiz = () => {
     let finalScore = 0;
     quiz?.quiz.forEach((q, index) => {
@@ -98,6 +115,15 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
     const percentageScore = Math.round((finalScore / quiz!.quiz.length) * 100);
     setScore(percentageScore);
     updateSubjectProgress(subjectId, percentageScore);
+    
+    if (percentageScore >= 60) { // Only give bonus for passing score
+        updateBonus();
+        toast({
+            title: 'Bonus Diterima!',
+            description: `Kamu mendapatkan ${ROBUX_PER_QUIZ} Poin Bonus karena menyelesaikan kuis!`,
+        });
+    }
+
     setQuizState('finished');
   }
 

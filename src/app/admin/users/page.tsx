@@ -55,6 +55,7 @@ const defaultFormValues: UserFormValues = {
   password: '',
   photoUrl: '',
   badge: '',
+  robloxUsername: '',
 };
 
 export default function UsersPage() {
@@ -114,6 +115,7 @@ export default function UsersPage() {
         ...user,
         photoUrl: user.photoUrl || '',
         badge: user.badge || '',
+        robloxUsername: user.robloxUsername || '',
         password: '',
     });
     setIsSheetOpen(true);
@@ -401,5 +403,3 @@ export default function UsersPage() {
     </>
   );
 }
-
-    

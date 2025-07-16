@@ -8,7 +8,7 @@ import { SubjectCard } from '@/components/SubjectCard';
 import { getSubjects } from '@/lib/subjects';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Edit, MessageSquareQuote, Loader2 } from 'lucide-react';
+import { ArrowLeft, Edit, MessageSquareQuote, Loader2, Gift } from 'lucide-react';
 import Link from 'next/link';
 import type { SchoolType, Grade, Semester } from '@/lib/types';
 import { useAuth } from '@/context/AuthContext';
@@ -18,12 +18,20 @@ function DashboardContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { user, loading } = useAuth();
+    const [isBonusFeatureActive, setIsBonusFeatureActive] = useState(false);
     
     useEffect(() => {
         if (!loading && !user) {
             router.push('/login');
         }
     }, [loading, user, router]);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const bonusStatus = localStorage.getItem('bonus_feature_status');
+            setIsBonusFeatureActive(bonusStatus === 'active');
+        }
+    }, []);
 
     const grade = (searchParams.get('grade') as Grade) || '1';
     const semester = (searchParams.get('semester') as Semester) || '1';
@@ -81,7 +89,7 @@ function DashboardContent() {
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                     <Card className="bg-secondary/50">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
@@ -114,6 +122,24 @@ function DashboardContent() {
                             </Button>
                         </CardContent>
                     </Card>
+                    {isBonusFeatureActive && (
+                        <Card className="bg-accent/20 border-accent/50">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-accent-foreground">
+                                    <Gift className="text-accent" />
+                                    Bonus Robux
+                                </CardTitle>
+                                <CardDescription>Selesaikan kuis untuk mengumpulkan Poin Bonus dan tukarkan dengan Robux!</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <Button asChild variant="secondary">
+                                        <Link href={`/bonus?grade=${grade}&semester=${semester}`}>
+                                        Lihat Bonus
+                                    </Link>
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

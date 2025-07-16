@@ -38,6 +38,7 @@ export const userSchema = z.object({
   password: z.string().optional(),
   photoUrl: z.string().optional(),
   badge: z.string().optional(),
+  robloxUsername: z.string().optional(),
 }).refine(data => data.role === 'admin' || (data.schoolType && data.schoolName), {
     message: "School type and name are required for users.",
     path: ["schoolName"],
@@ -175,6 +176,19 @@ function InnerUserForm({ form, onSubmit, editingUser, children }: UserFormProps)
                           </FormItem>
                         )}
                       />
+                       <FormField
+                        control={form.control}
+                        name="robloxUsername"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Username Roblox (Opsional)</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Username Roblox" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </>
                   )}
                 </div>
@@ -194,5 +208,3 @@ export function UserForm({ form, onSubmit, editingUser, children }: UserFormProp
         </FormProvider>
     )
 }
-
-    

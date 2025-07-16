@@ -17,7 +17,7 @@ import {
   SidebarInset,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Home, Users, LogOut, Loader2, BookHeart } from 'lucide-react';
+import { Home, Users, LogOut, Loader2, BookHeart, Gift } from 'lucide-react';
 import Link from 'next/link';
 import { ProfileDialog } from './ProfileDialog';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -52,6 +52,14 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                                 <Link href="/admin/users">
                                     <Users />
                                     <span>Pengguna</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                         <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/bonus')} tooltip="Bonus">
+                                <Link href="/admin/bonus">
+                                    <Gift />
+                                    <span>Manajemen Bonus</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

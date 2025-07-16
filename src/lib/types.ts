@@ -63,4 +63,5 @@ export interface User {
   badge?: string;
   photoUrl?: string;
   password?: string;
+  robloxUsername?: string;
 }
