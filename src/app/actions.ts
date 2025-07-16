@@ -4,9 +4,8 @@
 import { generateQuiz as generateQuizFlow } from '@/ai/flows/generate-quiz';
 import { answerHomework as answerHomeworkFlow } from '@/ai/flows/homework-helper-flow';
 import { generateDailyExam as generateDailyExamFlow } from '@/ai/flows/generate-exam-flow';
-import type { QuizData, ExamData } from '@/lib/types';
+import type { QuizData, ExamData, GenerateQuizInput } from '@/lib/types';
 import type { HomeworkHelpInput, HomeworkHelpOutput } from '@/ai/flows/homework-helper-flow';
-import type { GenerateQuizInput } from '@/ai/flows/generate-quiz';
 import type { GenerateExamInput } from '@/ai/flows/generate-exam-flow';
 
 

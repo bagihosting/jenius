@@ -26,6 +26,16 @@ export interface QuizData {
   quiz: Question[];
 }
 
+export interface GenerateQuizInput {
+  subjectContent: string;
+  numberOfQuestions: number;
+  schoolType: SchoolType;
+  grade: Grade;
+  semester: Semester;
+  dateSeed: string;
+  userEmail: string;
+}
+
 export interface MultipleChoiceQuestion {
   question: string;
   options: string[];

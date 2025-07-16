@@ -13,6 +13,7 @@ import type { QuizData, SchoolInfo } from '@/lib/types';
 import { Progress } from './ui/progress';
 import { useProgress } from '@/hooks/use-progress';
 import { Confetti } from './Confetti';
+import { useAuth } from '@/context/AuthContext';
 
 type QuizState = 'idle' | 'loading' | 'active' | 'finished';
 
@@ -23,6 +24,7 @@ interface QuizViewProps {
 }
 
 export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProps) {
+  const { user } = useAuth();
   const [quizState, setQuizState] = useState<QuizState>('idle');
   const [quiz, setQuiz] = useState<QuizData | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -32,13 +34,26 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
   const { updateSubjectProgress } = useProgress();
 
   const handleStartQuiz = async () => {
+    if (!user?.email) {
+      toast({
+        title: 'Gagal Memulai Kuis',
+        description: 'Tidak dapat mengidentifikasi pengguna. Silakan coba masuk kembali.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setQuizState('loading');
+    const dateSeed = new Date().toISOString().split('T')[0];
+    
     const result = await generateQuizAction({
       subjectContent,
       numberOfQuestions: 5,
       schoolType: schoolInfo.schoolType,
       grade: schoolInfo.grade,
       semester: schoolInfo.semester,
+      userEmail: user.email,
+      dateSeed: dateSeed,
     });
 
     if (result.error) {

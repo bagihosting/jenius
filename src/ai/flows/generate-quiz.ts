@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -10,7 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import type { QuizData, Semester } from '@/lib/types';
+import type { QuizData } from '@/lib/types';
 
 const GenerateQuizInputSchema = z.object({
   subjectContent: z
@@ -22,7 +23,9 @@ const GenerateQuizInputSchema = z.object({
     .describe('The number of questions to generate for the quiz.'),
   schoolType: z.string().describe('The type of school (e.g., SDN, MI).'),
   grade: z.string().describe('The grade level (e.g., 1, 5).'),
-  semester: z.string().describe('The semester (1 or 2).')
+  semester: z.string().describe('The semester (1 or 2).'),
+  dateSeed: z.string().describe('The current date (YYYY-MM-DD) to ensure daily variety.'),
+  userEmail: z.string().describe('The email of the user to ensure question uniqueness per user.'),
 });
 export type GenerateQuizInput = z.infer<typeof GenerateQuizInputSchema>;
 
@@ -48,6 +51,9 @@ const prompt = ai.definePrompt({
   output: {schema: GenerateQuizOutputSchema},
   prompt: `Anda adalah seorang ahli pembuat kuis untuk siswa sekolah dasar di Indonesia.
 Buatlah kuis berdasarkan konteks yang diberikan. Pastikan tingkat kesulitan soal sesuai untuk siswa kelas {{{grade}}} di sekolah jenis {{{schoolType}}} untuk semester {{{semester}}}.
+Gunakan string berikut sebagai 'benih' untuk memastikan soal yang Anda buat UNIK dan BERBEDA setiap kali diminta:
+- Tanggal: {{{dateSeed}}}
+- Email Pengguna: {{{userEmail}}}
 
 PENTING: Sesuaikan kompleksitas soal dan bahasa dengan tingkatan kelas:
 - Kelas 1-2 (Fase A): Gunakan bahasa yang sangat sederhana dan pertanyaan yang sangat mendasar. Pilihan jawaban harus jelas dan tidak membingungkan.
