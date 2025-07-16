@@ -26,21 +26,28 @@ const schoolTypes: { id: SchoolType; name: string }[] = [
   { id: 'SDN', name: 'SD Negeri' },
   { id: 'SDIT', name: 'SD Islam Terpadu' },
   { id: 'MI', name: 'Madrasah Ibtidaiyah (MI)' },
+  { id: 'SMP', name: 'SMP (Sekolah Menengah Pertama)' },
+  { id: 'MTs', name: 'MTs (Madrasah Tsanawiyah)' },
+  { id: 'SMA', name: 'SMA (Sekolah Menengah Atas)' },
+  { id: 'MA', name: 'MA (Madrasah Aliyah)' },
+  { id: 'AKADEMI', name: 'Akademi' },
+  { id: 'UNIVERSITAS', name: 'Universitas' },
 ];
 
 export const userSchema = z.object({
   name: z.string().min(2, { message: 'Nama harus memiliki setidaknya 2 karakter.' }),
   username: z.string().min(3, { message: 'Username harus memiliki setidaknya 3 karakter.' }).regex(/^[a-z0-9_]+$/, 'Username hanya boleh berisi huruf kecil, angka, dan garis bawah (_).'),
   email: z.string().email({ message: 'Email tidak valid.' }),
-  role: z.enum(['user', 'admin'], { required_error: 'Peran harus dipilih.' }),
-  schoolType: z.enum(['SDN', 'SDIT', 'MI']),
-  schoolName: z.string().min(3, { message: 'Nama sekolah harus diisi.' }),
+  role: z.enum(['user', 'admin', 'mahasiswa'], { required_error: 'Peran harus dipilih.' }),
+  schoolType: z.nativeEnum(Object.fromEntries(schoolTypes.map(s => [s.id, s.id])) as Record<SchoolType, SchoolType>).optional(),
+  schoolName: z.string().optional(),
   password: z.string().optional(),
   photoUrl: z.string().optional(),
   badge: z.string().optional(),
   robloxUsername: z.string().optional(),
-}).refine(data => data.role === 'admin' || (data.schoolType && data.schoolName), {
-    message: "School type and name are required for users.",
+  major: z.string().optional(),
+}).refine(data => data.role !== 'user' || (data.schoolType && data.schoolName), {
+    message: "Jenis dan nama sekolah wajib diisi untuk peran 'user'.",
     path: ["schoolName"],
 });
 
@@ -128,7 +135,8 @@ function InnerUserForm({ form, onSubmit, editingUser, children }: UserFormProps)
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="user">User</SelectItem>
+                            <SelectItem value="user">User (Siswa)</SelectItem>
+                            <SelectItem value="mahasiswa">Mahasiswa</SelectItem>
                             <SelectItem value="admin">Admin</SelectItem>
                           </SelectContent>
                         </Select>
@@ -144,7 +152,7 @@ function InnerUserForm({ form, onSubmit, editingUser, children }: UserFormProps)
                         name="schoolType"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Jenis Sekolah</FormLabel>
+                            <FormLabel>Jenis Sekolah/Institusi</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
                                 <SelectTrigger>
@@ -168,35 +176,9 @@ function InnerUserForm({ form, onSubmit, editingUser, children }: UserFormProps)
                         name="schoolName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Nama Sekolah</FormLabel>
+                            <FormLabel>Nama Sekolah/Institusi</FormLabel>
                             <FormControl>
-                                <Input placeholder="Contoh: SDN Merdeka 5" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                       <FormField
-                        control={form.control}
-                        name="robloxUsername"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Username Roblox (Opsional)</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Username Roblox" {...field} value={field.value || ''} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                       <FormField
-                        control={form.control}
-                        name="badge"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Lencana (Opsional)</FormLabel>
-                            <FormControl>
-                                <Input placeholder="contoh: star_student" {...field} value={field.value || ''} />
+                                <Input placeholder="Contoh: SDN Merdeka 5" {...field} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -204,6 +186,49 @@ function InnerUserForm({ form, onSubmit, editingUser, children }: UserFormProps)
                       />
                     </>
                   )}
+
+                  {role === 'mahasiswa' && (
+                      <FormField
+                        control={form.control}
+                        name="major"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Jurusan</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Contoh: Teknik Informatika" {...field} value={field.value || ''} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                  )}
+
+                  <FormField
+                    control={form.control}
+                    name="robloxUsername"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Username Roblox (Opsional)</FormLabel>
+                        <FormControl>
+                            <Input placeholder="Username Roblox" {...field} value={field.value || ''} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                   <FormField
+                    control={form.control}
+                    name="badge"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Lencana (Opsional)</FormLabel>
+                        <FormControl>
+                            <Input placeholder="contoh: star_student" {...field} value={field.value || ''} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </ScrollArea>
               {children}

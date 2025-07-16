@@ -18,7 +18,13 @@ export function Header() {
     setIsClient(true);
   }, []);
 
-  const dashboardHref = user?.role === 'admin' ? '/admin/dashboard' : '/belajar';
+  let dashboardHref = '/belajar';
+  if (user?.role === 'admin') {
+      dashboardHref = '/admin/dashboard';
+  } else if (user?.role === 'mahasiswa') {
+      dashboardHref = '/mahasiswa/dashboard';
+  }
+
 
   return (
     <header className="bg-card shadow-sm sticky top-0 z-40">
@@ -29,7 +35,7 @@ export function Header() {
               <BookHeart className="h-8 w-8 text-primary" />
               <span>Ayah Jenius</span>
             </Link>
-            <p className="text-sm text-muted-foreground hidden md:block">Platform belajar cerdas untuk siswa SD & MI</p>
+            <p className="text-sm text-muted-foreground hidden md:block">Platform belajar cerdas untuk semua</p>
           </div>
           <div className="flex items-center gap-2">
             {isClient && !loading && (

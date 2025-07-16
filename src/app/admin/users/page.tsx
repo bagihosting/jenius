@@ -37,7 +37,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/types';
-import { Loader2, PlusCircle, Search, Trash, Edit, User as UserIcon, School, Mail } from 'lucide-react';
+import { Loader2, PlusCircle, Search, Trash, Edit, User as UserIcon, School, Mail, GraduationCap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
 import { UserForm, userSchema } from '@/components/UserForm';
@@ -49,13 +49,14 @@ const defaultFormValues: UserFormValues = {
   name: '',
   username: '',
   email: '',
-  schoolType: 'SDN',
-  schoolName: '',
   role: 'user',
   password: '',
   photoUrl: '',
   badge: '',
   robloxUsername: '',
+  schoolType: 'SDN',
+  schoolName: '',
+  major: '',
 };
 
 export default function UsersPage() {
@@ -117,6 +118,9 @@ export default function UsersPage() {
         badge: user.badge || '',
         robloxUsername: user.robloxUsername || '',
         password: '',
+        schoolName: user.schoolName || '',
+        schoolType: user.schoolType || 'SDN',
+        major: user.major || '',
     });
     setIsSheetOpen(true);
   };
@@ -143,10 +147,44 @@ export default function UsersPage() {
 
   const onSubmit = (data: UserFormValues) => {
     try {
-      if (editingUser) {
+      const isNewUser = !editingUser;
+      
+      const userToSave: Partial<User> = {
+        name: data.name,
+        username: data.username,
+        email: data.email,
+        role: data.role,
+        photoUrl: data.photoUrl,
+        badge: data.badge,
+        robloxUsername: data.robloxUsername,
+      };
+
+      if (data.role === 'user') {
+          userToSave.schoolName = data.schoolName;
+          userToSave.schoolType = data.schoolType;
+      } else if (data.role === 'mahasiswa') {
+          userToSave.major = data.major;
+          userToSave.schoolName = data.schoolName;
+      }
+
+      if (isNewUser) {
+        if (!data.password) {
+          form.setError('password', { type: 'manual', message: 'Password wajib diisi untuk pengguna baru.' });
+          return;
+        }
+        if (localStorage.getItem(`user_${data.username}`)) {
+            form.setError('username', { type: 'manual', message: 'Username ini sudah digunakan.' });
+            return;
+        }
+        
+        const finalNewUser: User = userToSave as User;
+        localStorage.setItem(`user_${finalNewUser.username}`, JSON.stringify(finalNewUser));
+        localStorage.setItem(`pwd_${data.email}`, data.password);
+        toast({ title: 'Pengguna Ditambahkan', description: `${data.name} telah berhasil ditambahkan.` });
+
+      } else {
         // Edit existing user
-        const updatedUser: User = { ...editingUser, ...data, password: '' };
-        delete updatedUser.password;
+        const updatedUser: User = { ...editingUser, ...userToSave };
         
         localStorage.setItem(`user_${updatedUser.username}`, JSON.stringify(updatedUser));
         
@@ -166,22 +204,6 @@ export default function UsersPage() {
         }
 
         toast({ title: 'Pengguna Diperbarui', description: `Data untuk ${data.name} telah diperbarui.` });
-      } else {
-        // Add new user
-        if (!data.password) {
-          form.setError('password', { type: 'manual', message: 'Password wajib diisi untuk pengguna baru.' });
-          return;
-        }
-        if (localStorage.getItem(`user_${data.username}`)) {
-            form.setError('username', { type: 'manual', message: 'Username ini sudah digunakan.' });
-            return;
-        }
-        const newUser: User = { ...data, password: '' }; 
-        delete newUser.password;
-
-        localStorage.setItem(`user_${newUser.username}`, JSON.stringify(newUser));
-        localStorage.setItem(`pwd_${data.email}`, data.password);
-        toast({ title: 'Pengguna Ditambahkan', description: `${data.name} telah berhasil ditambahkan.` });
       }
       setIsSheetOpen(false);
       loadUsers();
@@ -197,6 +219,14 @@ export default function UsersPage() {
       (user.username?.toLowerCase() || '').includes(searchTerm.toLowerCase())
     );
   }, [users, searchTerm]);
+
+  const getRoleBadge = (role: string) => {
+    switch(role) {
+        case 'admin': return <Badge variant="default">Admin</Badge>;
+        case 'mahasiswa': return <Badge variant="secondary" className="bg-blue-100 text-blue-800">Mahasiswa</Badge>;
+        default: return <Badge variant="secondary">User</Badge>;
+    }
+  }
 
   return (
     <>
@@ -230,7 +260,7 @@ export default function UsersPage() {
                 <TableRow>
                   <TableHead>Nama</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead>Sekolah</TableHead>
+                  <TableHead>Institusi/Jurusan</TableHead>
                   <TableHead>Peran</TableHead>
                   <TableHead className="text-right">Aksi</TableHead>
                 </TableRow>
@@ -266,11 +296,9 @@ export default function UsersPage() {
                         </div>
                       </TableCell>
                       <TableCell>{user.email}</TableCell>
-                      <TableCell>{user.role === 'admin' ? 'N/A' : (user.schoolName || user.schoolType)}</TableCell>
+                      <TableCell>{user.role === 'mahasiswa' ? user.major : user.schoolName || 'N/A'}</TableCell>
                       <TableCell>
-                        <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
-                          {user.role}
-                        </Badge>
+                        {getRoleBadge(user.role)}
                       </TableCell>
                       <TableCell className="text-right">
                         <Button variant="ghost" size="icon" onClick={() => handleEdit(user)}>
@@ -318,9 +346,7 @@ export default function UsersPage() {
                                 <div>
                                     <p className="font-semibold">{user.name}</p>
                                     <p className="text-sm text-muted-foreground">@{user.username}</p>
-                                    <Badge variant={user.role === 'admin' ? 'default' : 'secondary'} className="mt-2">
-                                        {user.role}
-                                    </Badge>
+                                    <div className="mt-2">{getRoleBadge(user.role)}</div>
                                 </div>
                             </div>
                             <div className="flex flex-col items-end gap-2 -mr-2 -mt-2">
@@ -348,6 +374,12 @@ export default function UsersPage() {
                                 <div className="flex items-center gap-2">
                                     <School className="h-4 w-4" />
                                     <span>{user.schoolName || user.schoolType}</span>
+                                </div>
+                            )}
+                             {user.role === 'mahasiswa' && (
+                                <div className="flex items-center gap-2">
+                                    <GraduationCap className="h-4 w-4" />
+                                    <span>{user.major}</span>
                                 </div>
                             )}
                         </div>

@@ -8,11 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { ArrowRight, Lock } from 'lucide-react';
+import { ArrowRight, Lock, GraduationCap } from 'lucide-react';
 import { Suspense } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Loader2 } from 'lucide-react';
 import type { Grade } from '@/lib/types';
+import Link from 'next/link';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
 
 const gradeLevels = [
   { id: '1', name: 'Kelas 1 SD/MI' },
@@ -87,6 +90,15 @@ function BelajarSelection() {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
+                <Alert className="bg-blue-50 border-blue-200">
+                  <GraduationCap className="h-4 w-4 text-blue-600" />
+                  <AlertTitle className="text-blue-800">Tingkatkan ke Akun Mahasiswa!</AlertTitle>
+                  <AlertDescription className="text-blue-700">
+                    Dapatkan akses ke materi kuliah dan asisten akademik AI.
+                    <Link href="/upgrade" className="font-bold underline ml-1">Upgrade Sekarang</Link>
+                  </AlertDescription>
+                </Alert>
+
               <div className="space-y-2">
                 <Label htmlFor="grade-level" className="text-base flex items-center gap-2">
                     Pilih Kelas
@@ -127,7 +139,7 @@ function BelajarSelection() {
                 disabled={!grade || !semester}
                 onClick={handleStartLearning}
               >
-                Lanjutkan ke Dasbor
+                Lanjutkan ke Dasbor Siswa
                 <ArrowRight className="ml-2" />
               </Button>
             </div>

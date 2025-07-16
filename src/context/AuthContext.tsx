@@ -22,7 +22,7 @@ const initializeDefaultUsers = () => {
         if (typeof window === 'undefined') return;
         const adminExists = localStorage.getItem('user_admin');
         if (!adminExists) {
-            const adminUser: Omit<User, 'schoolType' | 'schoolName'> & { role: 'admin' } = {
+            const adminUser: User = {
                 name: 'Admin Jenius',
                 username: 'admin',
                 email: 'admin@ayahjenius.com',
@@ -80,6 +80,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(userData);
     if (userData.role === 'admin') {
       router.push('/admin/dashboard');
+    } else if (userData.role === 'mahasiswa') {
+        router.push('/mahasiswa/dashboard');
     } else {
       router.push('/belajar');
     }

@@ -1,5 +1,5 @@
 
-export type SchoolType = 'SDN' | 'SDIT' | 'MI' | 'SMP' | 'MTs' | 'SMA' | 'MA';
+export type SchoolType = 'SDN' | 'SDIT' | 'MI' | 'SMP' | 'MTs' | 'SMA' | 'MA' | 'AKADEMI' | 'UNIVERSITAS';
 export type Grade = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | '11' | '12';
 export type Semester = '1' | '2';
 
@@ -60,13 +60,14 @@ export interface User {
   name: string;
   username: string;
   email: string;
-  schoolType: SchoolType;
+  schoolType?: SchoolType;
   schoolName?: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'mahasiswa';
   grade?: Grade;
   badge?: string;
   photoUrl?: string;
   password?: string;
   robloxUsername?: string;
   registeredAt?: string; // ISO string date
+  major?: string; // Jurusan untuk mahasiswa
 }
