@@ -1,26 +1,30 @@
+
 'use client';
 
-import { notFound, useSearchParams } from 'next/navigation';
+import { notFound, useSearchParams, useParams } from 'next/navigation';
 import { getSubjectById } from '@/lib/subjects';
 import { Header } from '@/components/Header';
 import { SubjectDetails } from '@/components/SubjectDetails';
 import type { Subject, SchoolType, Grade, Semester } from '@/lib/types';
 import { useEffect, useState } from 'react';
 
-export default function SubjectPage({ params }: { params: { subjectId: string } }) {
+export default function SubjectPage() {
   const searchParams = useSearchParams();
+  const params = useParams();
+
   const schoolType = searchParams.get('school') as SchoolType;
   const grade = searchParams.get('grade') as Grade;
   const semester = searchParams.get('semester') as Semester;
+  const subjectId = params.subjectId as string;
   
   const [subject, setSubject] = useState<Subject | null | undefined>(undefined);
 
   useEffect(() => {
     if (schoolType && grade && semester) {
-      const foundSubject = getSubjectById(schoolType, grade, semester, params.subjectId);
+      const foundSubject = getSubjectById(schoolType, grade, semester, subjectId);
       setSubject(foundSubject);
     }
-  }, [schoolType, grade, semester, params.subjectId]);
+  }, [schoolType, grade, semester, subjectId]);
 
 
   if (subject === undefined) {
