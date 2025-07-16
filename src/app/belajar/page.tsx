@@ -1,78 +1,119 @@
 'use client';
 
-import { Suspense } from 'react';
-import { useSearchParams, useRouter, redirect } from 'next/navigation';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
-import { SubjectCard } from '@/components/SubjectCard';
-import { getSubjects } from '@/lib/subjects';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { Lightbulb, Edit, ArrowLeft } from 'lucide-react';
-import type { SchoolType, Grade, Semester } from '@/lib/types';
+import { Suspense } from 'react';
 
-const schoolTypeMap: { [key: string]: string } = {
-  SDN: 'SD Negeri',
-  SDIT: 'SD Islam Terpadu',
-  MI: 'Madrasah Ibtidaiyah'
-};
 
-function BelajarDashboard() {
-  const searchParams = useSearchParams();
+const schoolTypes = [
+  { id: 'SDN', name: 'SD Negeri' },
+  { id: 'SDIT', name: 'SD Islam Terpadu' },
+  { id: 'MI', name: 'Madrasah Ibtidaiyah (MI)' },
+];
+
+const gradeLevels = [
+  { id: '1', name: 'Kelas 1' },
+  { id: '2', name: 'Kelas 2' },
+  { id: '3', name: 'Kelas 3' },
+  { id: '4', name: 'Kelas 4' },
+  { id: '5', name: 'Kelas 5' },
+  { id: '6', name: 'Kelas 6' },
+];
+
+const semesters = [
+    { id: '1', name: 'Semester 1' },
+    { id: '2', name: 'Semester 2' },
+]
+
+function BelajarSelection() {
   const router = useRouter();
+  const [schoolType, setSchoolType] = useState('');
+  const [grade, setGrade] = useState('');
+  const [semester, setSemester] = useState('');
 
-  const schoolType = searchParams.get('school') as SchoolType;
-  const grade = searchParams.get('grade') as Grade;
-  const semester = searchParams.get('semester') as Semester;
-
-  if (!schoolType || !grade || !semester || !Object.keys(schoolTypeMap).includes(schoolType) || !['1', '2'].includes(semester)) {
-    redirect('/');
-  }
-
-  const subjects = getSubjects(schoolType, grade, semester);
-  const schoolName = schoolTypeMap[schoolType] || 'Sekolah';
-
-  const prHelperLink = `/pr-helper?school=${schoolType}&grade=${grade}&semester=${semester}`;
-  const examPracticeLink = `/exam-practice?school=${schoolType}&grade=${grade}&semester=${semester}`;
+  const handleStartLearning = () => {
+    if (schoolType && grade && semester) {
+      // This will redirect to a new dashboard page, let's assume it's `/dashboard` for now
+      // We will create this page later.
+      router.push(`/dashboard?school=${schoolType}&grade=${grade}&semester=${semester}`);
+    }
+  };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
-      <main className="flex-grow p-4 md:p-8">
-        <div className="max-w-6xl mx-auto">
-          <Button variant="ghost" onClick={() => router.push('/')} className="mb-4">
-             <ArrowLeft className="mr-2 h-4 w-4"/> Kembali ke pemilihan
-          </Button>
-
-          <div className="text-center mb-8 md:mb-12">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-headline text-gray-800 dark:text-gray-200">
-              Dasbor Belajar
-            </h1>
-            <p className="text-md sm:text-lg text-muted-foreground mt-2 max-w-2xl mx-auto">
-              {schoolName} - Kelas {grade} - Semester {semester}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 max-w-md mx-auto">
-            <Button asChild size="lg" className="w-full">
-              <Link href={prHelperLink}>
-                <Lightbulb className="mr-2 h-5 w-5" />
-                Bantuan PR Cerdas
-              </Link>
-            </Button>
-             <Button asChild size="lg" variant="secondary" className="w-full">
-              <Link href={examPracticeLink}>
-                <Edit className="mr-2 h-5 w-5" />
-                Latihan Soal Ujian
-              </Link>
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
-            {subjects.map((subject) => (
-              <SubjectCard key={subject.id} subject={subject} schoolInfo={{ schoolType, grade, semester }}/>
-            ))}
-          </div>
-        </div>
+      <main className="flex-grow flex items-center justify-center p-4">
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="text-center">
+            <CardTitle className="text-3xl font-headline">Pilih Kelas</CardTitle>
+            <CardDescription className="text-lg">Pilih sekolah, kelas, dan semester untuk memulai.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="school-type" className="text-base">Pilih Jenis Sekolah</Label>
+                <Select value={schoolType} onValueChange={setSchoolType}>
+                  <SelectTrigger id="school-type" className="w-full text-base h-12">
+                    <SelectValue placeholder="Pilih sekolah..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {schoolTypes.map((s) => (
+                      <SelectItem key={s.id} value={s.id} className="text-base">
+                        {s.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="grade-level" className="text-base">Pilih Kelas</Label>
+                <Select value={grade} onValueChange={setGrade}>
+                  <SelectTrigger id="grade-level" className="w-full text-base h-12">
+                    <SelectValue placeholder="Pilih kelas..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {gradeLevels.map((g) => (
+                      <SelectItem key={g.id} value={g.id} className="text-base">
+                        {g.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+               <div className="space-y-2">
+                <Label htmlFor="semester" className="text-base">Pilih Semester</Label>
+                <Select value={semester} onValueChange={setSemester}>
+                  <SelectTrigger id="semester" className="w-full text-base h-12">
+                    <SelectValue placeholder="Pilih semester..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {semesters.map((s) => (
+                      <SelectItem key={s.id} value={s.id} className="text-base">
+                        {s.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                size="lg"
+                className="w-full h-12 text-lg"
+                disabled={!schoolType || !grade || !semester}
+                onClick={handleStartLearning}
+              >
+                Lanjutkan ke Dasbor
+                <ArrowRight className="ml-2" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </main>
       <footer className="text-center p-4 text-muted-foreground text-sm">
         © 2024 Ayah Jenius. All rights reserved.
@@ -81,10 +122,11 @@ function BelajarDashboard() {
   );
 }
 
+
 export default function BelajarPage() {
     return (
         <Suspense fallback={<div>Loading...</div>}>
-            <BelajarDashboard />
+            <BelajarSelection />
         </Suspense>
     )
 }
