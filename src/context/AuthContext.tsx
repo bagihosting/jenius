@@ -29,7 +29,7 @@ const initializeDefaultUsers = () => {
                 schoolType: 'SDN', // Admin doesn't have a school, but type needs a value
                 schoolName: 'Kantor Pusat Ayah Jenius',
                 role: 'admin',
-                badge: 'little_genius'
+                badge: 'super_admin'
             };
             localStorage.setItem('user_admin', JSON.stringify(adminUser));
             localStorage.setItem('pwd_admin@ayahjenius.com', 'admin123');

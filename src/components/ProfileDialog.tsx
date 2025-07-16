@@ -15,7 +15,7 @@ import { Label } from './ui/label';
 import { useAuth } from '@/context/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Badge } from './ui/badge';
-import { Award, Brain, Camera, KeyRound, LogOut, Star, User as UserIcon, Save, Loader2 } from 'lucide-react';
+import { Award, Brain, Camera, KeyRound, LogOut, Star, User as UserIcon, Save, Loader2, Crown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from './ui/separator';
 import { ScrollArea } from './ui/scroll-area';
@@ -24,6 +24,7 @@ const badgeMap: { [key: string]: { icon: React.ElementType; label: string; color
   star_student: { icon: Star, label: 'Bintang Kelas', color: 'text-yellow-500' },
   diligent_learner: { icon: Award, label: 'Rajin Belajar', color: 'text-blue-500' },
   little_genius: { icon: Brain, label: 'Jenius Cilik', color: 'text-purple-500' },
+  super_admin: { icon: Crown, label: 'Super Admin', color: 'text-amber-500' },
 };
 
 async function compressAndConvertToWebP(file: File): Promise<string> {
