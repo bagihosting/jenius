@@ -8,10 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Lock } from 'lucide-react';
 import { Suspense } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Loader2 } from 'lucide-react';
+import type { Grade } from '@/lib/types';
 
 const gradeLevels = [
   { id: '1', name: 'Kelas 1' },
@@ -29,21 +30,29 @@ const semesters = [
 
 function BelajarSelection() {
   const router = useRouter();
-  const { user, loading } = useAuth();
-  const [grade, setGrade] = useState('');
+  const { user, loading, updateUser } = useAuth();
+  const [grade, setGrade] = useState<Grade | ''>('');
   const [semester, setSemester] = useState('');
   
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login');
     }
+    if (user?.grade) {
+        setGrade(user.grade);
+    }
   }, [user, loading, router]);
 
 
   const handleStartLearning = () => {
-    if (user?.schoolType && grade && semester) {
-      router.push(`/dashboard?grade=${grade}&semester=${semester}`);
+    if (!user || !grade || !semester) return;
+    
+    // Save grade if it's the first time
+    if (!user.grade) {
+      updateUser({ grade: grade as Grade });
     }
+
+    router.push(`/dashboard?grade=${grade}&semester=${semester}`);
   };
 
   if (loading || !user) {
@@ -55,6 +64,7 @@ function BelajarSelection() {
   }
 
   const schoolName = user.schoolName || 'Sekolah Anda';
+  const isGradeLocked = !!user.grade;
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -66,15 +76,19 @@ function BelajarSelection() {
             <CardDescription className="text-lg">
               Kamu terdaftar di <span className="font-bold text-primary">{schoolName}</span>.
               <br/>
-              Pilih kelas dan semester untuk memulai.
+              {isGradeLocked ? 'Pilih semester untuk memulai.' : 'Pilih kelas dan semester untuk memulai.'}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="grade-level" className="text-base">Pilih Kelas</Label>
-                <Select value={grade} onValueChange={setGrade}>
+                <Label htmlFor="grade-level" className="text-base flex items-center gap-2">
+                    Pilih Kelas
+                    {isGradeLocked && <span className="text-xs text-muted-foreground">(Kelas terkunci setelah pilihan pertama)</span>}
+                </Label>
+                <Select value={grade} onValueChange={(val) => setGrade(val as Grade)} disabled={isGradeLocked}>
                   <SelectTrigger id="grade-level" className="w-full text-base h-12">
+                    {isGradeLocked && <Lock className="mr-2 h-4 w-4" />}
                     <SelectValue placeholder="Pilih kelas..." />
                   </SelectTrigger>
                   <SelectContent>

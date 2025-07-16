@@ -60,6 +60,7 @@ export interface User {
   schoolType: SchoolType;
   schoolName?: string;
   role: 'user' | 'admin';
+  grade?: Grade;
   badge?: string;
   photoUrl?: string;
   password?: string;
