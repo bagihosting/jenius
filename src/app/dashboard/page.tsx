@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useSearchParams } from 'next/navigation';
@@ -7,7 +8,7 @@ import { SubjectCard } from '@/components/SubjectCard';
 import { getSubjects } from '@/lib/subjects';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Edit, MessageSquareQuestion } from 'lucide-react';
+import { ArrowLeft, Edit, MessageSquareQuote } from 'lucide-react';
 import Link from 'next/link';
 import type { SchoolType, Grade, Semester } from '@/lib/types';
 
@@ -74,7 +75,7 @@ function DashboardContent() {
                      <Card className="bg-secondary/50">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
-                                <MessageSquareQuestion/>
+                                <MessageSquareQuote/>
                                 Bantuan PR Cerdas
                             </CardTitle>
                             <CardDescription>Punya PR yang bikin pusing? Tanyakan di sini dan dapatkan penjelasan langkah demi langkah dari Ayah Jenius.</CardDescription>
