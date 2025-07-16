@@ -15,9 +15,10 @@ import { Label } from './ui/label';
 import { useAuth } from '@/context/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Badge } from './ui/badge';
-import { Award, Brain, Camera, KeyRound, LogOut, Star, User as UserIcon, Save } from 'lucide-react';
+import { Award, Brain, Camera, KeyRound, LogOut, Star, User as UserIcon, Save, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from './ui/separator';
+import { ScrollArea } from './ui/scroll-area';
 
 const schoolTypeMap: { [key: string]: string } = {
   SDN: 'SD Negeri',
@@ -145,81 +146,83 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
   return (
     <Dialog onOpenChange={() => setIsEditingName(false)}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-md p-0">
+        <DialogHeader className="p-6 pb-2">
           <DialogTitle className="text-center text-2xl font-headline">Profil Saya</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 py-4">
-            <div className="flex flex-col items-center gap-4">
-              <div className="relative group">
-                <Avatar className="h-24 w-24 cursor-pointer" onClick={handleAvatarClick}>
-                  <AvatarImage src={user.photoUrl} alt={user.name} />
-                  <AvatarFallback className="text-4xl">
-                     <UserIcon className="h-12 w-12"/>
-                  </AvatarFallback>
-                </Avatar>
-                <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                   {isUploading ? <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Camera className="h-8 w-8 text-white" />}
-                </div>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  className="hidden"
-                  accept="image/png, image/jpeg, image/gif"
-                />
+        <div className="flex flex-col sm:flex-row items-center gap-4 px-6">
+            <div className="relative group shrink-0">
+              <Avatar className="h-20 w-20 sm:h-24 sm:w-24 cursor-pointer" onClick={handleAvatarClick}>
+                <AvatarImage src={user.photoUrl} alt={user.name} />
+                <AvatarFallback className="text-4xl">
+                   <UserIcon className="h-10 w-10"/>
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                 {isUploading ? <Loader2 className="h-6 w-6 text-white animate-spin" /> : <Camera className="h-8 w-8 text-white" />}
               </div>
-              
-              {isEditingName ? (
-                 <div className="w-full flex items-center gap-2">
-                    <Input value={name} onChange={(e) => setName(e.target.value)} className="text-xl text-center" />
-                    <Button onClick={handleSaveName} size="sm"><Save className="mr-2"/> Simpan</Button>
-                    <Button onClick={() => setIsEditingName(false)} size="sm" variant="ghost">Batal</Button>
-                 </div>
-              ) : (
-                 <h2 className="text-2xl font-bold cursor-pointer" onClick={() => setIsEditingName(true)}>
-                    {user.name}
-                </h2>
-              )}
-
-              <p className="text-muted-foreground">{user.email}</p>
-              <Badge variant="secondary">{schoolTypeMap[user.schoolType] || user.schoolType}</Badge>
-
-              {userBadge && (
-                 <div className="flex items-center gap-2 p-2 bg-secondary rounded-md mt-2">
-                    <userBadge.icon className={`h-6 w-6 ${userBadge.color}`} />
-                    <span className="font-semibold text-secondary-foreground">{userBadge.label}</span>
-                 </div>
-              )}
-            </div>
-
-            <Separator />
-            
-            <div className="space-y-4 px-4">
-                <h3 className="font-semibold text-center">Ubah Password</h3>
-                <div className="space-y-2">
-                    <Label htmlFor="new-password">Password Baru</Label>
-                    <Input id="new-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Minimal 6 karakter" />
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Konfirmasi Password Baru</Label>
-                    <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Ulangi password baru" />
-                </div>
-                <Button onClick={handlePasswordChange} className="w-full">
-                    <KeyRound className="mr-2"/>
-                    Ubah Password
-                </Button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+                accept="image/png, image/jpeg, image/gif"
+              />
             </div>
             
-            <Separator />
+            <div className="flex flex-col items-center sm:items-start w-full">
+                {isEditingName ? (
+                   <div className="w-full flex items-center gap-2">
+                      <Input value={name} onChange={(e) => setName(e.target.value)} className="text-xl h-10" />
+                      <Button onClick={handleSaveName} size="sm"><Save /></Button>
+                   </div>
+                ) : (
+                   <h2 className="text-2xl font-bold cursor-pointer" onClick={() => setIsEditingName(true)}>
+                      {user.name}
+                  </h2>
+                )}
 
-            <div className="px-4">
+                <p className="text-muted-foreground">{user.email}</p>
+                <div className="flex items-center gap-2 mt-2">
+                    <Badge variant="secondary">{schoolTypeMap[user.schoolType] || user.schoolType}</Badge>
+                    {userBadge && (
+                       <div className="flex items-center gap-1.5 p-1 px-2 bg-secondary rounded-full">
+                          <userBadge.icon className={`h-4 w-4 ${userBadge.color}`} />
+                          <span className="font-semibold text-secondary-foreground text-xs">{userBadge.label}</span>
+                       </div>
+                    )}
+                </div>
+            </div>
+        </div>
+        
+        <Separator className="my-4"/>
+
+        <ScrollArea className="max-h-[calc(100vh-20rem)] sm:max-h-auto">
+            <div className="space-y-4 px-6 pb-6">
+                <div className="space-y-4">
+                    <h3 className="font-semibold text-center">Ubah Password</h3>
+                    <div className="space-y-2">
+                        <Label htmlFor="new-password">Password Baru</Label>
+                        <Input id="new-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Minimal 6 karakter" />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="confirm-password">Konfirmasi Password Baru</Label>
+                        <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Ulangi password baru" />
+                    </div>
+                    <Button onClick={handlePasswordChange} className="w-full">
+                        <KeyRound className="mr-2"/>
+                        Ubah Password
+                    </Button>
+                </div>
+                
+                <Separator />
+
                 <Button onClick={logout} variant="destructive" className="w-full">
                     <LogOut className="mr-2" />
                     Keluar
                 </Button>
             </div>
-        </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
