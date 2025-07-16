@@ -20,12 +20,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Separator } from './ui/separator';
 import { ScrollArea } from './ui/scroll-area';
 
-const schoolTypeMap: { [key: string]: string } = {
-  SDN: 'SD Negeri',
-  SDIT: 'SD Islam Terpadu',
-  MI: 'Madrasah Ibtidaiyah',
-};
-
 const badgeMap: { [key: string]: { icon: React.ElementType; label: string; color: string } } = {
   star_student: { icon: Star, label: 'Bintang Kelas', color: 'text-yellow-500' },
   diligent_learner: { icon: Award, label: 'Rajin Belajar', color: 'text-blue-500' },
@@ -194,7 +188,7 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
                 <p className="text-muted-foreground">{user.email}</p>
                 <div className="flex items-center gap-2 mt-2">
                     {user.role === 'user' && (
-                        <Badge variant="secondary">{schoolTypeMap[user.schoolType] || user.schoolType}</Badge>
+                        <Badge variant="secondary">{user.schoolName || user.schoolType}</Badge>
                     )}
                     {userBadge && (
                        <div className="flex items-center gap-1.5 p-1 px-2 bg-secondary rounded-full">
@@ -238,5 +232,3 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
     </Dialog>
   );
 }
-
-    

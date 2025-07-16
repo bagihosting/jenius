@@ -48,6 +48,7 @@ export interface User {
   username: string;
   email: string;
   schoolType: SchoolType;
+  schoolName?: string;
   role: 'user' | 'admin';
   badge?: string;
   photoUrl?: string;

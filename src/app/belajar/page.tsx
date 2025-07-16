@@ -13,12 +13,6 @@ import { Suspense } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Loader2 } from 'lucide-react';
 
-const schoolTypeMap: { [key: string]: string } = {
-  SDN: 'SD Negeri',
-  SDIT: 'SD Islam Terpadu',
-  MI: 'Madrasah Ibtidaiyah (MI)',
-};
-
 const gradeLevels = [
   { id: '1', name: 'Kelas 1' },
   { id: '2', name: 'Kelas 2' },
@@ -65,7 +59,7 @@ function BelajarSelection() {
     )
   }
 
-  const schoolName = schoolTypeMap[user.schoolType] || 'Sekolah';
+  const schoolName = user.schoolName || 'Sekolah Anda';
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -140,5 +134,3 @@ export default function BelajarPage() {
         </Suspense>
     )
 }
-
-    

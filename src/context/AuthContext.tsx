@@ -26,7 +26,8 @@ const initializeDefaultUsers = () => {
                 name: 'Admin Jenius',
                 username: 'admin',
                 email: 'admin@ayahjenius.com',
-                schoolType: 'SDN',
+                schoolType: 'SDN', // Admin doesn't have a school, but type needs a value
+                schoolName: 'Kantor Pusat Ayah Jenius',
                 role: 'admin',
                 badge: 'little_genius'
             };
@@ -41,6 +42,7 @@ const initializeDefaultUsers = () => {
                 username: 'user',
                 email: 'user@ayahjenius.com',
                 schoolType: 'SDN',
+                schoolName: 'SDN Tangerang 1',
                 role: 'user',
                 badge: 'star_student'
             };

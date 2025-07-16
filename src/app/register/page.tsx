@@ -12,8 +12,10 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { getSchoolsByCityAndType, School } from '@/lib/schools';
+import type { SchoolType } from '@/lib/types';
 
-const schoolTypes = [
+const schoolTypes: { id: SchoolType; name: string }[] = [
   { id: 'SDN', name: 'SD Negeri' },
   { id: 'SDIT', name: 'SD Islam Terpadu' },
   { id: 'MI', name: 'Madrasah Ibtidaiyah (MI)' },
@@ -26,15 +28,24 @@ export default function RegisterPage() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [schoolType, setSchoolType] = useState('');
+  const [schoolType, setSchoolType] = useState<SchoolType | ''>('');
+  const [schoolName, setSchoolName] = useState('');
+  const [availableSchools, setAvailableSchools] = useState<School[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  const handleSchoolTypeChange = (value: SchoolType) => {
+    setSchoolType(value);
+    setSchoolName(''); // Reset school name when type changes
+    const schools = getSchoolsByCityAndType('Tangerang', value);
+    setAvailableSchools(schools);
+  };
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!schoolType) {
+    if (!schoolType || !schoolName) {
         toast({
             title: "Form Belum Lengkap",
-            description: "Silakan pilih jenis sekolah Anda.",
+            description: "Silakan pilih jenis dan nama sekolah Anda.",
             variant: "destructive",
         });
         return;
@@ -53,7 +64,6 @@ export default function RegisterPage() {
           return;
         }
 
-        // Also check if email is already used by iterating through users
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
             if (key && key.startsWith('user_')) {
@@ -70,9 +80,9 @@ export default function RegisterPage() {
             }
         }
 
-        const newUser = { name, username, email, schoolType, role: 'user' as 'user' };
+        const newUser = { name, username, email, schoolType, schoolName, role: 'user' as 'user' };
         localStorage.setItem(`user_${username}`, JSON.stringify(newUser));
-        localStorage.setItem(`pwd_${email}`, password); // Keep pwd key with email for now
+        localStorage.setItem(`pwd_${email}`, password);
 
         console.log('Registering user:', newUser);
         toast({
@@ -152,7 +162,7 @@ export default function RegisterPage() {
               </div>
                <div className="space-y-2">
                 <Label htmlFor="school-type">Jenis Sekolah Anda</Label>
-                <Select value={schoolType} onValueChange={setSchoolType} required>
+                <Select value={schoolType} onValueChange={(value) => handleSchoolTypeChange(value as SchoolType)} required>
                   <SelectTrigger id="school-type" className="w-full">
                     <SelectValue placeholder="Pilih jenis sekolah..." />
                   </SelectTrigger>
@@ -165,6 +175,29 @@ export default function RegisterPage() {
                   </SelectContent>
                 </Select>
               </div>
+              {schoolType && (
+                <div className="space-y-2">
+                  <Label htmlFor="school-name">Nama Sekolah</Label>
+                  <Select value={schoolName} onValueChange={setSchoolName} required>
+                    <SelectTrigger id="school-name" className="w-full">
+                      <SelectValue placeholder="Pilih nama sekolah..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableSchools.length > 0 ? (
+                        availableSchools.map((s) => (
+                          <SelectItem key={s.name} value={s.name}>
+                            {s.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="not-found" disabled>
+                          Tidak ada sekolah ditemukan
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <Button type="submit" className="w-full" disabled={isLoading}>
                  {isLoading ? <Loader2 className="animate-spin" /> : 'Daftar'}
               </Button>

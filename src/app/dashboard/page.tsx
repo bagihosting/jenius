@@ -13,12 +13,6 @@ import Link from 'next/link';
 import type { SchoolType, Grade, Semester } from '@/lib/types';
 import { useAuth } from '@/context/AuthContext';
 
-const schoolTypeMap: { [key: string]: string } = {
-  SDN: 'SD Negeri',
-  SDIT: 'SD Islam Terpadu',
-  MI: 'Madrasah Ibtidaiyah'
-};
-
 function DashboardContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -33,10 +27,10 @@ function DashboardContent() {
     const semester = (searchParams.get('semester') as Semester) || '1';
     
     useEffect(() => {
-        if (!loading && !isAuthenticated) {
+        if (!loading && isClient && !isAuthenticated) {
             router.push('/login');
         }
-    }, [loading, isAuthenticated, router]);
+    }, [loading, isAuthenticated, isClient, router]);
     
     if (!isClient || loading || !isAuthenticated) {
         return (
@@ -69,7 +63,7 @@ function DashboardContent() {
         );
     }
 
-    const schoolName = schoolTypeMap[schoolType] || 'Sekolah';
+    const schoolName = user?.schoolName || 'Sekolah Anda';
     const subjects = getSubjects(schoolType, grade, semester);
     const schoolInfo = { schoolType, grade, semester };
     

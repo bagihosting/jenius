@@ -62,6 +62,7 @@ export default function UsersPage() {
       username: '',
       email: '',
       schoolType: 'SDN',
+      schoolName: '',
       role: 'user',
       password: '',
     },
@@ -98,7 +99,7 @@ export default function UsersPage() {
 
   const handleAddNew = () => {
     setEditingUser(null);
-    form.reset({ name: '', username: '', email: '', schoolType: 'SDN', role: 'user', password: '' });
+    form.reset({ name: '', username: '', email: '', schoolType: 'SDN', schoolName: '', role: 'user', password: '' });
     setIsDialogOpen(true);
   };
 
@@ -250,7 +251,7 @@ export default function UsersPage() {
                         </div>
                       </TableCell>
                       <TableCell>{user.email}</TableCell>
-                      <TableCell>{user.role === 'admin' ? 'N/A' : user.schoolType}</TableCell>
+                      <TableCell>{user.role === 'admin' ? 'N/A' : (user.schoolName || user.schoolType)}</TableCell>
                       <TableCell>
                         <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
                           {user.role}
@@ -320,5 +321,3 @@ export default function UsersPage() {
     </>
   );
 }
-
-    
