@@ -31,8 +31,8 @@ export default function LoginPage() {
             title: "Login Berhasil (Simulasi)",
             description: "Anda akan diarahkan untuk memilih kelas.",
         });
-        // For simulation, we'll use a mock user object
-        login({ name: 'Pengguna Jenius', email });
+        // For simulation, we'll use a mock user object with a school type
+        login({ name: 'Pengguna Jenius', email, schoolType: 'SDN' });
         setIsLoading(false);
     }, 1500);
   };

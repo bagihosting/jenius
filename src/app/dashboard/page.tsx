@@ -1,16 +1,17 @@
 
 'use client';
 
-import { useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { Suspense, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { SubjectCard } from '@/components/SubjectCard';
 import { getSubjects } from '@/lib/subjects';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Edit, MessageSquareQuote } from 'lucide-react';
+import { ArrowLeft, Edit, MessageSquareQuote, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import type { SchoolType, Grade, Semester } from '@/lib/types';
+import { useAuth } from '@/context/AuthContext';
 
 const schoolTypeMap: { [key: string]: string } = {
   SDN: 'SD Negeri',
@@ -19,18 +20,35 @@ const schoolTypeMap: { [key: string]: string } = {
 };
 
 function DashboardContent() {
+    const router = useRouter();
     const searchParams = useSearchParams();
-    const schoolType = (searchParams.get('school') as SchoolType) || 'SDN';
+    const { user, loading, isAuthenticated } = useAuth();
+
     const grade = (searchParams.get('grade') as Grade) || '1';
     const semester = (searchParams.get('semester') as Semester) || '1';
+    const schoolType = user?.schoolType;
 
-    if (!schoolType || !grade || !semester) {
+    useEffect(() => {
+        if (!loading && !isAuthenticated) {
+            router.push('/login');
+        }
+    }, [loading, isAuthenticated, router]);
+
+    if (loading || !isAuthenticated || !schoolType) {
+        return (
+            <main className="flex-grow flex items-center justify-center">
+                <Loader2 className="h-12 w-12 animate-spin text-primary"/>
+            </main>
+        )
+    }
+    
+    if (!grade || !semester) {
         return (
             <main className="flex-grow flex items-center justify-center p-4">
                 <Card className="w-full max-w-md text-center">
                     <CardHeader>
                         <CardTitle>Parameter Tidak Lengkap</CardTitle>
-                        <CardDescription>Silakan kembali dan pilih sekolah, kelas, serta semester.</CardDescription>
+                        <CardDescription>Silakan kembali dan pilih kelas serta semester.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Button asChild>
@@ -82,7 +100,7 @@ function DashboardContent() {
                         </CardHeader>
                         <CardContent>
                            <Button asChild>
-                                <Link href={`/pr-helper?school=${schoolType}&grade=${grade}&semester=${semester}`}>
+                                <Link href={`/pr-helper?grade=${grade}&semester=${semester}`}>
                                     Tanya PR
                                 </Link>
                            </Button>
@@ -98,7 +116,7 @@ function DashboardContent() {
                         </CardHeader>
                         <CardContent>
                             <Button asChild>
-                                 <Link href={`/exam-practice?school=${schoolType}&grade=${grade}&semester=${semester}`}>
+                                 <Link href={`/exam-practice?grade=${grade}&semester=${semester}`}>
                                     Mulai Latihan
                                 </Link>
                            </Button>

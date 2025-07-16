@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -10,6 +11,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+const schoolTypes = [
+  { id: 'SDN', name: 'SD Negeri' },
+  { id: 'SDIT', name: 'SD Islam Terpadu' },
+  { id: 'MI', name: 'Madrasah Ibtidaiyah (MI)' },
+];
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -17,16 +25,24 @@ export default function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [schoolType, setSchoolType] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!schoolType) {
+        toast({
+            title: "Form Belum Lengkap",
+            description: "Silakan pilih jenis sekolah Anda.",
+            variant: "destructive",
+        });
+        return;
+    }
     setIsLoading(true);
 
     // Placeholder for actual registration logic
     setTimeout(() => {
-        // Here you would typically call a server action or API route to create a new user
-        console.log('Registering user:', { name, email, password });
+        console.log('Registering user:', { name, email, password, schoolType });
         toast({
             title: "Pendaftaran Berhasil (Simulasi)",
             description: "Akun Anda telah dibuat. Silakan masuk.",
@@ -79,6 +95,21 @@ export default function RegisterPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
+              </div>
+               <div className="space-y-2">
+                <Label htmlFor="school-type">Jenis Sekolah Anda</Label>
+                <Select value={schoolType} onValueChange={setSchoolType} required>
+                  <SelectTrigger id="school-type" className="w-full">
+                    <SelectValue placeholder="Pilih jenis sekolah..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {schoolTypes.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
                  {isLoading ? <Loader2 className="animate-spin" /> : 'Daftar'}

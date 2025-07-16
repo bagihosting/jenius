@@ -1,7 +1,8 @@
+
 'use client';
 
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Edit, Loader2, AlertCircle, Sparkles } from 'lucide-react';
 import { Header } from '@/components/Header';
 import {
@@ -13,12 +14,13 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { getSubjects } from '@/lib/subjects';
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import type { ExamData, Subject, SchoolType, Grade, Semester } from '@/lib/types';
 import { generateExamAction } from '../actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/context/AuthContext';
 
 type ExamState = 'idle' | 'loading' | 'success' | 'error';
 
@@ -39,16 +41,29 @@ function renderMarkdownBold(text: string) {
 }
 
 export default function ExamPracticePage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const schoolType = (searchParams.get('school') as SchoolType) || 'SDN';
+  const { user, loading, isAuthenticated } = useAuth();
+
   const grade = (searchParams.get('grade') as Grade) || '5';
   const semester = (searchParams.get('semester') as Semester) || '1';
+  const schoolType = user?.schoolType;
 
-  const subjects = useMemo(() => getSubjects(schoolType, grade, semester), [schoolType, grade, semester]);
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [loading, isAuthenticated, router]);
+
+  const subjects = useMemo(() => {
+      if (!schoolType) return [];
+      return getSubjects(schoolType, grade, semester);
+  }, [schoolType, grade, semester]);
+
   const [examData, setExamData] = useState<Record<string, SubjectExam>>({});
 
   const fetchExam = useCallback(async (subject: Subject) => {
-    if (examData[subject.id]?.state === 'loading' || examData[subject.id]?.state === 'success') {
+    if (examData[subject.id]?.state === 'loading' || examData[subject.id]?.state === 'success' || !schoolType) {
       return;
     }
 
@@ -70,7 +85,15 @@ export default function ExamPracticePage() {
     }
   }, [examData, schoolType, grade, semester]);
 
-  if (!schoolType || !grade || !semester) {
+  if (loading || !isAuthenticated || !schoolType) {
+    return (
+      <div className="flex-grow flex items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!grade || !semester) {
     return (
       <div className="flex flex-col min-h-screen">
         <Header />
@@ -95,7 +118,7 @@ export default function ExamPracticePage() {
   }
 
   const schoolName = schoolTypeMap[schoolType] || 'Sekolah';
-  const backLink = `/belajar?school=${schoolType}&grade=${grade}&semester=${semester}`;
+  const backLink = `/dashboard?grade=${grade}&semester=${semester}`;
 
   return (
     <div className="flex flex-col min-h-screen">

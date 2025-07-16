@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -17,7 +18,7 @@ export function SubjectCard({ subject, schoolInfo }: SubjectCardProps) {
   const progress = getSubjectProgress(subject.id);
 
   const Icon = getIcon(subject.icon);
-  const link = `/subjects/${subject.id}?school=${schoolInfo.schoolType}&grade=${schoolInfo.grade}&semester=${schoolInfo.semester}`;
+  const link = `/subjects/${subject.id}?grade=${schoolInfo.grade}&semester=${schoolInfo.semester}`;
 
   return (
     <Link href={link} className="group">

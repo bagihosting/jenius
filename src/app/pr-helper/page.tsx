@@ -1,8 +1,9 @@
+
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2, Send } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
@@ -15,23 +16,30 @@ import { getSubjects } from '@/lib/subjects';
 import { homeworkHelperAction } from '@/app/actions';
 import type { HomeworkHelpInput } from '@/ai/flows/homework-helper-flow';
 import type { SchoolType, Grade, Semester } from '@/lib/types';
+import { useAuth } from '@/context/AuthContext';
 
 type PrHelperState = 'idle' | 'loading' | 'answered';
 
-const schoolTypeMap: { [key: string]: string } = {
-  SDN: 'SD Negeri',
-  SDIT: 'SD Islam Terpadu',
-  MI: 'Madrasah Ibtidaiyah'
-};
-
 export default function PrHelperPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const schoolType = (searchParams.get('school') as SchoolType) || 'SDN';
+  const { user, loading, isAuthenticated } = useAuth();
+
   const grade = (searchParams.get('grade') as Grade) || '5';
   const semester = (searchParams.get('semester') as Semester) || '1';
+  const schoolType = user?.schoolType;
 
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [loading, isAuthenticated, router]);
 
-  const subjects = useMemo(() => getSubjects(schoolType, grade, semester), [schoolType, grade, semester]);
+  const subjects = useMemo(() => {
+    if (!schoolType || !grade || !semester) return [];
+    return getSubjects(schoolType, grade, semester);
+  }, [schoolType, grade, semester]);
+
   const [state, setState] = useState<PrHelperState>('idle');
   const [subject, setSubject] = useState('');
   const [question, setQuestion] = useState('');
@@ -48,6 +56,7 @@ export default function PrHelperPage() {
       });
       return;
     }
+    if (!schoolType) return;
 
     setState('loading');
     const input: HomeworkHelpInput = { subject, question, schoolType, grade, semester };
@@ -73,7 +82,15 @@ export default function PrHelperPage() {
     setState('idle');
   };
   
-  const backlink = `/belajar?school=${schoolType}&grade=${grade}&semester=${semester}`;
+  const backlink = `/dashboard?grade=${grade}&semester=${semester}`;
+
+  if (loading || !isAuthenticated) {
+    return (
+      <div className="flex-grow flex items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen">

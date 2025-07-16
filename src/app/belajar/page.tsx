@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -12,11 +13,11 @@ import { Suspense } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Loader2 } from 'lucide-react';
 
-const schoolTypes = [
-  { id: 'SDN', name: 'SD Negeri' },
-  { id: 'SDIT', name: 'SD Islam Terpadu' },
-  { id: 'MI', name: 'Madrasah Ibtidaiyah (MI)' },
-];
+const schoolTypeMap: { [key: string]: string } = {
+  SDN: 'SD Negeri',
+  SDIT: 'SD Islam Terpadu',
+  MI: 'Madrasah Ibtidaiyah (MI)',
+};
 
 const gradeLevels = [
   { id: '1', name: 'Kelas 1' },
@@ -34,8 +35,7 @@ const semesters = [
 
 function BelajarSelection() {
   const router = useRouter();
-  const { isAuthenticated, loading } = useAuth();
-  const [schoolType, setSchoolType] = useState('');
+  const { user, isAuthenticated, loading } = useAuth();
   const [grade, setGrade] = useState('');
   const [semester, setSemester] = useState('');
   
@@ -47,12 +47,12 @@ function BelajarSelection() {
 
 
   const handleStartLearning = () => {
-    if (schoolType && grade && semester) {
-      router.push(`/dashboard?school=${schoolType}&grade=${grade}&semester=${semester}`);
+    if (user?.schoolType && grade && semester) {
+      router.push(`/dashboard?grade=${grade}&semester=${semester}`);
     }
   };
 
-  if (loading || !isAuthenticated) {
+  if (loading || !isAuthenticated || !user) {
     return (
         <div className="flex-grow flex items-center justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary"/>
@@ -60,32 +60,23 @@ function BelajarSelection() {
     )
   }
 
+  const schoolName = schoolTypeMap[user.schoolType] || 'Sekolah';
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
       <main className="flex-grow flex items-center justify-center p-4">
         <Card className="w-full max-w-md shadow-lg">
           <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-headline">Pilih Kelas</CardTitle>
-            <CardDescription className="text-lg">Pilih sekolah, kelas, dan semester untuk memulai.</CardDescription>
+            <CardTitle className="text-3xl font-headline">Pilih Kelas & Semester</CardTitle>
+            <CardDescription className="text-lg">
+              Kamu terdaftar di <span className="font-bold text-primary">{schoolName}</span>.
+              <br/>
+              Pilih kelas dan semester untuk memulai.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="school-type" className="text-base">Pilih Jenis Sekolah</Label>
-                <Select value={schoolType} onValueChange={setSchoolType}>
-                  <SelectTrigger id="school-type" className="w-full text-base h-12">
-                    <SelectValue placeholder="Pilih sekolah..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {schoolTypes.map((s) => (
-                      <SelectItem key={s.id} value={s.id} className="text-base">
-                        {s.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
               <div className="space-y-2">
                 <Label htmlFor="grade-level" className="text-base">Pilih Kelas</Label>
                 <Select value={grade} onValueChange={setGrade}>
@@ -119,7 +110,7 @@ function BelajarSelection() {
               <Button
                 size="lg"
                 className="w-full h-12 text-lg"
-                disabled={!schoolType || !grade || !semester}
+                disabled={!grade || !semester}
                 onClick={handleStartLearning}
               >
                 Lanjutkan ke Dasbor

@@ -1,11 +1,14 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import type { SchoolType } from '@/lib/types';
 
 interface User {
   name: string;
   email: string;
+  schoolType: SchoolType;
 }
 
 interface AuthContextType {

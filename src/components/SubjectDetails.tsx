@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -9,7 +10,7 @@ import { QuizView } from '@/components/QuizView';
 
 export function SubjectDetails({ subject, schoolInfo }: { subject: Subject, schoolInfo: SchoolInfo }) {
   const Icon = getIcon(subject.icon);
-  const backlink = `/belajar?school=${schoolInfo.schoolType}&grade=${schoolInfo.grade}&semester=${schoolInfo.semester}`;
+  const backlink = `/dashboard?grade=${schoolInfo.grade}&semester=${schoolInfo.semester}`;
 
   return (
     <div className="max-w-4xl mx-auto">
