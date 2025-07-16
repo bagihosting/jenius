@@ -30,7 +30,8 @@ const initializeDefaultUsers = () => {
                 username: 'admin',
                 email: 'admin@ayahjenius.com',
                 schoolType: 'SDN',
-                role: 'admin'
+                role: 'admin',
+                badge: 'little_genius'
             };
             localStorage.setItem('user_admin', JSON.stringify(adminUser));
             localStorage.setItem('pwd_admin@ayahjenius.com', 'admin123');
@@ -45,7 +46,8 @@ const initializeDefaultUsers = () => {
                 username: 'user',
                 email: 'user@ayahjenius.com',
                 schoolType: 'SDN',
-                role: 'user'
+                role: 'user',
+                badge: 'star_student'
             };
             localStorage.setItem('user_user', JSON.stringify(defaultUser));
             localStorage.setItem('pwd_user@ayahjenius.com', 'password123');
