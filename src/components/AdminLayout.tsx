@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import {
@@ -17,9 +17,10 @@ import {
   SidebarInset,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Button } from './ui/button';
-import { Home, Users, LogOut, Loader2, UserCircle } from 'lucide-react';
+import { Home, Users, LogOut, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { ProfileDialog } from './ProfileDialog';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     const { user, logout } = useAuth();
@@ -30,13 +31,20 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         <div className="flex min-h-screen w-full">
             <Sidebar>
                 <SidebarHeader>
-                    <div className="flex items-center gap-2 p-2">
-                        <UserCircle className="w-8 h-8"/>
-                        <div className="flex flex-col" style={{ opacity: state === 'expanded' ? 1 : 0, transition: 'opacity 0.2s' }}>
-                            <span className="text-sm font-semibold">{user?.name}</span>
-                            <span className="text-xs text-muted-foreground">{user?.email}</span>
+                    <ProfileDialog>
+                        <div className="flex items-center gap-2 p-2 cursor-pointer hover:bg-sidebar-accent rounded-md">
+                            <Avatar className="w-8 h-8">
+                                <AvatarImage src={user?.photoUrl} alt={user?.name} />
+                                <AvatarFallback>
+                                    {user?.name?.charAt(0).toUpperCase()}
+                                </AvatarFallback>
+                            </Avatar>
+                            <div className="flex flex-col" style={{ opacity: state === 'expanded' ? 1 : 0, transition: 'opacity 0.2s' }}>
+                                <span className="text-sm font-semibold">{user?.name}</span>
+                                <span className="text-xs text-muted-foreground">{user?.email}</span>
+                            </div>
                         </div>
-                    </div>
+                    </ProfileDialog>
                 </SidebarHeader>
                 <SidebarContent>
                     <SidebarMenu>
@@ -82,8 +90,13 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const { user, loading, isAuthenticated } = useAuth();
     const router = useRouter();
+    const [isClient, setIsClient] = useState(false);
 
-    React.useEffect(() => {
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    useEffect(() => {
         if (!loading) {
             if (!isAuthenticated || user?.role !== 'admin') {
                 router.push('/login');
@@ -91,7 +104,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         }
     }, [loading, isAuthenticated, user, router]);
 
-    if (loading || !user) {
+    if (!isClient || loading || !user) {
         return (
             <div className="flex h-screen w-full items-center justify-center">
                 <Loader2 className="h-16 w-16 animate-spin text-primary" />
