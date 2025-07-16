@@ -25,7 +25,7 @@ function DashboardContent() {
     const { user, loading, isAuthenticated } = useAuth();
 
     const grade = (searchParams.get('grade') as Grade) || '1';
-    const semester = (search_params.get('semester') as Semester) || '1';
+    const semester = (searchParams.get('semester') as Semester) || '1';
     const schoolType = user?.schoolType;
 
     useEffect(() => {

@@ -138,7 +138,7 @@ export default function ExamPracticePage() {
                 Latihan Soal Ujian Harian
               </CardTitle>
               <CardDescription>
-                Untuk {schoolName} Kelas {grade} Semester {semester}. Soal dibuat baru oleh Ayah Tirta setiap hari!
+                Untuk {schoolName} Kelas {grade} Semester {semester}. Soal dibuat baru oleh Ayah Jenius setiap hari!
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -158,7 +158,7 @@ export default function ExamPracticePage() {
                         {examData[subject.id]?.state === 'loading' && (
                            <div className="flex flex-col items-center justify-center text-center p-8 rounded-lg bg-secondary">
                             <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-                            <p className="font-semibold text-lg">Ayah Tirta sedang menyiapkan soal harian...</p>
+                            <p className="font-semibold text-lg">Ayah Jenius sedang menyiapkan soal harian...</p>
                             <p className="text-muted-foreground">Mohon tunggu sebentar.</p>
                           </div>
                         )}

@@ -104,7 +104,7 @@ export default function PrHelperPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-3xl font-headline">Bantuan PR Cerdas</CardTitle>
-              <CardDescription>Punya PR yang sulit? Tanyakan di sini dan biarkan Ayah Tirta membantu menjelaskan!</CardDescription>
+              <CardDescription>Punya PR yang sulit? Tanyakan di sini dan biarkan Ayah Jenius membantu menjelaskan!</CardDescription>
             </CardHeader>
             <CardContent>
               {state === 'idle' || state === 'loading' ? (
@@ -161,7 +161,7 @@ export default function PrHelperPage() {
                         </div>
                     </div>
                     <div className="space-y-4">
-                        <h3 className="font-semibold text-lg">Penjelasan dari Ayah Tirta:</h3>
+                        <h3 className="font-semibold text-lg">Penjelasan dari Ayah Jenius:</h3>
                         <div className="p-4 bg-primary/10 rounded-md border border-primary/20 prose prose-sm max-w-none dark:prose-invert"
                           dangerouslySetInnerHTML={{ __html: answer.replace(/\n/g, '<br />') }}
                         />

@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -51,9 +52,9 @@ const prompt = ai.definePrompt({
   output: {schema: GenerateExamOutputSchema},
   prompt: `Anda adalah seorang ahli pembuat soal ujian yang jenius untuk siswa di Indonesia. Anda mengikuti Kurikulum Merdeka.
 Buat satu set soal latihan ujian berdasarkan konteks yang diberikan. Pastikan tingkat kesulitan soal sesuai untuk siswa kelas {{{grade}}} di sekolah jenis {{{schoolType}}} untuk semester {{{semester}}}.
-Gunakan kombinasi string tanggal dan email pengguna berikut sebagai 'benih' untuk memastikan soal yang Anda buat unik dan bervariasi setiap harinya untuk setiap pengguna:
+Gunakan string tanggal berikut sebagai 'benih' untuk memastikan soal yang Anda buat unik dan bervariasi setiap harinya:
 - Tanggal: {{{dateSeed}}}
-- Email Pengguna: {{{userEmail}}}
+- Email Pengguna (untuk variasi per pengguna): {{{userEmail}}}
 
 PENTING: Sesuaikan kompleksitas soal dan bahasa dengan tingkatan kelas:
 - Kelas 1-2 (Fase A): Gunakan bahasa yang sangat sederhana dan pertanyaan konkret. Fokus pada pemahaman dasar. Contoh soal harus mudah divisualisasikan.
