@@ -75,7 +75,7 @@ const generateExamFlow = ai.defineFlow(
   async input => {
     const {output} = await prompt(input);
     if (!output) {
-        throw new Error("Ayah Tirta gagal membuat soal ujian harian.");
+        throw new Error("Ayah Jenius gagal membuat soal ujian harian.");
     }
     return output;
   }

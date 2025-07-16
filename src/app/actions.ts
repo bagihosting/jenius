@@ -15,15 +15,15 @@ export async function generateQuizAction(
     const quizData = await generateQuizFlow(input);
 
     if (!quizData || !quizData.quiz || !Array.isArray(quizData.quiz)) {
-      throw new Error('Menerima format kuis yang tidak valid dari Ayah Tirta.');
+      throw new Error('Menerima format kuis yang tidak valid dari Ayah Jenius.');
     }
 
     return { data: quizData };
   } catch (e) {
     console.error(e);
-    const errorMessage = e instanceof Error ? e.message : 'Terjadi kesalahan tidak dikenal saat membuat kuis.';
+    const errorMessage = e instanceof Error ? e.message : 'Terjadi kesalahan tidak dikenal.';
     return {
-      error: `Maaf, terjadi kesalahan saat membuat kuis. Silakan coba lagi.`,
+      error: `Maaf, Ayah Jenius gagal membuat kuis. Silakan coba lagi. (${errorMessage})`,
     };
   }
 }
@@ -34,14 +34,14 @@ export async function homeworkHelperAction(
     try {
         const result = await answerHomeworkFlow(input);
         if (!result || !result.answer) {
-            throw new Error('Ayah Tirta gagal memberikan jawaban.');
+            throw new Error('Ayah Jenius gagal memberikan jawaban.');
         }
         return { data: result };
     } catch (e) {
         console.error(e);
         const errorMessage = e instanceof Error ? e.message : 'Terjadi kesalahan tidak dikenal saat meminta bantuan PR.';
         return {
-            error: `Maaf, terjadi kesalahan saat memproses permintaanmu. ${errorMessage}`,
+            error: `Maaf, terjadi kesalahan saat memproses permintaanmu: ${errorMessage}`,
         };
     }
 }
@@ -53,14 +53,15 @@ export async function generateExamAction(
     const examData = await generateDailyExamFlow(input);
 
     if (!examData || !examData.multipleChoice || !examData.essay) {
-      throw new Error('Menerima format soal ujian yang tidak valid dari Ayah Tirta.');
+      throw new Error('Menerima format soal ujian yang tidak valid dari Ayah Jenius.');
     }
 
     return { data: examData };
   } catch (e) {
     console.error(e);
+    const errorMessage = e instanceof Error ? e.message : 'Terjadi kesalahan tidak dikenal.';
     return {
-      error: `Maaf, Ayah Tirta sedang kesulitan membuat soal ujian harian. Silakan coba beberapa saat lagi.`,
+      error: `Maaf, Ayah Jenius sedang kesulitan membuat soal ujian harian. Silakan coba lagi. (${errorMessage})`,
     };
   }
 }

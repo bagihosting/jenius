@@ -111,7 +111,7 @@ export default function Home() {
         </Card>
       </main>
       <footer className="text-center p-4 text-muted-foreground text-sm">
-        © 2024 Ayah Jenius. Dirancang untuk semua siswa cerdas.
+        © 2024 Ayah Jenius. All rights reserved.
       </footer>
     </div>
   );
