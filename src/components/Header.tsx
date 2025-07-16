@@ -5,9 +5,11 @@ import { BookHeart, LogIn, LogOut, UserCircle, LayoutDashboard } from 'lucide-re
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 export function Header() {
   const { isAuthenticated, user, logout, loading } = useAuth();
+  const router = useRouter();
 
   return (
     <header className="bg-card shadow-sm">
@@ -34,10 +36,6 @@ export function Header() {
                             <LayoutDashboard />
                             Dasbor
                         </Link>
-                    </Button>
-                    <Button variant="ghost" onClick={logout}>
-                      <LogOut />
-                      Keluar
                     </Button>
                   </>
                 ) : (
