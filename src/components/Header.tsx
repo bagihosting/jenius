@@ -1,7 +1,7 @@
 
 'use client';
 
-import { BookHeart, LogIn, LogOut, UserCircle } from 'lucide-react';
+import { BookHeart, LogIn, LogOut, UserCircle, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -29,6 +29,12 @@ export function Header() {
                         <UserCircle className="h-5 w-5 text-muted-foreground"/>
                         {user?.name || 'Pengguna'}
                     </span>
+                    <Button variant="outline" asChild>
+                        <Link href="/belajar">
+                            <LayoutDashboard />
+                            Dasbor
+                        </Link>
+                    </Button>
                     <Button variant="ghost" onClick={logout}>
                       <LogOut />
                       Keluar
