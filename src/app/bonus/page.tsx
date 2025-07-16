@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import type { Grade } from '@/lib/types';
 
 const ROBUX_PER_QUIZ = 0.01;
 
@@ -23,7 +24,7 @@ export default function BonusPage() {
   const { user, loading, isAuthenticated, updateUser } = useAuth();
   const { toast } = useToast();
 
-  const grade = searchParams.get('grade');
+  const grade = searchParams.get('grade') as Grade;
   const semester = searchParams.get('semester');
   const backlink = `/dashboard?grade=${grade}&semester=${semester}`;
 
@@ -34,8 +35,23 @@ export default function BonusPage() {
   useEffect(() => {
     if (!loading && !isAuthenticated) {
       router.push('/login');
+      return;
     }
-  }, [loading, isAuthenticated, router]);
+    
+    // Redirect if grade is not between 1 and 6
+    if (grade) {
+        const gradeNum = parseInt(grade, 10);
+        if (gradeNum > 6) {
+            toast({
+                title: "Fitur Tidak Tersedia",
+                description: "Bonus Robux hanya tersedia untuk siswa kelas 1-6.",
+                variant: "destructive"
+            });
+            router.push(backlink);
+        }
+    }
+
+  }, [loading, isAuthenticated, router, grade, backlink]);
 
   useEffect(() => {
     if (user) {

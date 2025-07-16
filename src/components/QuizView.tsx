@@ -98,6 +98,10 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
 
   const updateBonus = (bonusPerQuiz: number) => {
     if (typeof window === 'undefined' || !user) return false;
+
+    const gradeNum = parseInt(schoolInfo.grade, 10);
+    if (gradeNum > 6) return false; // Bonus only for grades 1-6
+
     const bonusStatus = localStorage.getItem('bonus_feature_status');
     if (bonusStatus !== 'active') return false;
 

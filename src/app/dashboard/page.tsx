@@ -35,6 +35,7 @@ function DashboardContent() {
 
     const grade = (searchParams.get('grade') as Grade) || '1';
     const semester = (searchParams.get('semester') as Semester) || '1';
+    const gradeNum = parseInt(grade, 10);
     
     if (loading || !user) {
         return (
@@ -122,7 +123,7 @@ function DashboardContent() {
                             </Button>
                         </CardContent>
                     </Card>
-                    {isBonusFeatureActive && (
+                    {isBonusFeatureActive && gradeNum <= 6 && (
                         <Card className="bg-accent/20 border-accent/50">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-accent-foreground">
