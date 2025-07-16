@@ -35,6 +35,7 @@ export default function LoginPage() {
                     description: "Username tidak ditemukan. Silakan coba lagi.",
                     variant: "destructive",
                 });
+                setIsLoading(false);
                 return;
             }
             
@@ -47,6 +48,9 @@ export default function LoginPage() {
                     description: `Selamat datang kembali, ${userData.name}!`,
                 });
                 login(userData);
+                // No need to set isLoading to false here, as the page will redirect.
+                // Added return to prevent finally block from executing immediately.
+                return; 
             } else {
                  toast({
                     title: "Login Gagal",
@@ -62,7 +66,10 @@ export default function LoginPage() {
             });
             console.error("Login error:", error);
         } finally {
-            setIsLoading(false);
+            // This will only run for failed login attempts now.
+            if (!localStorage.getItem('user')) {
+                setIsLoading(false);
+            }
         }
     }, 1000);
   };
