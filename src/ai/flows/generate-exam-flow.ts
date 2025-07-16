@@ -33,7 +33,7 @@ const EssayQuestionSchema = z.object({
 });
 
 const GenerateExamOutputSchema = z.object({
-  multipleChoice: z.array(MultipleChoiceQuestionSchema).min(30).max(30).describe('An array of 30 multiple-choice questions.'),
+  multipleChoice: z.array(MultipleChoiceQuestionSchema).describe('An array of around 30 multiple-choice questions.'),
   essay: z.array(EssayQuestionSchema).min(5).max(5).describe('An array of 5 essay questions with detailed answers.'),
 });
 export type ExamData = z.infer<typeof GenerateExamOutputSchema>;
