@@ -40,8 +40,8 @@ const EssayQuestionSchema = z.object({
 });
 
 const GenerateExamOutputSchema = z.object({
-  multipleChoice: z.array(MultipleChoiceQuestionSchema).min(10).describe('An array of at least 10 multiple-choice questions.'),
-  essay: z.array(EssayQuestionSchema).min(5).max(5).describe('An array of 5 essay questions with detailed answers.'),
+  multipleChoice: z.array(MultipleChoiceQuestionSchema).min(5).max(5).describe('An array of 5 multiple-choice questions.'),
+  essay: z.array(EssayQuestionSchema).min(2).max(2).describe('An array of 2 essay questions with detailed answers.'),
 });
 export type ExamData = z.infer<typeof GenerateExamOutputSchema>;
 
@@ -70,9 +70,9 @@ PENTING: Sesuaikan kompleksitas soal dan bahasa dengan tingkatan kelas:
 - Kelas 7-9 (Fase D): Buat soal yang analitis dan menguji pemahaman konsep tingkat SMP/MTs. Bahasa harus formal namun mudah dipahami. Fokus pada soal HOTS yang relevan.
 - Kelas 10-12 (Fase E/F): Buat soal yang kompleks, analitis, dan membutuhkan pemikiran tingkat tinggi (HOTS) setara SMA/MA. Fokus pada soal-soal yang prediktif akan keluar di ujian 2025 (UTBK, dll). Boleh menyertakan soal cerita atau studi kasus.
 
-Buat setidaknya 10 soal pilihan ganda dengan 4 pilihan jawaban (A, B, C, D). PENTING: Pastikan setiap pilihan jawaban UNIK dan hanya ada SATU jawaban yang benar secara definitif. Untuk setiap soal pilihan ganda, berikan penjelasan singkat, cerdas, dan mudah dimengerti. Dalam penjelasan, **tebalkan (gunakan Markdown: **kata**) kata-kata kunci atau jawaban yang benar** agar mudah dikenali.
+Buat 5 soal pilihan ganda dengan 4 pilihan jawaban (A, B, C, D). PENTING: Pastikan setiap pilihan jawaban UNIK dan hanya ada SATU jawaban yang benar secara definitif. Untuk setiap soal pilihan ganda, berikan penjelasan singkat, cerdas, dan mudah dimengerti. Dalam penjelasan, **tebalkan (gunakan Markdown: **kata**) kata-kata kunci atau jawaban yang benar** agar mudah dikenali.
 
-Buat juga 5 soal esai dengan jawaban penjelasan yang CERDAS, SIMPEL, dan JENIUS.
+Buat juga 2 soal esai dengan jawaban penjelasan yang CERDAS, SIMPEL, dan JENIUS.
 Jawaban esai HARUS mengikuti format berikut:
 Konsep Kunci: [Jelaskan konsep utama yang relevan dengan pertanyaan secara singkat dan mendalam]
 
@@ -103,7 +103,7 @@ const generateExamFlow = ai.defineFlow(
             const {media} = await ai.generate({
               model: 'googleai/gemini-2.0-flash-preview-image-generation',
               prompt: `sebuah gambar ilustrasi datar yang mendidik dan sederhana untuk anak-anak: ${q.imagePrompt}`,
-              config: { responseModalities: ['IMAGE'] },
+              config: { responseModalities: ['TEXT', 'IMAGE'] },
             });
             q.imageUrl = media.url;
           } catch (e) {
