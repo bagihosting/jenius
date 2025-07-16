@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/context/AuthContext';
 import { User } from '@/lib/types';
@@ -9,6 +9,7 @@ import { Loader2, Trophy, User as UserIcon } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
 import { Badge } from './ui/badge';
 import { ScrollArea } from './ui/scroll-area';
+import { getIcon } from '@/lib/icons';
 
 interface StudentRank {
   user: User;
@@ -90,22 +91,26 @@ export function LeaderboardCard() {
               {leaderboard.map((student, index) => (
                 <li
                   key={student.user.username}
-                  className={`flex items-center gap-4 p-2 rounded-md ${
+                  className={`flex items-center gap-3 p-2 rounded-md ${
                     student.user.username === currentUser?.username ? 'bg-primary/10 border border-primary/20' : ''
                   }`}
                 >
-                  <div className="font-bold text-lg w-6 text-center text-muted-foreground">{index + 1}</div>
-                  <Avatar>
-                    <AvatarImage src={student.user.photoUrl} alt={student.user.name} />
-                    <AvatarFallback>
-                        <UserIcon className="w-4 h-4"/>
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-grow">
-                    <p className="font-semibold truncate">{student.user.name}</p>
-                    <p className="text-xs text-muted-foreground">{student.user.schoolName}</p>
+                  <div className="flex items-center gap-3 w-16 shrink-0">
+                    <span className="font-bold text-lg w-6 text-center text-muted-foreground">{index + 1}</span>
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage src={student.user.photoUrl} alt={student.user.name} />
+                      <AvatarFallback>
+                          <UserIcon className="w-4 h-4"/>
+                      </AvatarFallback>
+                    </Avatar>
                   </div>
-                  <Badge variant="secondary" className="font-bold">{student.averageScore}%</Badge>
+                  <div className="flex-grow flex justify-between items-start gap-2">
+                    <div>
+                      <p className="font-semibold leading-tight">{student.user.name}</p>
+                      <p className="text-xs text-muted-foreground">{student.user.schoolName}</p>
+                    </div>
+                     <Badge variant="secondary" className="font-bold shrink-0">{student.averageScore}%</Badge>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -114,9 +119,4 @@ export function LeaderboardCard() {
       </CardContent>
     </Card>
   );
-}
-
-// Helper function to satisfy build process, can be removed if not needed elsewhere
-export const getIcon = (name: string) => {
-    return Trophy;
 }
