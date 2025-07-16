@@ -41,3 +41,11 @@ export interface ExamData {
   multipleChoice: MultipleChoiceQuestion[];
   essay: EssayQuestion[];
 }
+
+export interface User {
+  name: string;
+  email: string;
+  schoolType: SchoolType;
+  role: 'user' | 'admin';
+  badge?: string;
+}
