@@ -193,7 +193,7 @@ export default function AdminUsersPage() {
             console.error("Failed to save user:", error);
             toast({ title: "Error", description: "Gagal menyimpan data pengguna.", variant: "destructive" });
         }
-    };
+    }
 
     const handleDeleteUser = async (user: User) => {
         if (user.role === 'admin') {
@@ -216,7 +216,7 @@ export default function AdminUsersPage() {
             console.error("Failed to delete user:", error);
             toast({ title: "Error", description: "Gagal menghapus pengguna.", variant: "destructive" });
         }
-    };
+    }
 
     return (
         <Card>
@@ -381,4 +381,4 @@ export default function AdminUsersPage() {
         </Card>
     );
 
-    
+}
