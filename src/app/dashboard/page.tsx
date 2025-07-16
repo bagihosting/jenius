@@ -143,7 +143,7 @@ export default function DashboardPage() {
                 <DashboardContent />
             </Suspense>
              <footer className="text-center p-4 text-muted-foreground text-sm">
-                © 2024 Ayah Jenius. All rights reserved.
+                © {new Date().getFullYear()} Ayah Jenius. All rights reserved.
             </footer>
         </div>
     );

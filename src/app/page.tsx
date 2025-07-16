@@ -150,7 +150,7 @@ export default function Home() {
       </main>
 
       <footer className="text-center p-6 bg-card text-muted-foreground text-sm border-t">
-        © 2024 Ayah Jenius. All rights reserved.
+        © {new Date().getFullYear()} Ayah Jenius. All rights reserved.
       </footer>
     </div>
   );
