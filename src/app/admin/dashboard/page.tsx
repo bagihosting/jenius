@@ -4,11 +4,24 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Gift, Loader2 } from "lucide-react";
 import React, { useState, useEffect } from "react";
+import { db } from '@/lib/firebase';
+import { collection, getDocs, doc, getDoc, query, where } from 'firebase/firestore';
+
+
+async function getFeatureStatus(): Promise<boolean> {
+    const docRef = doc(db, "appConfig", "bonusFeature");
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+        return docSnap.data().isActive;
+    }
+    return false;
+}
 
 export default function AdminDashboardPage() {
     const [userCount, setUserCount] = useState(0);
     const [isBonusFeatureActive, setIsBonusFeatureActive] = useState(false);
     const [isClient, setIsClient] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         setIsClient(true);
@@ -16,15 +29,26 @@ export default function AdminDashboardPage() {
 
     useEffect(() => {
         if (isClient) {
-            const allUsers = Object.keys(localStorage).filter(k => k.startsWith('user_'));
-            setUserCount(allUsers.length);
+            const fetchData = async () => {
+                setIsLoading(true);
+                try {
+                    const usersCollection = collection(db, 'users');
+                    const userSnapshot = await getDocs(usersCollection);
+                    setUserCount(userSnapshot.size);
 
-            const bonusStatus = localStorage.getItem('bonus_feature_status');
-            setIsBonusFeatureActive(bonusStatus === 'active');
+                    const bonusStatus = await getFeatureStatus();
+                    setIsBonusFeatureActive(bonusStatus);
+                } catch (error) {
+                    console.error("Error fetching dashboard data:", error);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+            fetchData();
         }
     }, [isClient]);
 
-    if (!isClient) {
+    if (!isClient || isLoading) {
         return (
             <div className="flex h-full w-full items-center justify-center">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />

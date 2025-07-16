@@ -29,11 +29,29 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { db } from '@/lib/firebase';
+import { collection, doc, getDocs, updateDoc, getDoc, setDoc, query, where } from 'firebase/firestore';
+
 
 interface UserBonus {
   user: User;
   bonus: number;
 }
+
+async function getFeatureStatus(): Promise<boolean> {
+    const docRef = doc(db, "appConfig", "bonusFeature");
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+        return docSnap.data().isActive;
+    }
+    return false;
+}
+
+async function setFeatureStatus(isActive: boolean): Promise<void> {
+    const docRef = doc(db, "appConfig", "bonusFeature");
+    await setDoc(docRef, { isActive });
+}
+
 
 export default function BonusManagementPage() {
   const { toast } = useToast();
@@ -51,30 +69,26 @@ export default function BonusManagementPage() {
     setIsClient(true);
   }, []);
 
-  const loadData = () => {
+  const loadData = async () => {
     setIsLoading(true);
     try {
-      const loadedUsers: UserBonus[] = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('user_')) {
-          const userData: User = JSON.parse(localStorage.getItem(key) || '{}');
-          if (userData.role === 'user') {
-            const bonusKey = `bonus_points_${userData.email}`;
-            const bonus = parseFloat(localStorage.getItem(bonusKey) || '0');
-            loadedUsers.push({ user: userData, bonus });
-          }
-        }
-      }
+      const q = query(collection(db, "users"), where("role", "==", "user"));
+      const querySnapshot = await getDocs(q);
+      const loadedUsers: UserBonus[] = querySnapshot.docs.map(doc => {
+          const userData = doc.data() as User;
+          return { user: userData, bonus: userData.bonusPoints || 0 };
+      });
+      
       setUsers(loadedUsers.sort((a,b) => b.bonus - a.bonus));
       
-      const featureStatus = localStorage.getItem('bonus_feature_status');
-      setIsFeatureActive(featureStatus === 'active');
+      const featureStatus = await getFeatureStatus();
+      setIsFeatureActive(featureStatus);
 
     } catch (error) {
+      console.error("Error loading data: ", error);
       toast({
         title: 'Gagal Memuat Data',
-        description: 'Terjadi kesalahan saat mengambil data dari penyimpanan lokal.',
+        description: 'Terjadi kesalahan saat mengambil data dari Firestore.',
         variant: 'destructive',
       });
     } finally {
@@ -88,8 +102,8 @@ export default function BonusManagementPage() {
     }
   }, [isClient]);
 
-  const handleToggleFeature = (isActive: boolean) => {
-    localStorage.setItem('bonus_feature_status', isActive ? 'active' : 'inactive');
+  const handleToggleFeature = async (isActive: boolean) => {
+    await setFeatureStatus(isActive);
     setIsFeatureActive(isActive);
     toast({
       title: 'Fitur Bonus Diperbarui',
@@ -97,10 +111,11 @@ export default function BonusManagementPage() {
     });
   };
 
-  const confirmResetBonus = () => {
+  const confirmResetBonus = async () => {
     if (!userToReset) return;
     try {
-      localStorage.setItem(`bonus_points_${userToReset.email}`, '0');
+      const userDocRef = doc(db, "users", userToReset.uid);
+      await updateDoc(userDocRef, { bonusPoints: 0 });
       toast({ title: 'Bonus Direset', description: `Bonus untuk ${userToReset.name} telah direset.` });
       loadData();
     } catch (error) {
@@ -120,7 +135,7 @@ export default function BonusManagementPage() {
     setNewBonusValue('');
   };
 
-  const handleSaveBonus = (email: string) => {
+  const handleSaveBonus = async (user: User) => {
     const newBonus = parseFloat(newBonusValue);
     if (isNaN(newBonus) || newBonus < 0) {
       toast({ title: 'Nilai Tidak Valid', description: 'Bonus harus berupa angka positif.', variant: 'destructive' });
@@ -128,7 +143,8 @@ export default function BonusManagementPage() {
     }
     
     try {
-      localStorage.setItem(`bonus_points_${email}`, newBonus.toFixed(4));
+      const userDocRef = doc(db, "users", user.uid);
+      await updateDoc(userDocRef, { bonusPoints: newBonus });
       toast({ title: 'Bonus Diperbarui', description: `Bonus telah berhasil diperbarui.` });
       loadData();
     } catch (error) {
@@ -216,7 +232,7 @@ export default function BonusManagementPage() {
                   </TableRow>
                 ) : (
                   filteredUsers.map(({ user, bonus }) => (
-                    <TableRow key={user.username}>
+                    <TableRow key={user.uid}>
                       <TableCell>
                         <div className="flex items-center gap-3">
                            <Avatar>
@@ -251,7 +267,7 @@ export default function BonusManagementPage() {
                       <TableCell className="text-right space-x-1">
                         {editingUserEmail === user.email ? (
                             <>
-                                <Button variant="ghost" size="icon" onClick={() => handleSaveBonus(user.email)}>
+                                <Button variant="ghost" size="icon" onClick={() => handleSaveBonus(user)}>
                                     <Save className="h-4 w-4 text-green-600"/>
                                 </Button>
                                 <Button variant="ghost" size="icon" onClick={handleCancelEdit}>

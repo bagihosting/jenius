@@ -3,6 +3,9 @@
 
 import { Award, Brain, Star, Gem, Rocket, LucideProps } from 'lucide-react';
 import type { User } from './types';
+import { db } from './firebase';
+import { doc, updateDoc, increment } from 'firebase/firestore';
+
 
 export interface BadgeTier {
   level: number;
@@ -36,7 +39,7 @@ interface UserStats {
 }
 
 const getUserStats = (user: User | null): UserStats => {
-  if (typeof window === 'undefined' || !user || !user.email) {
+  if (!user) {
     return { accountAgeInDays: 0, quizCompletions: 0 };
   }
 
@@ -44,7 +47,7 @@ const getUserStats = (user: User | null): UserStats => {
   const now = new Date();
   const accountAgeInDays = Math.floor((now.getTime() - registeredAt.getTime()) / (1000 * 60 * 60 * 24));
   
-  const quizCompletions = parseInt(localStorage.getItem(`quizCompletions_${user.email}`) || '0', 10);
+  const quizCompletions = user.quizCompletions || 0;
 
   return { accountAgeInDays, quizCompletions };
 };
@@ -66,10 +69,15 @@ export const getBadgeInfo = (user: User | null): BadgeTier => {
   return currentTier;
 };
 
-export const recordQuizCompletion = (user: User | null) => {
-    if (typeof window === 'undefined' || !user || !user.email) return;
+export const recordQuizCompletion = async (user: User | null) => {
+    if (!user) return;
 
-    const key = `quizCompletions_${user.email}`;
-    const currentCompletions = parseInt(localStorage.getItem(key) || '0', 10);
-    localStorage.setItem(key, (currentCompletions + 1).toString());
+    const userDocRef = doc(db, "users", user.uid);
+    try {
+        await updateDoc(userDocRef, {
+            quizCompletions: increment(1)
+        });
+    } catch(error) {
+        console.error("Failed to record quiz completion in Firestore: ", error);
+    }
 }

@@ -68,6 +68,7 @@ export interface GenerateExamInput {
 }
 
 export interface User {
+  uid: string;
   name: string;
   username: string;
   email: string;
@@ -77,10 +78,12 @@ export interface User {
   grade?: Grade;
   badge?: string;
   photoUrl?: string;
-  password?: string;
   robloxUsername?: string;
   registeredAt?: string; // ISO string date
   major?: string; // Jurusan untuk mahasiswa
+  quizCompletions?: number;
+  bonusPoints?: number;
+  progress?: { [subjectId: string]: number };
 }
 
 export const HomeworkHelpInputSchema = z.object({

@@ -16,6 +16,8 @@ import { useProgress } from '@/hooks/use-progress';
 import { Confetti } from './Confetti';
 import { useAuth } from '@/context/AuthContext';
 import { getBadgeInfo, recordQuizCompletion } from '@/lib/badgeService';
+import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 type QuizState = 'idle' | 'loading' | 'active' | 'finished';
 
@@ -25,9 +27,7 @@ interface QuizViewProps {
   schoolInfo: SchoolInfo;
 }
 
-// Function to normalize answers for comparison
 const normalizeAnswer = (answer: string): string => {
-  // Removes "A. ", "B. ", etc., trims whitespace, and converts to lowercase
   return answer.replace(/^[A-D]\.\s*/, '').trim().toLowerCase();
 };
 
@@ -96,31 +96,32 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
     }
   };
 
-  const updateBonus = (bonusPerQuiz: number) => {
-    if (typeof window === 'undefined' || !user) return false;
+  const updateBonus = async (bonusPerQuiz: number) => {
+    if (!user) return false;
 
     const gradeNum = parseInt(schoolInfo.grade, 10);
     if (gradeNum > 6) return false; // Bonus only for grades 1-6
 
-    const bonusStatus = localStorage.getItem('bonus_feature_status');
-    if (bonusStatus !== 'active') return false;
-
-    const bonusKey = `bonus_points_${user.email}`;
     try {
-        const currentBonus = parseFloat(localStorage.getItem(bonusKey) || '0');
-        const newBonus = currentBonus + bonusPerQuiz;
-        localStorage.setItem(bonusKey, newBonus.toFixed(4));
-        return true;
+      const configDoc = await getDoc(doc(db, "appConfig", "bonusFeature"));
+      if (!configDoc.exists() || !configDoc.data().isActive) {
+        return false;
+      }
+      
+      const userDocRef = doc(db, "users", user.uid);
+      await updateDoc(userDocRef, {
+        bonusPoints: increment(bonusPerQuiz)
+      });
+      return true;
     } catch(e) {
         console.error("Failed to update bonus points", e);
         return false;
     }
   };
 
-  const handleSubmitQuiz = () => {
+  const handleSubmitQuiz = async () => {
     let finalScore = 0;
     quiz?.quiz.forEach((q, index) => {
-      // Use normalization for robust comparison
       const userAnswer = userAnswers[index] || '';
       if (normalizeAnswer(q.correctAnswer) === normalizeAnswer(userAnswer)) {
         finalScore++;
@@ -129,15 +130,15 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
 
     const percentageScore = Math.round((finalScore / quiz!.quiz.length) * 100);
     setScore(percentageScore);
-    updateSubjectProgress(subjectId, percentageScore);
+    await updateSubjectProgress(subjectId, percentageScore);
     
     if (user) {
-        recordQuizCompletion(user);
+        await recordQuizCompletion(user);
     }
     
     if (percentageScore >= 60) {
         const badgeInfo = getBadgeInfo(user);
-        const bonusGiven = updateBonus(badgeInfo.bonusPerQuiz);
+        const bonusGiven = await updateBonus(badgeInfo.bonusPerQuiz);
         if(bonusGiven) {
             toast({
                 title: "Selamat, Kamu Dapat Bonus!",

@@ -12,66 +12,54 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import type { User } from '@/lib/types';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
   const { toast } = useToast();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    setTimeout(() => {
-        try {
-            const storedUser = localStorage.getItem(`user_${username}`);
-            if (!storedUser) {
-                 toast({
-                    title: "Login Gagal",
-                    description: "Username tidak ditemukan. Silakan coba lagi.",
-                    variant: "destructive",
-                });
-                setIsLoading(false);
-                return;
-            }
-            
-            const userData: User = JSON.parse(storedUser);
-            const storedPassword = localStorage.getItem(`pwd_${userData.email}`);
-
-            if (storedPassword === password) {
-                toast({
-                    title: "Login Berhasil",
-                    description: `Selamat datang kembali, ${userData.name}!`,
-                });
-                login(userData);
-                // No need to set isLoading to false here, as the page will redirect.
-                // Added return to prevent finally block from executing immediately.
-                return; 
-            } else {
-                 toast({
-                    title: "Login Gagal",
-                    description: "Password salah. Silakan coba lagi.",
-                    variant: "destructive",
-                });
-            }
-        } catch (error) {
-             toast({
-                title: "Terjadi Kesalahan",
-                description: "Tidak dapat memproses login saat ini.",
-                variant: "destructive",
-            });
-            console.error("Login error:", error);
-        } finally {
-            // This will only run for failed login attempts now.
-            if (!localStorage.getItem('user')) {
-                setIsLoading(false);
-            }
-        }
-    }, 1000);
+    try {
+      const auth = getAuth();
+      // Firebase Auth uses email for login, not username
+      await signInWithEmailAndPassword(auth, email, password);
+      // The onAuthStateChanged listener in AuthContext will handle the redirect.
+      toast({
+          title: "Login Berhasil",
+          description: `Selamat datang kembali!`,
+      });
+      // No need to call login() here, it's handled by the listener
+    } catch (error: any) { {
+      console.error("Login error:", error);
+      let errorMessage = "Terjadi kesalahan saat login.";
+      switch (error.code) {
+        case 'auth/user-not-found':
+        case 'auth/invalid-email':
+          errorMessage = "Email tidak ditemukan atau tidak valid.";
+          break;
+        case 'auth/wrong-password':
+          errorMessage = "Password salah. Silakan coba lagi.";
+          break;
+        case 'auth/invalid-credential':
+          errorMessage = "Kombinasi email dan password salah.";
+          break;
+      }
+      toast({
+          title: "Login Gagal",
+          description: errorMessage,
+          variant: "destructive",
+      });
+    }
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   return (
@@ -86,13 +74,13 @@ export default function LoginPage() {
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="username"
-                  type="text"
-                  placeholder="username_anda"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  id="email"
+                  type="email"
+                  placeholder="email@anda.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>

@@ -15,6 +15,8 @@ import { useAuth } from '@/context/AuthContext';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import type { Grade } from '@/lib/types';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 const ROBUX_PER_QUIZ = 0.01;
 
@@ -60,17 +62,15 @@ export default function BonusPage() {
   useEffect(() => {
     if (user) {
         setRobloxUsername(user.robloxUsername || '');
-        const bonusKey = `bonus_points_${user.email}`;
-        const storedBonus = parseFloat(localStorage.getItem(bonusKey) || '0');
-        setBonusPoints(storedBonus);
+        setBonusPoints(user.bonusPoints || 0);
     }
   }, [user]);
 
-  const handleSaveUsername = () => {
+  const handleSaveUsername = async () => {
     if (!user) return;
     setIsSaving(true);
     try {
-        updateUser({ robloxUsername: robloxUsername });
+        await updateUser({ robloxUsername: robloxUsername });
         toast({
             title: 'Berhasil!',
             description: 'Username Roblox kamu telah disimpan.',

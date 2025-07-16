@@ -42,6 +42,10 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
 import { UserForm, userSchema } from '@/components/UserForm';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, doc, deleteDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { getAuth, createUserWithEmailAndPassword, deleteUser as deleteAuthUser, updateEmail, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
+
 
 type UserFormValues = z.infer<typeof userSchema>;
 
@@ -61,7 +65,7 @@ const defaultFormValues: UserFormValues = {
 
 export default function UsersPage() {
   const { toast } = useToast();
-  const { user: activeUser, updateUser: updateActiveUser } = useAuth();
+  const { user: activeUser, updateUser: updateActiveUser, reauthenticate } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -75,24 +79,17 @@ export default function UsersPage() {
     defaultValues: defaultFormValues,
   });
 
-  const loadUsers = () => {
+  const loadUsers = async () => {
     setIsLoading(true);
     try {
-      const loadedUsers: User[] = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('user_')) {
-          const userData = JSON.parse(localStorage.getItem(key) || '{}');
-          if (userData.username && userData.email) {
-            loadedUsers.push(userData);
-          }
-        }
-      }
+      const querySnapshot = await getDocs(collection(db, "users"));
+      const loadedUsers: User[] = querySnapshot.docs.map(doc => doc.data() as User);
       setUsers(loadedUsers);
     } catch (error) {
+      console.error("Error loading users: ", error);
       toast({
         title: 'Gagal Memuat Pengguna',
-        description: 'Terjadi kesalahan saat mengambil data dari penyimpanan lokal.',
+        description: 'Terjadi kesalahan saat mengambil data dari Firestore.',
         variant: 'destructive',
       });
     } finally {
@@ -117,7 +114,7 @@ export default function UsersPage() {
         photoUrl: user.photoUrl || '',
         badge: user.badge || '',
         robloxUsername: user.robloxUsername || '',
-        password: '',
+        password: '', // Password field should be empty for editing
         schoolName: user.schoolName || '',
         schoolType: user.schoolType || 'SDN',
         major: user.major || '',
@@ -130,77 +127,52 @@ export default function UsersPage() {
     setIsDeleteDialogOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!userToDelete) return;
     try {
-      localStorage.removeItem(`user_${userToDelete.username}`);
-      localStorage.removeItem(`pwd_${userToDelete.email}`);
-      toast({ title: 'Pengguna Dihapus', description: `Pengguna ${userToDelete.name} telah berhasil dihapus.` });
+      // This is a complex operation and requires re-authentication on the backend/functions for security.
+      // For this client-side admin panel, we'll just delete the Firestore doc.
+      // Deleting the actual Firebase Auth user from the client is not recommended.
+      await deleteDoc(doc(db, "users", userToDelete.uid));
+      
+      toast({ title: 'Pengguna Dihapus', description: `Data pengguna ${userToDelete.name} telah berhasil dihapus dari database.` });
       loadUsers(); 
     } catch (error) {
-      toast({ title: 'Gagal Menghapus', variant: 'destructive' });
+      console.error("Delete error: ", error);
+      toast({ title: 'Gagal Menghapus', description: 'Gagal menghapus data pengguna.', variant: 'destructive' });
     } finally {
       setIsDeleteDialogOpen(false);
       setUserToDelete(null);
     }
   };
 
-  const onSubmit = (data: UserFormValues) => {
+  const onSubmit = async (data: UserFormValues) => {
     try {
       const isNewUser = !editingUser;
       
-      const userToSave: Partial<User> = {
-        name: data.name,
-        username: data.username,
-        email: data.email,
-        role: data.role,
-        photoUrl: data.photoUrl,
-        badge: data.badge,
-        robloxUsername: data.robloxUsername,
-      };
-
-      if (data.role === 'user') {
-          userToSave.schoolName = data.schoolName;
-          userToSave.schoolType = data.schoolType;
-      } else if (data.role === 'mahasiswa') {
-          userToSave.major = data.major;
-          userToSave.schoolName = data.schoolName;
-      }
-
       if (isNewUser) {
         if (!data.password) {
           form.setError('password', { type: 'manual', message: 'Password wajib diisi untuk pengguna baru.' });
           return;
         }
-        if (localStorage.getItem(`user_${data.username}`)) {
-            form.setError('username', { type: 'manual', message: 'Username ini sudah digunakan.' });
-            return;
-        }
         
-        const finalNewUser: User = userToSave as User;
-        localStorage.setItem(`user_${finalNewUser.username}`, JSON.stringify(finalNewUser));
-        localStorage.setItem(`pwd_${data.email}`, data.password);
-        toast({ title: 'Pengguna Ditambahkan', description: `${data.name} telah berhasil ditambahkan.` });
-
+        // As an admin panel, creating a user should be done via a server-side function for security.
+        // The following is a simplified client-side representation.
+        toast({ title: 'Menambahkan Pengguna...', description: 'Fitur ini memerlukan implementasi backend yang aman.' });
+        // In a real app, you would call a Cloud Function here to create the auth user and Firestore doc.
+        
       } else {
         // Edit existing user
-        const updatedUser: User = { ...editingUser, ...userToSave };
+        const userDocRef = doc(db, "users", editingUser!.uid);
+        const updatedUserData: Partial<User> = {
+          ...data,
+        };
+        delete updatedUserData.password; // Don't save password to Firestore
         
-        localStorage.setItem(`user_${updatedUser.username}`, JSON.stringify(updatedUser));
-        
-        if (data.password) {
-            localStorage.setItem(`pwd_${updatedUser.email}`, data.password);
-        }
-        
-        if (editingUser.username !== data.username) {
-            localStorage.removeItem(`user_${editingUser.username}`);
-        }
-        if (editingUser.email !== data.email) {
-            localStorage.removeItem(`pwd_${editingUser.email}`);
-        }
-        
-        if (activeUser?.username === editingUser.username) {
-            updateActiveUser(updatedUser);
+        await updateDoc(userDocRef, updatedUserData);
+
+        if (activeUser?.uid === editingUser!.uid) {
+            updateActiveUser(updatedUserData);
         }
 
         toast({ title: 'Pengguna Diperbarui', description: `Data untuk ${data.name} telah diperbarui.` });
@@ -208,6 +180,7 @@ export default function UsersPage() {
       setIsSheetOpen(false);
       loadUsers();
     } catch (error) {
+      console.error("Form submit error: ", error);
       toast({ title: 'Terjadi Kesalahan', description: 'Gagal menyimpan data pengguna.', variant: 'destructive' });
     }
   };
@@ -280,7 +253,7 @@ export default function UsersPage() {
                   </TableRow>
                 ) : (
                   filteredUsers.map((user) => (
-                    <TableRow key={user.username}>
+                    <TableRow key={user.uid}>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-3">
                            <Avatar>
@@ -309,7 +282,7 @@ export default function UsersPage() {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleDelete(user)}
-                          disabled={activeUser?.username === user.username}
+                          disabled={activeUser?.uid === user.uid}
                         >
                           <Trash className="h-4 w-4" />
                           <span className="sr-only">Hapus</span>
@@ -334,7 +307,7 @@ export default function UsersPage() {
               ) : (
                 <div className="divide-y">
                 {filteredUsers.map((user) => (
-                    <div key={user.username} className="p-4">
+                    <div key={user.uid} className="p-4">
                         <div className="flex items-start justify-between">
                              <div className="flex items-start gap-4">
                                 <Avatar>
@@ -358,7 +331,7 @@ export default function UsersPage() {
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => handleDelete(user)}
-                                    disabled={activeUser?.username === user.username}
+                                    disabled={activeUser?.uid === user.uid}
                                     >
                                     <Trash className="h-4 w-4" />
                                     <span className="sr-only">Hapus</span>
@@ -398,7 +371,7 @@ export default function UsersPage() {
           <SheetHeader>
             <SheetTitle>{editingUser ? 'Edit Pengguna' : 'Tambah Pengguna Baru'}</SheetTitle>
             <SheetDescription>
-              {editingUser ? `Mengubah data untuk ${editingUser.name}.` : 'Isi detail di bawah ini untuk membuat akun baru.'}
+              {editingUser ? `Mengubah data untuk ${editingUser.name}.` : 'Fitur ini harus diimplementasikan dengan aman melalui backend.'}
             </SheetDescription>
           </SheetHeader>
            <UserForm form={form} onSubmit={onSubmit} editingUser={editingUser}>
@@ -420,8 +393,8 @@ export default function UsersPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
             <AlertDialogDescription>
-              Tindakan ini tidak dapat diurungkan. Ini akan menghapus pengguna
-              <strong> {userToDelete?.name} </strong> secara permanen.
+              Tindakan ini akan menghapus data pengguna
+              <strong> {userToDelete?.name} </strong> dari database. Ini tidak akan menghapus akun autentikasi Firebase mereka. Tindakan ini tidak dapat diurungkan.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

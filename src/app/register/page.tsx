@@ -13,6 +13,9 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { SchoolType, User } from '@/lib/types';
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore"; 
+import { db } from '@/lib/firebase';
 
 const schoolTypes: { id: SchoolType; name: string }[] = [
   { id: 'SDN', name: 'SD Negeri' },
@@ -35,7 +38,13 @@ export default function RegisterPage() {
   const [schoolName, setSchoolName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleRegister = (e: React.FormEvent) => {
+  const isUsernameTaken = async (username: string) => {
+    const docRef = doc(db, "usernames", username);
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists();
+  }
+
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!schoolType || !schoolName) {
         toast({
@@ -47,64 +56,61 @@ export default function RegisterPage() {
     }
     setIsLoading(true);
 
-    setTimeout(() => {
-      try {
-        if (localStorage.getItem(`user_${username}`)) {
-          toast({
+    if (await isUsernameTaken(username)) {
+      toast({
+        title: "Pendaftaran Gagal",
+        description: "Username ini sudah terdaftar. Silakan gunakan username lain.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const auth = getAuth();
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const authUser = userCredential.user;
+
+      const newUser: User = { 
+          uid: authUser.uid,
+          name, 
+          username, 
+          email, 
+          schoolType, 
+          schoolName, 
+          role: 'user',
+          registeredAt: new Date().toISOString(),
+          quizCompletions: 0,
+          bonusPoints: 0,
+      };
+
+      // Create user document in Firestore
+      await setDoc(doc(db, "users", authUser.uid), newUser);
+      
+      // Reserve username
+      await setDoc(doc(db, "usernames", username), { uid: authUser.uid });
+
+      toast({
+          title: "Pendaftaran Berhasil",
+          description: "Akun Anda telah dibuat. Silakan masuk.",
+      });
+      router.push('/login');
+    } catch (error: any) {
+        let errorMessage = "Tidak dapat memproses pendaftaran saat ini.";
+        if (error.code === 'auth/email-already-in-use') {
+          errorMessage = "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk.";
+        } else if (error.code === 'auth/weak-password') {
+          errorMessage = "Password terlalu lemah. Gunakan minimal 6 karakter.";
+        }
+        toast({
             title: "Pendaftaran Gagal",
-            description: "Username ini sudah terdaftar. Silakan gunakan username lain.",
-            variant: "destructive",
-          });
-          setIsLoading(false);
-          return;
-        }
-
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && key.startsWith('user_')) {
-                const userData = JSON.parse(localStorage.getItem(key) || '{}');
-                if (userData.email === email) {
-                    toast({
-                        title: "Pendaftaran Gagal",
-                        description: "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk.",
-                        variant: "destructive",
-                    });
-                    setIsLoading(false);
-                    return;
-                }
-            }
-        }
-
-        const newUser: Omit<User, 'password'> = { 
-            name, 
-            username, 
-            email, 
-            schoolType, 
-            schoolName, 
-            role: 'user',
-            registeredAt: new Date().toISOString(), // Add registration date
-        };
-        localStorage.setItem(`user_${username}`, JSON.stringify(newUser));
-        localStorage.setItem(`pwd_${email}`, password);
-        localStorage.setItem(`quizCompletions_${email}`, '0'); // Initialize quiz count
-
-        console.log('Registering user:', newUser);
-        toast({
-            title: "Pendaftaran Berhasil",
-            description: "Akun Anda telah dibuat. Silakan masuk.",
-        });
-        router.push('/login');
-      } catch (error) {
-        toast({
-            title: "Terjadi Kesalahan",
-            description: "Tidak dapat memproses pendaftaran saat ini.",
+            description: errorMessage,
             variant: "destructive",
         });
         console.error("Registration error:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }, 1500);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -158,7 +164,7 @@ export default function RegisterPage() {
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Buat password yang kuat"
+                  placeholder="Buat password yang kuat (min. 6 karakter)"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required

@@ -1,9 +1,10 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
-
-const BASE_PROGRESS_KEY = 'pintarElementaryProgress';
+import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 type ProgressData = {
   [subjectId: string]: number;
@@ -13,48 +14,34 @@ export const useProgress = () => {
   const { user } = useAuth();
   const [progress, setProgress] = useState<ProgressData>({});
 
-  const getProgressKey = useCallback(() => {
-    if (!user?.email) return null;
-    return `${BASE_PROGRESS_KEY}_${user.email}`;
-  }, [user?.email]);
-
   useEffect(() => {
-    const progressKey = getProgressKey();
-    if (!progressKey) {
-        setProgress({}); // Reset progress if no user
-        return;
-    };
-
-    try {
-      const storedProgress = localStorage.getItem(progressKey);
-      if (storedProgress) {
-        setProgress(JSON.parse(storedProgress));
-      } else {
-        setProgress({}); // Initialize if no progress found for this user
-      }
-    } catch (error) {
-      console.error('Failed to read progress from localStorage', error);
+    if (user && user.progress) {
+      setProgress(user.progress);
+    } else {
       setProgress({});
     }
-  }, [getProgressKey]);
+  }, [user]);
 
-  const updateSubjectProgress = useCallback((subjectId: string, score: number) => {
-    const progressKey = getProgressKey();
-    if (!progressKey) return;
+  const updateSubjectProgress = useCallback(async (subjectId: string, score: number) => {
+    if (!user) return;
 
-    setProgress((prevProgress) => {
-      const newProgress = {
-        ...prevProgress,
-        [subjectId]: Math.max(prevProgress[subjectId] || 0, score),
-      };
-      try {
-        localStorage.setItem(progressKey, JSON.stringify(newProgress));
-      } catch (error) {
-        console.error('Failed to save progress to localStorage', error);
-      }
-      return newProgress;
-    });
-  }, [getProgressKey]);
+    const newProgress = {
+      ...progress,
+      [subjectId]: Math.max(progress[subjectId] || 0, score),
+    };
+    
+    setProgress(newProgress);
+
+    try {
+      const userDocRef = doc(db, 'users', user.uid);
+      await updateDoc(userDocRef, {
+        progress: newProgress
+      });
+    } catch (error) {
+      console.error('Failed to save progress to Firestore', error);
+      // Optionally revert state or show toast
+    }
+  }, [user, progress]);
 
   const getSubjectProgress = useCallback(
     (subjectId: string) => {

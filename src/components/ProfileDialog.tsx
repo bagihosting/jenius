@@ -20,6 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Separator } from './ui/separator';
 import { ScrollArea } from './ui/scroll-area';
 import { getBadgeInfo, BadgeTier } from '@/lib/badgeService';
+import { getStorage, ref, uploadString, getDownloadURL } from 'firebase/storage';
 
 async function compressAndConvertToWebP(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -63,7 +64,7 @@ async function compressAndConvertToWebP(file: File): Promise<string> {
 
 
 export function ProfileDialog({ children }: { children: React.ReactNode }) {
-  const { user, updateUser, updatePassword, logout } = useAuth();
+  const { user, updateUser, updatePassword: updateAuthPassword, logout } = useAuth();
   const [name, setName] = useState(user?.name || '');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -76,17 +77,18 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (user) {
       setBadgeInfo(getBadgeInfo(user));
+      setName(user.name);
     }
   }, [user]);
 
   if (!user) return null;
 
-  const handleSaveName = () => {
+  const handleSaveName = async () => {
     if (name.trim() === '') {
       toast({ title: 'Nama tidak boleh kosong', variant: 'destructive' });
       return;
     }
-    updateUser({ name });
+    await updateUser({ name });
     setIsEditingName(false);
     toast({ title: 'Nama berhasil diperbarui!', variant: 'default' });
   };
@@ -108,17 +110,24 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
     setIsUploading(true);
     try {
         const compressedDataUrl = await compressAndConvertToWebP(file);
-        updateUser({ photoUrl: compressedDataUrl });
+        
+        const storage = getStorage();
+        const storageRef = ref(storage, `profilePictures/${user.uid}.webp`);
+        
+        await uploadString(storageRef, compressedDataUrl, 'data_url');
+        const downloadURL = await getDownloadURL(storageRef);
+
+        await updateUser({ photoUrl: downloadURL });
         toast({ title: 'Foto profil berhasil diperbarui!', variant: 'default' });
     } catch (error) {
-        console.error("Image processing failed:", error);
-        toast({ title: 'Gagal memproses gambar', description: 'Silakan coba file lain.', variant: 'destructive' });
+        console.error("Image processing or upload failed:", error);
+        toast({ title: 'Gagal memproses atau mengunggah gambar', description: 'Silakan coba file lain.', variant: 'destructive' });
     } finally {
         setIsUploading(false);
     }
   };
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     if (password === '' || confirmPassword === '') {
         toast({ title: 'Password tidak boleh kosong', variant: 'destructive' });
         return;
@@ -132,17 +141,22 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
         return;
     }
     
-    updatePassword(password);
-    toast({ title: 'Password berhasil diperbarui!', variant: 'default' });
-    setPassword('');
-    setConfirmPassword('');
+    try {
+        await updateAuthPassword(password);
+        toast({ title: 'Password berhasil diperbarui!', description: 'Anda mungkin perlu login ulang.', variant: 'default' });
+        setPassword('');
+        setConfirmPassword('');
+    } catch(error: any) {
+        console.error("Password update failed:", error);
+        toast({ title: 'Gagal mengubah password', description: 'Silakan coba logout dan login kembali sebelum mencoba lagi.', variant: 'destructive' });
+    }
   };
 
   const UserBadge = badgeInfo ? badgeInfo.icon : null;
 
   return (
     <Dialog onOpenChange={(open) => {
-        if (open) {
+        if (open && user) {
             setName(user.name);
             setPassword('');
             setConfirmPassword('');

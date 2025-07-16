@@ -10,6 +10,9 @@ import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
 import { Badge } from './ui/badge';
 import { ScrollArea } from './ui/scroll-area';
 import { getBadgeInfo, BadgeTier } from '@/lib/badgeService';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+
 
 interface StudentRank {
   user: User;
@@ -17,23 +20,14 @@ interface StudentRank {
   badge: BadgeTier;
 }
 
-const getAverageScore = (userEmail: string): number => {
-  if (typeof window === 'undefined') return 0;
-  const progressKey = `pintarElementaryProgress_${userEmail}`;
-  const storedProgress = localStorage.getItem(progressKey);
-  if (!storedProgress) return 0;
-
-  try {
-    const progressData = JSON.parse(storedProgress);
-    const scores: number[] = Object.values(progressData);
+const getAverageScore = (user: User): number => {
+    if (!user.progress || Object.keys(user.progress).length === 0) return 0;
+    
+    const scores: number[] = Object.values(user.progress);
     if (scores.length === 0) return 0;
 
     const totalScore = scores.reduce((sum, score) => sum + score, 0);
     return Math.round(totalScore / scores.length);
-  } catch (error) {
-    console.error(`Failed to parse progress for ${userEmail}:`, error);
-    return 0;
-  }
 };
 
 export function LeaderboardCard() {
@@ -42,34 +36,36 @@ export function LeaderboardCard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const allUsers: User[] = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('user_')) {
-          try {
-            const userData = JSON.parse(localStorage.getItem(key) || '{}');
-            if (userData.role === 'user') {
-              allUsers.push(userData);
-            }
-          } catch (e) {
-            console.error(`Error parsing user data from localStorage for key: ${key}`, e);
-          }
-        }
-      }
+    const fetchLeaderboard = async () => {
+        setLoading(true);
+        try {
+            const q = query(
+                collection(db, "users"), 
+                where("role", "==", "user")
+            );
 
-      const rankedUsers: StudentRank[] = allUsers
-        .map(user => ({
-          user,
-          averageScore: getAverageScore(user.email),
-          badge: getBadgeInfo(user),
-        }))
-        .filter(student => student.averageScore > 0) // Only show users who have scores
-        .sort((a, b) => b.averageScore - a.averageScore);
-      
-      setLeaderboard(rankedUsers);
-      setLoading(false);
-    }
+            const querySnapshot = await getDocs(q);
+            const allUsers = querySnapshot.docs.map(doc => doc.data() as User);
+
+            const rankedUsers: StudentRank[] = allUsers
+                .map(user => ({
+                user,
+                averageScore: getAverageScore(user),
+                badge: getBadgeInfo(user),
+                }))
+                .filter(student => student.averageScore > 0)
+                .sort((a, b) => b.averageScore - a.averageScore)
+                .slice(0, 20); // Get top 20
+            
+            setLeaderboard(rankedUsers);
+        } catch(error) {
+            console.error("Error fetching leaderboard: ", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    fetchLeaderboard();
   }, []);
 
   return (
@@ -95,11 +91,11 @@ export function LeaderboardCard() {
             <ul className="space-y-4">
               {leaderboard.map((student, index) => {
                 const BadgeIcon = student.badge.icon;
-                const isCurrentUser = student.user.username === currentUser?.username;
+                const isCurrentUser = student.user.uid === currentUser?.uid;
                 
                 return (
                     <li
-                    key={student.user.username}
+                    key={student.user.uid}
                     className={`flex items-center gap-3 p-2 rounded-md ${
                         isCurrentUser ? 'bg-primary/10 border border-primary/20' : ''
                     }`}
