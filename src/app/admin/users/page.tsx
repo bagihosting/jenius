@@ -69,32 +69,6 @@ export default function AdminUsersPage() {
         setIsLoading(true);
         try {
             const loadedUsers: User[] = [];
-            
-            // Ensure admin user exists
-            if (!localStorage.getItem('user_admin')) {
-                const adminUser = {
-                    name: 'Admin Jenius',
-                    username: 'admin',
-                    email: 'admin@ayahjenius.com',
-                    schoolType: 'SDN',
-                    role: 'admin' as 'admin'
-                };
-                localStorage.setItem('user_admin', JSON.stringify(adminUser));
-                localStorage.setItem('pwd_admin@ayahjenius.com', 'admin123');
-            }
-             // Ensure default user exists
-            if (!localStorage.getItem('user_user')) {
-                 const defaultUser = {
-                    name: 'Pengguna Jenius',
-                    username: 'user',
-                    email: 'user@ayahjenius.com',
-                    schoolType: 'SDN',
-                    role: 'user' as 'user'
-                };
-                localStorage.setItem('user_user', JSON.stringify(defaultUser));
-                 localStorage.setItem('pwd_user@ayahjenius.com', 'password123');
-            }
-
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
                 if (key && key.startsWith('user_')) {
