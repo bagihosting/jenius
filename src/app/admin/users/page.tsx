@@ -125,7 +125,7 @@ export default function AdminUsersPage() {
 
     const handleFormChange = (value: string, field: string) => {
         setFormData(prev => ({...prev, [field]: value}));
-    }
+    };
     
     function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
         setFormData(prev => ({...prev, [e.target.name]: e.target.value}));
@@ -380,6 +380,5 @@ export default function AdminUsersPage() {
             </Dialog>
         </Card>
     );
-}
 
     
