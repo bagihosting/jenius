@@ -1,7 +1,6 @@
 
 'use client';
 
-import { useState } from 'react';
 import { useForm, FormProvider, useWatch } from 'react-hook-form';
 import * as z from 'zod';
 import { Input } from '@/components/ui/input';
@@ -20,11 +19,7 @@ import {
     FormLabel,
     FormMessage,
 } from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
-import { Loader2, Search } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import type { User, SchoolType } from '@/lib/types';
-import { findSchoolsAction } from '@/app/actions';
 
 const schoolTypes: { id: SchoolType; name: string }[] = [
   { id: 'SDN', name: 'SD Negeri' },
@@ -37,11 +32,14 @@ export const userSchema = z.object({
   username: z.string().min(3, { message: 'Username harus memiliki setidaknya 3 karakter.' }).regex(/^[a-z0-9_]+$/, 'Username hanya boleh berisi huruf kecil, angka, dan garis bawah (_).'),
   email: z.string().email({ message: 'Email tidak valid.' }),
   role: z.enum(['user', 'admin'], { required_error: 'Peran harus dipilih.' }),
-  city: z.string().optional(),
-  schoolType: z.enum(['SDN', 'SDIT', 'MI']).optional(),
-  schoolName: z.string().optional(),
+  schoolType: z.enum(['SDN', 'SDIT', 'MI']),
+  schoolName: z.string().min(3, { message: 'Nama sekolah harus diisi.' }),
   password: z.string().optional(),
+}).refine(data => data.role === 'admin' || (data.schoolType && data.schoolName), {
+    message: "School type and name are required for users.",
+    path: ["schoolName"],
 });
+
 
 type UserFormValues = z.infer<typeof userSchema>;
 
@@ -53,37 +51,7 @@ interface UserFormProps {
 }
 
 function InnerUserForm({ form, onSubmit, editingUser, children }: UserFormProps) {
-    const { toast } = useToast();
-    const [isSearchingSchools, setIsSearchingSchools] = useState(false);
-    const [availableSchools, setAvailableSchools] = useState<string[]>([]);
-    
     const role = useWatch({ control: form.control, name: 'role' });
-    const city = useWatch({ control: form.control, name: 'city' });
-    const schoolType = useWatch({ control: form.control, name: 'schoolType' });
-
-    useState(() => {
-      if (editingUser?.schoolName) {
-        setAvailableSchools([editingUser.schoolName]);
-      }
-    });
-
-    const handleFindSchools = async () => {
-      if (!city || !schoolType) {
-        toast({ title: 'Informasi Kurang', description: 'Isi kota dan jenis sekolah.', variant: 'destructive' });
-        return;
-      }
-      setIsSearchingSchools(true);
-      setAvailableSchools([]);
-      form.setValue('schoolName', '');
-      const result = await findSchoolsAction({ city, schoolType });
-      setIsSearchingSchools(false);
-
-      if (result.error || !result.data?.schools) {
-        toast({ title: 'Gagal Mencari Sekolah', description: result.error || 'Tidak ada sekolah ditemukan.', variant: 'destructive' });
-      } else {
-        setAvailableSchools(result.data.schools);
-      }
-    };
 
     return (
         <Form {...form}>
@@ -165,73 +133,43 @@ function InnerUserForm({ form, onSubmit, editingUser, children }: UserFormProps)
               
               {role === 'user' && (
                 <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="city"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Kota</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="Contoh: Surabaya" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="schoolType"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Jenis Sekolah</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Pilih jenis" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {schoolTypes.map((s) => (
-                                  <SelectItem key={s.id} value={s.id}>
-                                    {s.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                  </div>
-                   <Button type="button" variant="secondary" className="w-full" onClick={handleFindSchools} disabled={isSearchingSchools || !city || !schoolType}>
-                      {isSearchingSchools ? <Loader2 className="animate-spin" /> : <Search />}
-                      Cari Sekolah
-                    </Button>
-                    <FormField
-                      control={form.control}
-                      name="schoolName"
-                      render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Nama Sekolah</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value} disabled={availableSchools.length === 0}>
-                                <FormControl>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Pilih nama sekolah" />
-                                </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                {availableSchools.map((s) => (
-                                    <SelectItem key={s} value={s}>
-                                      {s}
-                                    </SelectItem>
-                                ))}
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  <FormField
+                    control={form.control}
+                    name="schoolType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Jenis Sekolah</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Pilih jenis" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {schoolTypes.map((s) => (
+                              <SelectItem key={s.id} value={s.id}>
+                                {s.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="schoolName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nama Sekolah</FormLabel>
+                        <FormControl>
+                            <Input placeholder="Contoh: SDN Merdeka 5" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </>
               )}
 

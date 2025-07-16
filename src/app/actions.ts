@@ -4,25 +4,10 @@
 import { generateQuiz as generateQuizFlow } from '@/ai/flows/generate-quiz';
 import { answerHomework as answerHomeworkFlow } from '@/ai/flows/homework-helper-flow';
 import { generateDailyExam as generateDailyExamFlow } from '@/ai/flows/generate-exam-flow';
-import { findSchools as findSchoolsFlow } from '@/ai/flows/find-schools-flow';
 import type { QuizData, ExamData } from '@/lib/types';
 import type { HomeworkHelpInput, HomeworkHelpOutput } from '@/ai/flows/homework-helper-flow';
 import type { GenerateQuizInput } from '@/ai/flows/generate-quiz';
 import type { GenerateExamInput } from '@/ai/flows/generate-exam-flow';
-import { z } from 'zod';
-
-
-// Schema for findSchools moved here
-export const FindSchoolsInputSchema = z.object({
-  city: z.string().describe('The city in Indonesia to search for schools in.'),
-  schoolType: z.enum(['SDN', 'SDIT', 'MI']).describe('The type of school.'),
-});
-export type FindSchoolsInput = z.infer<typeof FindSchoolsInputSchema>;
-
-export const FindSchoolsOutputSchema = z.object({
-  schools: z.array(z.string()).describe('A list of school names.'),
-});
-export type FindSchoolsOutput = z.infer<typeof FindSchoolsOutputSchema>;
 
 
 export async function generateQuizAction(
@@ -80,23 +65,5 @@ export async function generateExamAction(
     return {
       error: `Maaf, Ayah Jenius sedang kesulitan membuat soal ujian harian. Silakan coba lagi. (${errorMessage})`,
     };
-  }
-}
-
-export async function findSchoolsAction(
-  input: FindSchoolsInput
-): Promise<{ data?: FindSchoolsOutput; error?: string }> {
-  try {
-    const result = await findSchoolsFlow(input);
-    if (!result || !result.schools) {
-        throw new Error('Gagal menemukan sekolah.');
-    }
-    return { data: result };
-  } catch (e) {
-      console.error(e);
-      const errorMessage = e instanceof Error ? e.message : 'Terjadi kesalahan tidak dikenal.';
-      return {
-          error: `Maaf, terjadi kesalahan saat mencari sekolah: ${errorMessage}`,
-      };
   }
 }
