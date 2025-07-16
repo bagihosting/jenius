@@ -48,14 +48,6 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={pathname === '/admin/users'} tooltip="Manajemen Pengguna">
-                                <Link href="/admin/users">
-                                    <Users />
-                                    <span>Pengguna</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarContent>
                 <SidebarFooter>
