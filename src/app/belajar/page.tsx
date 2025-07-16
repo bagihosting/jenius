@@ -38,12 +38,17 @@ function BelajarSelection() {
   const { user, isAuthenticated, loading } = useAuth();
   const [grade, setGrade] = useState('');
   const [semester, setSemester] = useState('');
+  const [isClient, setIsClient] = useState(false);
   
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!loading && isClient && !isAuthenticated) {
       router.push('/login');
     }
-  }, [isAuthenticated, loading, router]);
+  }, [isAuthenticated, loading, router, isClient]);
 
 
   const handleStartLearning = () => {
@@ -52,7 +57,7 @@ function BelajarSelection() {
     }
   };
 
-  if (loading || !isAuthenticated || !user) {
+  if (!isClient || loading || !isAuthenticated || !user) {
     return (
         <div className="flex-grow flex items-center justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary"/>
@@ -130,8 +135,10 @@ function BelajarSelection() {
 
 export default function BelajarPage() {
     return (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<div className="flex-grow flex items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary"/></div>}>
             <BelajarSelection />
         </Suspense>
     )
 }
+
+    

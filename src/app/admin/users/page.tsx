@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
@@ -27,13 +27,6 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Table,
   TableBody,
   TableCell,
@@ -47,162 +40,9 @@ import type { User } from '@/lib/types';
 import { Loader2, PlusCircle, Search, Trash, Edit, User as UserIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from '@/components/ui/form';
-
-
-const schoolTypes = [
-  { id: 'SDN', name: 'SD Negeri' },
-  { id: 'SDIT', name: 'SD Islam Terpadu' },
-  { id: 'MI', name: 'Madrasah Ibtidaiyah (MI)' },
-];
-
-const userSchema = z.object({
-  name: z.string().min(2, { message: 'Nama harus memiliki setidaknya 2 karakter.' }),
-  username: z.string().min(3, { message: 'Username harus memiliki setidaknya 3 karakter.' }).regex(/^[a-z0-9_]+$/, 'Username hanya boleh berisi huruf kecil, angka, dan garis bawah (_).'),
-  email: z.string().email({ message: 'Email tidak valid.' }),
-  schoolType: z.enum(['SDN', 'SDIT', 'MI']),
-  role: z.enum(['user', 'admin'], { required_error: 'Peran harus dipilih.' }),
-  password: z.string().optional(),
-});
+import { UserForm, userSchema } from '@/components/UserForm';
 
 type UserFormValues = z.infer<typeof userSchema>;
-
-function UserForm({ form, onSubmit, editingUser }: { form: any, onSubmit: (data: UserFormValues) => void, editingUser: User | null }) {
-    const role = useWatch({
-        control: form.control,
-        name: 'role',
-    });
-
-    useEffect(() => {
-        if (role === 'admin') {
-            form.setValue('schoolType', 'SDN');
-        }
-    }, [role, form]);
-
-    return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nama Lengkap</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Nama Lengkap" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Username</FormLabel>
-                    <FormControl>
-                      <Input placeholder="username" {...field} disabled={!!editingUser} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="email@contoh.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder={editingUser ? 'Isi untuk mengubah' : 'Password baru'} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="role"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Peran</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Pilih peran" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="user">User</SelectItem>
-                            <SelectItem value="admin">Admin</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  {role === 'user' && (
-                    <FormField
-                      control={form.control}
-                      name="schoolType"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Jenis Sekolah</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Pilih jenis sekolah" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {schoolTypes.map((s) => (
-                                <SelectItem key={s.id} value={s.id}>
-                                  {s.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-              </div>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button type="button" variant="outline">Batal</Button>
-                </DialogClose>
-                <Button type="submit" disabled={form.formState.isSubmitting}>
-                  {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Simpan
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-    )
-}
 
 export default function UsersPage() {
   const { toast } = useToast();
@@ -448,7 +288,17 @@ export default function UsersPage() {
               {editingUser ? `Mengubah data untuk ${editingUser.name}.` : 'Isi detail di bawah ini untuk membuat akun baru.'}
             </DialogDescription>
           </DialogHeader>
-          <UserForm form={form} onSubmit={onSubmit} editingUser={editingUser} />
+           <UserForm form={form} onSubmit={onSubmit} editingUser={editingUser}>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button type="button" variant="outline">Batal</Button>
+                </DialogClose>
+                <Button type="submit" disabled={form.formState.isSubmitting}>
+                  {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Simpan
+                </Button>
+              </DialogFooter>
+          </UserForm>
         </DialogContent>
       </Dialog>
 
@@ -470,3 +320,5 @@ export default function UsersPage() {
     </>
   );
 }
+
+    
