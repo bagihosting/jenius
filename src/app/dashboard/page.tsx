@@ -26,23 +26,24 @@ function DashboardContent() {
 
     const grade = (searchParams.get('grade') as Grade) || '1';
     const semester = (searchParams.get('semester') as Semester) || '1';
-    const schoolType = user?.schoolType;
-
+    
     useEffect(() => {
         if (!loading && !isAuthenticated) {
             router.push('/login');
         }
     }, [loading, isAuthenticated, router]);
-
-    if (loading || !isAuthenticated || !schoolType) {
+    
+    if (loading || !isAuthenticated) {
         return (
             <main className="flex-grow flex items-center justify-center">
                 <Loader2 className="h-12 w-12 animate-spin text-primary"/>
             </main>
         )
     }
-    
-    if (!grade || !semester) {
+
+    const schoolType = user?.schoolType;
+
+    if (!grade || !semester || !schoolType) {
         return (
             <main className="flex-grow flex items-center justify-center p-4">
                 <Card className="w-full max-w-md text-center">
@@ -135,7 +136,7 @@ export default function DashboardPage() {
     return (
         <div className="flex flex-col min-h-screen">
             <Header />
-            <Suspense fallback={<div>Loading dashboard...</div>}>
+            <Suspense fallback={<main className="flex-grow flex items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary"/></main>}>
                 <DashboardContent />
             </Suspense>
              <footer className="text-center p-4 text-muted-foreground text-sm">
