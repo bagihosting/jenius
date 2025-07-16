@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, BrainCircuit, PartyPopper, RotateCw, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, BrainCircuit, PartyPopper, RotateCw, CheckCircle2, XCircle, Gift } from 'lucide-react';
 import type { QuizData, SchoolInfo } from '@/lib/types';
 import { Progress } from './ui/progress';
 import { useProgress } from '@/hooks/use-progress';
@@ -91,17 +91,19 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
   };
 
   const updateBonus = () => {
-    if (typeof window === 'undefined' || !user) return;
+    if (typeof window === 'undefined' || !user) return false;
     const bonusStatus = localStorage.getItem('bonus_feature_status');
-    if (bonusStatus !== 'active') return;
+    if (bonusStatus !== 'active') return false;
 
     const bonusKey = `bonus_points_${user.email}`;
     try {
         const currentBonus = parseFloat(localStorage.getItem(bonusKey) || '0');
         const newBonus = currentBonus + ROBUX_PER_QUIZ;
         localStorage.setItem(bonusKey, newBonus.toFixed(4));
+        return true;
     } catch(e) {
         console.error("Failed to update bonus points", e);
+        return false;
     }
   };
 
@@ -116,12 +118,14 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
     setScore(percentageScore);
     updateSubjectProgress(subjectId, percentageScore);
     
-    if (percentageScore >= 60) { // Only give bonus for passing score
-        updateBonus();
-        toast({
-            title: 'Bonus Diterima!',
-            description: `Kamu mendapatkan ${ROBUX_PER_QUIZ} Poin Bonus karena menyelesaikan kuis!`,
-        });
+    if (percentageScore >= 60) {
+        const bonusGiven = updateBonus();
+        if(bonusGiven) {
+            toast({
+                title: 'Selamat! Kamu Hebat!',
+                description: `Kamu mendapatkan ${ROBUX_PER_QUIZ} Poin Bonus Robux karena telah menyelesaikan kuis ini!`,
+            });
+        }
     }
 
     setQuizState('finished');
