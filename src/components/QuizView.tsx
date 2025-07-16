@@ -37,6 +37,7 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
       numberOfQuestions: 5,
       schoolType: schoolInfo.schoolType,
       grade: schoolInfo.grade,
+      semester: schoolInfo.semester,
     });
 
     if (result.error) {

@@ -24,14 +24,20 @@ const gradeLevels = [
   { id: '6', name: 'Kelas 6' },
 ];
 
+const semesters = [
+    { id: '1', name: 'Semester 1' },
+    { id: '2', name: 'Semester 2' },
+]
+
 export default function Home() {
   const router = useRouter();
   const [schoolType, setSchoolType] = useState('');
   const [grade, setGrade] = useState('');
+  const [semester, setSemester] = useState('');
 
   const handleStartLearning = () => {
-    if (schoolType && grade) {
-      router.push(`/belajar?school=${schoolType}&grade=${grade}`);
+    if (schoolType && grade && semester) {
+      router.push(`/belajar?school=${schoolType}&grade=${grade}&semester=${semester}`);
     }
   };
 
@@ -76,10 +82,25 @@ export default function Home() {
                   </SelectContent>
                 </Select>
               </div>
+               <div className="space-y-2">
+                <Label htmlFor="semester" className="text-base">Pilih Semester</Label>
+                <Select value={semester} onValueChange={setSemester}>
+                  <SelectTrigger id="semester" className="w-full text-base h-12">
+                    <SelectValue placeholder="Pilih semester..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {semesters.map((s) => (
+                      <SelectItem key={s.id} value={s.id} className="text-base">
+                        {s.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <Button
                 size="lg"
                 className="w-full h-12 text-lg"
-                disabled={!schoolType || !grade}
+                disabled={!schoolType || !grade || !semester}
                 onClick={handleStartLearning}
               >
                 Mulai Belajar

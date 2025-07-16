@@ -17,7 +17,7 @@ export function SubjectCard({ subject, schoolInfo }: SubjectCardProps) {
   const progress = getSubjectProgress(subject.id);
 
   const Icon = getIcon(subject.icon);
-  const link = `/subjects/${subject.id}?school=${schoolInfo.schoolType}&grade=${schoolInfo.grade}`;
+  const link = `/subjects/${subject.id}?school=${schoolInfo.schoolType}&grade=${schoolInfo.grade}&semester=${schoolInfo.semester}`;
 
   return (
     <Link href={link} className="group">

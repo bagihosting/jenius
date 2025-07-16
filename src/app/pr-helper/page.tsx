@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { getSubjects } from '@/lib/subjects';
 import { homeworkHelperAction } from '@/app/actions';
 import type { HomeworkHelpInput } from '@/ai/flows/homework-helper-flow';
-import type { SchoolType, Grade } from '@/lib/types';
+import type { SchoolType, Grade, Semester } from '@/lib/types';
 
 type PrHelperState = 'idle' | 'loading' | 'answered';
 
@@ -28,8 +28,10 @@ export default function PrHelperPage() {
   const searchParams = useSearchParams();
   const schoolType = (searchParams.get('school') as SchoolType) || 'SDN';
   const grade = (searchParams.get('grade') as Grade) || '5';
+  const semester = (searchParams.get('semester') as Semester) || '1';
 
-  const subjects = useMemo(() => getSubjects(schoolType, grade), [schoolType, grade]);
+
+  const subjects = useMemo(() => getSubjects(schoolType, grade, semester), [schoolType, grade, semester]);
   const [state, setState] = useState<PrHelperState>('idle');
   const [subject, setSubject] = useState('');
   const [question, setQuestion] = useState('');
@@ -48,7 +50,7 @@ export default function PrHelperPage() {
     }
 
     setState('loading');
-    const input: HomeworkHelpInput = { subject, question, schoolType, grade };
+    const input: HomeworkHelpInput = { subject, question, schoolType, grade, semester };
     const result = await homeworkHelperAction(input);
 
     if (result.error) {
@@ -71,7 +73,7 @@ export default function PrHelperPage() {
     setState('idle');
   };
   
-  const backlink = `/belajar?school=${schoolType}&grade=${grade}`;
+  const backlink = `/belajar?school=${schoolType}&grade=${grade}&semester=${semester}`;
 
   return (
     <div className="flex flex-col min-h-screen">

@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { getSubjects } from '@/lib/subjects';
 import { useState, useCallback, useMemo } from 'react';
-import type { ExamData, Subject, SchoolType, Grade } from '@/lib/types';
+import type { ExamData, Subject, SchoolType, Grade, Semester } from '@/lib/types';
 import { generateExamAction } from '../actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -42,8 +42,9 @@ export default function ExamPracticePage() {
   const searchParams = useSearchParams();
   const schoolType = (searchParams.get('school') as SchoolType) || 'SDN';
   const grade = (searchParams.get('grade') as Grade) || '5';
+  const semester = (searchParams.get('semester') as Semester) || '1';
 
-  const subjects = useMemo(() => getSubjects(schoolType, grade), [schoolType, grade]);
+  const subjects = useMemo(() => getSubjects(schoolType, grade, semester), [schoolType, grade, semester]);
   const [examData, setExamData] = useState<Record<string, SubjectExam>>({});
 
   const fetchExam = useCallback(async (subject: Subject) => {
@@ -59,6 +60,7 @@ export default function ExamPracticePage() {
       dateSeed,
       schoolType,
       grade,
+      semester,
     });
 
     if (result.error) {
@@ -66,9 +68,9 @@ export default function ExamPracticePage() {
     } else if (result.data) {
       setExamData(prev => ({ ...prev, [subject.id]: { state: 'success', data: result.data } }));
     }
-  }, [examData, schoolType, grade]);
+  }, [examData, schoolType, grade, semester]);
 
-  if (!schoolType || !grade) {
+  if (!schoolType || !grade || !semester) {
     return (
       <div className="flex flex-col min-h-screen">
         <Header />
@@ -76,7 +78,7 @@ export default function ExamPracticePage() {
           <Card className="text-center">
             <CardHeader>
               <CardTitle>Parameter Tidak Lengkap</CardTitle>
-              <CardDescription>Silakan kembali ke halaman utama untuk memilih sekolah dan kelas.</CardDescription>
+              <CardDescription>Silakan kembali ke halaman utama untuk memilih sekolah, kelas, dan semester.</CardDescription>
             </CardHeader>
             <CardContent>
               <Button asChild>
@@ -93,13 +95,14 @@ export default function ExamPracticePage() {
   }
 
   const schoolName = schoolTypeMap[schoolType] || 'Sekolah';
+  const backLink = `/belajar?school=${schoolType}&grade=${grade}&semester=${semester}`;
 
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow p-4 md:p-8">
         <div className="max-w-4xl mx-auto">
-          <Link href={`/belajar?school=${schoolType}&grade=${grade}`} className="flex items-center gap-2 text-primary hover:underline mb-4">
+          <Link href={backLink} className="flex items-center gap-2 text-primary hover:underline mb-4">
             <ArrowLeft size={16} />
             Kembali ke dasbor
           </Link>
@@ -110,7 +113,7 @@ export default function ExamPracticePage() {
                 Latihan Soal Ujian Harian
               </CardTitle>
               <CardDescription>
-                Untuk {schoolName} Kelas {grade}. Soal dibuat baru oleh Ayah Tirta setiap hari!
+                Untuk {schoolName} Kelas {grade} Semester {semester}. Soal dibuat baru oleh Ayah Tirta setiap hari!
               </CardDescription>
             </CardHeader>
             <CardContent>

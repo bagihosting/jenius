@@ -13,10 +13,11 @@ import {z} from 'genkit';
 import type { MultipleChoiceQuestion, EssayQuestion } from '@/lib/types';
 
 const GenerateExamInputSchema = z.object({
-  subjectContent: z.string().describe('The content of the subject to generate the exam from.'),
+  subjectContent: z.string().describe('The content of the subject to generate the exam from, including semester context.'),
   dateSeed: z.string().describe('The current date (YYYY-MM-DD) to ensure daily variety.'),
   schoolType: z.string().describe('The type of school (e.g., SDN, MI).'),
-  grade: z.string().describe('The grade level (e.g., 1, 5).')
+  grade: z.string().describe('The grade level (e.g., 1, 5).'),
+  semester: z.string().describe('The semester (1 or 2).')
 });
 export type GenerateExamInput = z.infer<typeof GenerateExamInputSchema>;
 
@@ -48,7 +49,7 @@ const prompt = ai.definePrompt({
   input: {schema: GenerateExamInputSchema},
   output: {schema: GenerateExamOutputSchema},
   prompt: `Anda adalah seorang ahli pembuat soal ujian yang jenius untuk siswa di Indonesia. Anda mengikuti Kurikulum Merdeka.
-Buat satu set soal latihan ujian berdasarkan konteks yang diberikan. Pastikan tingkat kesulitan soal sesuai untuk siswa kelas {{{grade}}} di sekolah jenis {{{schoolType}}}.
+Buat satu set soal latihan ujian berdasarkan konteks yang diberikan. Pastikan tingkat kesulitan soal sesuai untuk siswa kelas {{{grade}}} di sekolah jenis {{{schoolType}}} untuk semester {{{semester}}}.
 Gunakan string tanggal berikut sebagai 'benih' untuk memastikan soal yang Anda buat bervariasi setiap harinya: {{{dateSeed}}}
 
 PENTING: Sesuaikan kompleksitas soal dan bahasa dengan tingkatan kelas:
@@ -56,12 +57,12 @@ PENTING: Sesuaikan kompleksitas soal dan bahasa dengan tingkatan kelas:
 - Kelas 3-4 (Fase B): Gunakan bahasa yang jelas dan mulai perkenalkan soal yang membutuhkan penalaran sederhana. Jawaban mungkin memerlukan satu atau dua langkah pemikiran.
 - Kelas 5-6 (Fase C): Buat soal yang lebih analitis dan membutuhkan pemikiran tingkat tinggi (HOTS). Boleh menyertakan soal cerita atau studi kasus singkat.
 
-Buat 30 soal pilihan ganda dengan 4 pilihan jawaban (A, B, C, D). Untuk setiap soal pilihan ganda, berikan penjelasan singkat, cerdas, dan mudah dimengerti. Dalam penjelasan, **tebalkan (gunakan Markdown: **kata**) kata-kata kunci atau jawaban yang benar** agar mudah dikenali.
+Buat sekitar 30 soal pilihan ganda dengan 4 pilihan jawaban (A, B, C, D). Untuk setiap soal pilihan ganda, berikan penjelasan singkat, cerdas, dan mudah dimengerti. Dalam penjelasan, **tebalkan (gunakan Markdown: **kata**) kata-kata kunci atau jawaban yang benar** agar mudah dikenali.
 Buat juga 5 soal esai dengan jawaban penjelasan yang cerdas dan mendalam.
 Jawaban esai harus mengikuti format: Analisis Masalah, Langkah-langkah Penyelesaian, dan Kesimpulan.
 Semua konten harus dalam Bahasa Indonesia, kecuali jika mata pelajarannya adalah Bahasa Inggris atau Bahasa Arab.
 
-Konten Mata Pelajaran: {{{subjectContent}}}
+Konten Mata Pelajaran (termasuk fokus semester): {{{subjectContent}}}
 `,
 });
 

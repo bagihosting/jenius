@@ -8,7 +8,7 @@ import { getSubjects } from '@/lib/subjects';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Lightbulb, Edit, ArrowLeft } from 'lucide-react';
-import type { SchoolType, Grade } from '@/lib/types';
+import type { SchoolType, Grade, Semester } from '@/lib/types';
 
 const schoolTypeMap: { [key: string]: string } = {
   SDN: 'SD Negeri',
@@ -22,16 +22,17 @@ function BelajarDashboard() {
 
   const schoolType = searchParams.get('school') as SchoolType;
   const grade = searchParams.get('grade') as Grade;
+  const semester = searchParams.get('semester') as Semester;
 
-  if (!schoolType || !grade || !Object.keys(schoolTypeMap).includes(schoolType)) {
+  if (!schoolType || !grade || !semester || !Object.keys(schoolTypeMap).includes(schoolType) || !['1', '2'].includes(semester)) {
     redirect('/');
   }
 
-  const subjects = getSubjects(schoolType, grade);
+  const subjects = getSubjects(schoolType, grade, semester);
   const schoolName = schoolTypeMap[schoolType] || 'Sekolah';
 
-  const prHelperLink = `/pr-helper?school=${schoolType}&grade=${grade}`;
-  const examPracticeLink = `/exam-practice?school=${schoolType}&grade=${grade}`;
+  const prHelperLink = `/pr-helper?school=${schoolType}&grade=${grade}&semester=${semester}`;
+  const examPracticeLink = `/exam-practice?school=${schoolType}&grade=${grade}&semester=${semester}`;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -47,7 +48,7 @@ function BelajarDashboard() {
               Dasbor Belajar
             </h1>
             <p className="text-lg sm:text-xl text-muted-foreground mt-2 max-w-2xl mx-auto">
-              {schoolName} - Kelas {grade}
+              {schoolName} - Kelas {grade} - Semester {semester}
             </p>
           </div>
 
@@ -68,7 +69,7 @@ function BelajarDashboard() {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
             {subjects.map((subject) => (
-              <SubjectCard key={subject.id} subject={subject} schoolInfo={{ schoolType, grade }}/>
+              <SubjectCard key={subject.id} subject={subject} schoolInfo={{ schoolType, grade, semester }}/>
             ))}
           </div>
         </div>

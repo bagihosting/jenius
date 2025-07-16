@@ -9,7 +9,7 @@ import { QuizView } from '@/components/QuizView';
 
 export function SubjectDetails({ subject, schoolInfo }: { subject: Subject, schoolInfo: SchoolInfo }) {
   const Icon = getIcon(subject.icon);
-  const backlink = `/belajar?school=${schoolInfo.schoolType}&grade=${schoolInfo.grade}`;
+  const backlink = `/belajar?school=${schoolInfo.schoolType}&grade=${schoolInfo.grade}&semester=${schoolInfo.semester}`;
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -24,7 +24,7 @@ export function SubjectDetails({ subject, schoolInfo }: { subject: Subject, scho
           </div>
           <div>
             <h1 className="text-3xl md:text-4xl font-bold font-headline text-gray-800 dark:text-gray-200">{subject.title}</h1>
-            <p className="text-muted-foreground mt-1">Materi belajar untuk Kelas {schoolInfo.grade}</p>
+            <p className="text-muted-foreground mt-1">Materi belajar untuk Kelas {schoolInfo.grade} - Semester {schoolInfo.semester}</p>
           </div>
         </div>
         

@@ -16,6 +16,7 @@ const HomeworkHelpInputSchema = z.object({
   question: z.string().describe('The homework question to be answered.'),
   schoolType: z.string().describe('The type of school (e.g., SDN, MI).'),
   grade: z.string().describe('The grade level (e.g., 1, 5).'),
+  semester: z.string().describe('The semester (1 or 2).'),
 });
 export type HomeworkHelpInput = z.infer<typeof HomeworkHelpInputSchema>;
 
@@ -33,7 +34,7 @@ const prompt = ai.definePrompt({
   input: { schema: HomeworkHelpInputSchema },
   output: { schema: HomeworkHelpOutputSchema },
   prompt: `Anda adalah seorang guru yang ramah dan suportif yang membantu siswa mengerjakan pekerjaan rumah mereka.
-Anda akan menjawab pertanyaan untuk siswa kelas {{{grade}}} di sekolah jenis {{{schoolType}}}.
+Anda akan menjawab pertanyaan untuk siswa kelas {{{grade}}} di sekolah jenis {{{schoolType}}} pada semester {{{semester}}}.
 Tujuan Anda adalah menjelaskan konsep dan membimbing mereka menuju jawaban, bukan hanya memberikan jawaban langsung.
 Pengguna akan memberikan mata pelajaran dan sebuah pertanyaan.
 
