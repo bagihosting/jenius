@@ -69,7 +69,6 @@ export default function AdminUsersPage() {
         setIsLoading(true);
         try {
             const loadedUsers: User[] = [];
-            // Add default admin if not present
             if (!localStorage.getItem('user_admin@ayahjenius.com')) {
                 localStorage.setItem('user_admin@ayahjenius.com', JSON.stringify({
                     name: 'Admin Jenius',
@@ -116,7 +115,7 @@ export default function AdminUsersPage() {
                 name: user.name,
                 email: user.email,
                 schoolType: user.schoolType,
-                password: '', // Don't show password for existing user
+                password: '', 
                 badge: user.badge || '',
             });
         } else {
@@ -140,18 +139,18 @@ export default function AdminUsersPage() {
             return;
         }
 
-        if (currentUser) { // Editing user
+        if (currentUser) { 
             if (currentUser.email !== email && localStorage.getItem(`user_${email}`)) {
                 toast({ title: "Error", description: "Pengguna dengan email baru ini sudah ada.", variant: "destructive" });
                 return;
             }
-            if (currentUser.email !== email) { // Email changed, need to update key
+            if (currentUser.email !== email) { 
                  localStorage.removeItem(`user_${currentUser.email}`);
             }
             const updatedUser: User = { ...currentUser, name, email, schoolType, badge: badge || undefined };
             localStorage.setItem(`user_${email}`, JSON.stringify(updatedUser));
             toast({ title: "Sukses", description: "Data pengguna berhasil diperbarui." });
-        } else { // Adding new user
+        } else { 
             if (!password) {
                  toast({ title: "Error", description: "Password harus diisi untuk pengguna baru.", variant: "destructive" });
                  return;
@@ -162,7 +161,7 @@ export default function AdminUsersPage() {
             }
             const newUser: User = { name, email, schoolType, role: 'user', badge: badge || undefined };
              localStorage.setItem(`user_${email}`, JSON.stringify(newUser));
-             localStorage.setItem(`pwd_${email}`, password); // Simulate password storage (unsafe, for demo only)
+             localStorage.setItem(`pwd_${email}`, password);
              toast({ title: "Sukses", description: "Pengguna baru berhasil ditambahkan." });
         }
         
@@ -176,7 +175,7 @@ export default function AdminUsersPage() {
             return;
         }
         localStorage.removeItem(`user_${email}`);
-        localStorage.removeItem(`pwd_${email}`); // Also remove simulated password
+        localStorage.removeItem(`pwd_${email}`);
         toast({ title: "Sukses", description: "Pengguna berhasil dihapus." });
         loadUsers();
     };
