@@ -69,6 +69,7 @@ export default function AdminUsersPage() {
         setIsLoading(true);
         try {
             const loadedUsers: User[] = [];
+            // Ensure admin user exists for login
             if (!localStorage.getItem('user_admin@ayahjenius.com')) {
                 localStorage.setItem('user_admin@ayahjenius.com', JSON.stringify({
                     name: 'Admin Jenius',
@@ -76,7 +77,19 @@ export default function AdminUsersPage() {
                     schoolType: 'SDN',
                     role: 'admin'
                 }));
+                localStorage.setItem('pwd_admin@ayahjenius.com', 'admin123');
             }
+             // Ensure default user exists for login
+            if (!localStorage.getItem('user_user@ayahjenius.com')) {
+                localStorage.setItem('user_user@ayahjenius.com', JSON.stringify({
+                    name: 'Pengguna Jenius',
+                    email: 'user@ayahjenius.com',
+                    schoolType: 'SDN',
+                    role: 'user'
+                }));
+                 localStorage.setItem('pwd_user@ayahjenius.com', 'password123');
+            }
+
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
                 if (key && key.startsWith('user_')) {
@@ -149,6 +162,9 @@ export default function AdminUsersPage() {
             }
             const updatedUser: User = { ...currentUser, name, email, schoolType, badge: badge || undefined };
             localStorage.setItem(`user_${email}`, JSON.stringify(updatedUser));
+            if (password) {
+                localStorage.setItem(`pwd_${email}`, password);
+            }
             toast({ title: "Sukses", description: "Data pengguna berhasil diperbarui." });
         } else { 
             if (!password) {
@@ -337,5 +353,3 @@ export default function AdminUsersPage() {
         </Card>
     );
 }
-
-    

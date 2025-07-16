@@ -40,21 +40,38 @@ export default function RegisterPage() {
     }
     setIsLoading(true);
 
-    // Placeholder for actual registration logic
     setTimeout(() => {
+      try {
+        if (localStorage.getItem(`user_${email}`)) {
+          toast({
+            title: "Pendaftaran Gagal",
+            description: "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+
         const newUser = { name, email, schoolType, role: 'user' };
-        // In a real app, this would be an API call.
-        // Here, we simulate by storing in localStorage.
-        // We use a unique key for each user to simulate a user list for the admin.
         localStorage.setItem(`user_${email}`, JSON.stringify(newUser));
+        localStorage.setItem(`pwd_${email}`, password);
 
         console.log('Registering user:', newUser);
         toast({
-            title: "Pendaftaran Berhasil (Simulasi)",
+            title: "Pendaftaran Berhasil",
             description: "Akun Anda telah dibuat. Silakan masuk.",
         });
         router.push('/login');
+      } catch (error) {
+        toast({
+            title: "Terjadi Kesalahan",
+            description: "Tidak dapat memproses pendaftaran saat ini.",
+            variant: "destructive",
+        });
+        console.error("Registration error:", error);
+      } finally {
         setIsLoading(false);
+      }
     }, 1500);
   };
 
@@ -104,7 +121,7 @@ export default function RegisterPage() {
               </div>
                <div className="space-y-2">
                 <Label htmlFor="school-type">Jenis Sekolah Anda</Label>
-                <Select value={schoolType} onValueChange={setSchoolType}>
+                <Select value={schoolType} onValueChange={setSchoolType} required>
                   <SelectTrigger id="school-type" className="w-full">
                     <SelectValue placeholder="Pilih jenis sekolah..." />
                   </SelectTrigger>

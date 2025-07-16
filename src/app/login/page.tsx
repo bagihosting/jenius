@@ -12,39 +12,50 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import type { User } from '@/lib/types';
 
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
   const { toast } = useToast();
-  const [email, setEmail] = useState('user@ayahjenius.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Placeholder for actual login logic
     setTimeout(() => {
-        // Admin user simulation
-        if (email === 'admin@ayahjenius.com' && password === 'admin123') {
-            toast({
-                title: "Login Admin Berhasil",
-                description: "Anda akan diarahkan ke dasbor admin.",
-            });
-            login({ name: 'Admin Jenius', email, schoolType: 'SDN', role: 'admin' });
-            return;
-        }
+        try {
+            const storedPassword = localStorage.getItem(`pwd_${email}`);
+            const storedUser = localStorage.getItem(`user_${email}`);
 
-        toast({
-            title: "Login Berhasil (Simulasi)",
-            description: "Anda akan diarahkan untuk memilih kelas.",
-        });
-        // For simulation, we'll use a mock user object with a school type
-        login({ name: 'Pengguna Jenius', email, schoolType: 'SDN', role: 'user' });
-        setIsLoading(false);
-    }, 1500);
+            if (storedUser && storedPassword === password) {
+                const userData: User = JSON.parse(storedUser);
+                toast({
+                    title: "Login Berhasil",
+                    description: `Selamat datang kembali, ${userData.name}!`,
+                });
+                login(userData);
+            } else {
+                 toast({
+                    title: "Login Gagal",
+                    description: "Email atau password salah. Silakan coba lagi.",
+                    variant: "destructive",
+                });
+            }
+        } catch (error) {
+             toast({
+                title: "Terjadi Kesalahan",
+                description: "Tidak dapat memproses login saat ini.",
+                variant: "destructive",
+            });
+            console.error("Login error:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, 1000);
   };
 
   return (
