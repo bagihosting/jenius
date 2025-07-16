@@ -72,12 +72,7 @@ export default function AdminUsersPage() {
         try {
             const userKeysStr = localStorage.getItem('user_keys');
             if (!userKeysStr) {
-                const initialUsers = [];
-                const adminData = localStorage.getItem('user_admin');
-                const userData = localStorage.getItem('user_user');
-                if (adminData) initialUsers.push(JSON.parse(adminData));
-                if (userData) initialUsers.push(JSON.parse(userData));
-                setUsers(initialUsers);
+                setUsers([]);
                 return;
             }
 
@@ -386,3 +381,5 @@ export default function AdminUsersPage() {
         </Card>
     );
 }
+
+    
