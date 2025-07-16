@@ -183,7 +183,20 @@ function InnerUserForm({ form, onSubmit, editingUser, children }: UserFormProps)
                           <FormItem>
                             <FormLabel>Username Roblox (Opsional)</FormLabel>
                             <FormControl>
-                                <Input placeholder="Username Roblox" {...field} />
+                                <Input placeholder="Username Roblox" {...field} value={field.value || ''} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                       <FormField
+                        control={form.control}
+                        name="badge"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Lencana (Opsional)</FormLabel>
+                            <FormControl>
+                                <Input placeholder="contoh: star_student" {...field} value={field.value || ''} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>

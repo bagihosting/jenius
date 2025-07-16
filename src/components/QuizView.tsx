@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, BrainCircuit, PartyPopper, RotateCw, CheckCircle2, XCircle, Gift } from 'lucide-react';
+import { Loader2, BrainCircuit, PartyPopper, RotateCw, CheckCircle2, XCircle } from 'lucide-react';
 import type { QuizData, SchoolInfo } from '@/lib/types';
 import { Progress } from './ui/progress';
 import { useProgress } from '@/hooks/use-progress';
@@ -122,8 +122,8 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
         const bonusGiven = updateBonus();
         if(bonusGiven) {
             toast({
-                title: 'Selamat! Kamu Hebat!',
-                description: `Kamu mendapatkan ${ROBUX_PER_QUIZ} Poin Bonus Robux karena telah menyelesaikan kuis ini!`,
+                title: 'Bonus Didapatkan!',
+                description: `Selamat! Kamu mendapatkan ${ROBUX_PER_QUIZ} Poin Bonus karena nilaimu di atas 60!`,
             });
         }
     }

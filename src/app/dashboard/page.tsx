@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Edit, MessageSquareQuote, Loader2, Gift } from 'lucide-react';
 import Link from 'next/link';
-import type { SchoolType, Grade, Semester } from '@/lib/types';
+import type { Grade, Semester } from '@/lib/types';
 import { useAuth } from '@/context/AuthContext';
 import { LeaderboardCard } from '@/components/LeaderboardCard';
 
@@ -27,7 +27,6 @@ function DashboardContent() {
     }, [loading, user, router]);
 
     useEffect(() => {
-        // This effect runs on the client after hydration
         if (typeof window !== 'undefined') {
             const bonusStatus = localStorage.getItem('bonus_feature_status');
             setIsBonusFeatureActive(bonusStatus === 'active');
@@ -90,7 +89,7 @@ function DashboardContent() {
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <Card className="bg-secondary/50">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">

@@ -22,12 +22,10 @@ const initializeDefaultUsers = () => {
         if (typeof window === 'undefined') return;
         const adminExists = localStorage.getItem('user_admin');
         if (!adminExists) {
-            const adminUser: User = {
+            const adminUser: Omit<User, 'schoolType' | 'schoolName'> & { role: 'admin' } = {
                 name: 'Admin Jenius',
                 username: 'admin',
                 email: 'admin@ayahjenius.com',
-                schoolType: 'SDN', // Admin doesn't have a school, but type needs a value
-                schoolName: 'Kantor Pusat Ayah Jenius',
                 role: 'admin',
                 badge: 'super_admin'
             };
@@ -97,30 +95,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(prevUser => {
         if (!prevUser) return null;
         
-        const oldUsername = prevUser.username;
-        const newUsername = userData.username || oldUsername;
-        
         const newUser: User = { ...prevUser, ...userData };
-        if (userData.password) {
-            delete newUser.password;
+        if (newUser.password) {
+          delete newUser.password;
         }
 
-        // Update main user session
         localStorage.setItem('user', JSON.stringify(newUser));
-        
-        // Update the specific user entry
-        localStorage.setItem(`user_${newUsername}`, JSON.stringify(newUser));
+        localStorage.setItem(`user_${newUser.username}`, JSON.stringify(newUser));
 
-        // If username changed, clean up old entry
-        if (oldUsername !== newUsername) {
-            localStorage.removeItem(`user_${oldUsername}`);
+        if (prevUser.username !== newUser.username) {
+            localStorage.removeItem(`user_${prevUser.username}`);
         }
         
-        if (userData.password && userData.email) {
-             localStorage.setItem(`pwd_${userData.email}`, userData.password);
-             if (prevUser.email !== userData.email) {
-                localStorage.removeItem(`pwd_${prevUser.email}`);
-             }
+        if (prevUser.email !== newUser.email) {
+            localStorage.removeItem(`pwd_${prevUser.email}`);
         }
 
         return newUser;

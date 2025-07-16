@@ -2,19 +2,19 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, FileText } from "lucide-react";
+import { Users, Gift } from "lucide-react";
 import React from "react";
 
 export default function AdminDashboardPage() {
-    // In a real app, these numbers would come from a database.
     const [userCount, setUserCount] = React.useState(0);
-    const [contentCount, setContentCount] = React.useState(0);
+    const [isBonusFeatureActive, setIsBonusFeatureActive] = React.useState(false);
 
     React.useEffect(() => {
-        // Simulate fetching data
         const allUsers = Object.keys(localStorage).filter(k => k.startsWith('user_'));
         setUserCount(allUsers.length);
-        setContentCount(1); // For the homepage content
+
+        const bonusStatus = localStorage.getItem('bonus_feature_status');
+        setIsBonusFeatureActive(bonusStatus === 'active');
     }, []);
 
     return (
@@ -43,14 +43,16 @@ export default function AdminDashboardPage() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">
-                            Konten Dikelola
+                            Status Fitur Bonus
                         </CardTitle>
-                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <Gift className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{contentCount}</div>
+                        <div className={`text-2xl font-bold ${isBonusFeatureActive ? 'text-green-500' : 'text-red-500'}`}>
+                            {isBonusFeatureActive ? 'Aktif' : 'Nonaktif'}
+                        </div>
                         <p className="text-xs text-muted-foreground">
-                            Halaman depan (Segera hadir)
+                            Status fitur bonus Robux
                         </p>
                     </CardContent>
                 </Card>
@@ -60,7 +62,7 @@ export default function AdminDashboardPage() {
                     <CardHeader>
                         <CardTitle>Selamat Datang, Admin!</CardTitle>
                         <CardDescription>
-                            Gunakan menu di sebelah kiri untuk menavigasi panel admin. Anda dapat mengelola pengguna dan segera dapat mengedit konten halaman depan.
+                            Gunakan menu di sebelah kiri untuk menavigasi panel admin. Anda dapat mengelola pengguna dan fitur bonus Robux.
                         </CardDescription>
                     </CardHeader>
                 </Card>

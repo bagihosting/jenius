@@ -5,11 +5,10 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/context/AuthContext';
 import { User } from '@/lib/types';
-import { Loader2, Trophy, User as UserIcon, Star, Award, Brain } from 'lucide-react';
+import { Loader2, User as UserIcon, Star, Award, Brain, Trophy } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
 import { Badge } from './ui/badge';
 import { ScrollArea } from './ui/scroll-area';
-import { getIcon } from '@/lib/icons';
 
 interface StudentRank {
   user: User;
@@ -52,9 +51,13 @@ export function LeaderboardCard() {
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key && key.startsWith('user_')) {
-          const userData = JSON.parse(localStorage.getItem(key) || '{}');
-          if (userData.role === 'user') {
-            allUsers.push(userData);
+          try {
+            const userData = JSON.parse(localStorage.getItem(key) || '{}');
+            if (userData.role === 'user') {
+              allUsers.push(userData);
+            }
+          } catch (e) {
+            console.error(`Error parsing user data from localStorage for key: ${key}`, e);
           }
         }
       }
@@ -64,6 +67,7 @@ export function LeaderboardCard() {
           user,
           averageScore: getAverageScore(user.email),
         }))
+        .filter(student => student.averageScore > 0) // Only show users who have scores
         .sort((a, b) => b.averageScore - a.averageScore);
       
       setLeaderboard(rankedUsers);
@@ -71,13 +75,11 @@ export function LeaderboardCard() {
     }
   }, []);
 
-  const TrophyIcon = getIcon('Trophy');
-
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-headline">
-          <TrophyIcon className="text-yellow-500" />
+          <Trophy className="text-yellow-500" />
           Peringkat Kelas
         </CardTitle>
         <CardDescription>Siswa dengan skor rata-rata tertinggi.</CardDescription>
@@ -96,11 +98,13 @@ export function LeaderboardCard() {
             <ul className="space-y-4">
               {leaderboard.map((student, index) => {
                 const studentBadge = student.user.badge && badgeMap[student.user.badge];
+                const isCurrentUser = student.user.username === currentUser?.username;
+                
                 return (
                     <li
                     key={student.user.username}
                     className={`flex items-center gap-3 p-2 rounded-md ${
-                        student.user.username === currentUser?.username ? 'bg-primary/10 border border-primary/20' : ''
+                        isCurrentUser ? 'bg-primary/10 border border-primary/20' : ''
                     }`}
                     >
                     <div className="flex items-center gap-3 w-16 shrink-0">

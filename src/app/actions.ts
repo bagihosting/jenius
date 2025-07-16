@@ -24,7 +24,7 @@ export async function generateQuizAction(
     console.error(e);
     const errorMessage = e instanceof Error ? e.message : 'Terjadi kesalahan tidak dikenal.';
     return {
-      error: `Maaf, Ayah Jenius gagal membuat kuis. Silakan coba lagi. (${errorMessage})`,
+      error: `Maaf, Ayah Jenius gagal membuat kuis saat ini. Coba lagi nanti. (${errorMessage})`,
     };
   }
 }
@@ -62,7 +62,7 @@ export async function generateExamAction(
     console.error(e);
     const errorMessage = e instanceof Error ? e.message : 'Terjadi kesalahan tidak dikenal.';
     return {
-      error: `Maaf, Ayah Jenius sedang kesulitan membuat soal ujian harian. Silakan coba lagi. (${errorMessage})`,
+      error: `Maaf, Ayah Jenius sedang kesulitan membuat soal ujian harian. Silakan coba lagi nanti. (${errorMessage})`,
     };
   }
 }

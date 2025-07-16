@@ -34,10 +34,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/types';
-import { Loader2, PlusCircle, Search, Trash, Edit, User as UserIcon, School, Mail, KeyRound } from 'lucide-react';
+import { Loader2, PlusCircle, Search, Trash, Edit, User as UserIcon, School, Mail } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
 import { UserForm, userSchema } from '@/components/UserForm';
@@ -224,7 +224,6 @@ export default function UsersPage() {
             </div>
           </div>
 
-          {/* Table View for Desktop */}
           <div className="overflow-x-auto hidden md:block">
             <Table>
               <TableHeader>
@@ -295,7 +294,6 @@ export default function UsersPage() {
             </Table>
           </div>
 
-          {/* Card View for Mobile */}
           <div className="md:hidden">
              {isLoading ? (
                 <div className="text-center p-8">
