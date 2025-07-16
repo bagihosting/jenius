@@ -1,3 +1,4 @@
+
 'use server';
 
 import { generateQuiz as generateQuizFlow } from '@/ai/flows/generate-quiz';
@@ -8,7 +9,21 @@ import type { QuizData, ExamData } from '@/lib/types';
 import type { HomeworkHelpInput, HomeworkHelpOutput } from '@/ai/flows/homework-helper-flow';
 import type { GenerateQuizInput } from '@/ai/flows/generate-quiz';
 import type { GenerateExamInput } from '@/ai/flows/generate-exam-flow';
-import type { FindSchoolsInput, FindSchoolsOutput } from '@/ai/flows/find-schools-flow';
+import { z } from 'zod';
+
+
+// Schema for findSchools moved here
+export const FindSchoolsInputSchema = z.object({
+  city: z.string().describe('The city in Indonesia to search for schools in.'),
+  schoolType: z.enum(['SDN', 'SDIT', 'MI']).describe('The type of school.'),
+});
+export type FindSchoolsInput = z.infer<typeof FindSchoolsInputSchema>;
+
+export const FindSchoolsOutputSchema = z.object({
+  schools: z.array(z.string()).describe('A list of school names.'),
+});
+export type FindSchoolsOutput = z.infer<typeof FindSchoolsOutputSchema>;
+
 
 export async function generateQuizAction(
   input: GenerateQuizInput

@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -10,23 +11,15 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import type { FindSchoolsInput, FindSchoolsOutput } from '@/app/actions';
+import { FindSchoolsInputSchema, FindSchoolsOutputSchema } from '@/app/actions';
+
 
 const schoolTypeMap = {
   'SDN': 'Sekolah Dasar Negeri (SDN)',
   'SDIT': 'Sekolah Dasar Islam Terpadu (SDIT)',
   'MI': 'Madrasah Ibtidaiyah (MI)',
 };
-
-export const FindSchoolsInputSchema = z.object({
-  city: z.string().describe('The city in Indonesia to search for schools in.'),
-  schoolType: z.enum(['SDN', 'SDIT', 'MI']).describe('The type of school.'),
-});
-export type FindSchoolsInput = z.infer<typeof FindSchoolsInputSchema>;
-
-const FindSchoolsOutputSchema = z.object({
-  schools: z.array(z.string()).describe('A list of school names.'),
-});
-export type FindSchoolsOutput = z.infer<typeof FindSchoolsOutputSchema>;
 
 export async function findSchools(input: FindSchoolsInput): Promise<FindSchoolsOutput> {
   return findSchoolsFlow(input);
