@@ -48,8 +48,8 @@ export default function Home() {
       <main className="flex-grow flex items-center justify-center p-4">
         <Card className="w-full max-w-md shadow-lg">
           <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-headline">Selamat Datang di Ayah Jenius!</CardTitle>
-            <CardDescription className="text-lg">Platform belajar cerdas untuk siswa SD & MI.</CardDescription>
+            <CardTitle className="text-3xl font-headline">Selamat Datang!</CardTitle>
+            <CardDescription className="text-lg">Pilih sekolah, kelas, dan semester untuk memulai.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
