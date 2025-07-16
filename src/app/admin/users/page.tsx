@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
@@ -26,7 +26,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -68,12 +67,142 @@ const userSchema = z.object({
   name: z.string().min(2, { message: 'Nama harus memiliki setidaknya 2 karakter.' }),
   username: z.string().min(3, { message: 'Username harus memiliki setidaknya 3 karakter.' }).regex(/^[a-z0-9_]+$/, 'Username hanya boleh berisi huruf kecil, angka, dan garis bawah (_).'),
   email: z.string().email({ message: 'Email tidak valid.' }),
-  schoolType: z.enum(['SDN', 'SDIT', 'MI'], { required_error: 'Jenis sekolah harus dipilih.' }),
+  schoolType: z.enum(['SDN', 'SDIT', 'MI']),
   role: z.enum(['user', 'admin'], { required_error: 'Peran harus dipilih.' }),
   password: z.string().optional(),
 });
 
 type UserFormValues = z.infer<typeof userSchema>;
+
+function UserForm({ form, onSubmit, editingUser }: { form: any, onSubmit: (data: UserFormValues) => void, editingUser: User | null }) {
+    const role = useWatch({
+        control: form.control,
+        name: 'role',
+    });
+
+    useEffect(() => {
+        if (role === 'admin') {
+            form.setValue('schoolType', 'SDN');
+        }
+    }, [role, form]);
+
+    return (
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nama Lengkap</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Nama Lengkap" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Username</FormLabel>
+                    <FormControl>
+                      <Input placeholder="username" {...field} disabled={!!editingUser} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="email@contoh.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder={editingUser ? 'Isi untuk mengubah' : 'Password baru'} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="role"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Peran</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Pilih peran" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="user">User</SelectItem>
+                            <SelectItem value="admin">Admin</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {role === 'user' && (
+                    <FormField
+                      control={form.control}
+                      name="schoolType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Jenis Sekolah</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Pilih jenis sekolah" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {schoolTypes.map((s) => (
+                                <SelectItem key={s.id} value={s.id}>
+                                  {s.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button type="button" variant="outline">Batal</Button>
+                </DialogClose>
+                <Button type="submit" disabled={form.formState.isSubmitting}>
+                  {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Simpan
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+    )
+}
 
 export default function UsersPage() {
   const { toast } = useToast();
@@ -106,7 +235,6 @@ export default function UsersPage() {
         const key = localStorage.key(i);
         if (key && key.startsWith('user_')) {
           const userData = JSON.parse(localStorage.getItem(key) || '{}');
-          // Basic validation to ensure it's a user object
           if (userData.username && userData.email) {
             loadedUsers.push(userData);
           }
@@ -131,7 +259,6 @@ export default function UsersPage() {
   const handleAddNew = () => {
     setEditingUser(null);
     form.reset({ name: '', username: '', email: '', schoolType: 'SDN', role: 'user', password: '' });
-    form.setValue('password', '');
     setIsDialogOpen(true);
   };
 
@@ -155,7 +282,7 @@ export default function UsersPage() {
       localStorage.removeItem(`user_${userToDelete.username}`);
       localStorage.removeItem(`pwd_${userToDelete.email}`);
       toast({ title: 'Pengguna Dihapus', description: `Pengguna ${userToDelete.name} telah berhasil dihapus.` });
-      loadUsers(); // Refresh user list
+      loadUsers(); 
     } catch (error) {
       toast({ title: 'Gagal Menghapus', variant: 'destructive' });
     } finally {
@@ -168,14 +295,15 @@ export default function UsersPage() {
     try {
       if (editingUser) {
         // Edit existing user
-        const updatedUser: User = { ...editingUser, ...data };
+        const updatedUser: User = { ...editingUser, ...data, password: '' };
+        delete updatedUser.password;
+        
         localStorage.setItem(`user_${updatedUser.username}`, JSON.stringify(updatedUser));
         
         if (data.password) {
             localStorage.setItem(`pwd_${updatedUser.email}`, data.password);
         }
         
-        // If username or email changed, handle the old keys
         if (editingUser.username !== data.username) {
             localStorage.removeItem(`user_${editingUser.username}`);
         }
@@ -198,10 +326,10 @@ export default function UsersPage() {
             form.setError('username', { type: 'manual', message: 'Username ini sudah digunakan.' });
             return;
         }
-        const newUser: User = { ...data, password: '' }; // Don't store password in user object
+        const newUser: User = { ...data, password: '' }; 
         delete newUser.password;
 
-        localStorage.setItem(`user_${data.username}`, JSON.stringify(newUser));
+        localStorage.setItem(`user_${newUser.username}`, JSON.stringify(newUser));
         localStorage.setItem(`pwd_${data.email}`, data.password);
         toast({ title: 'Pengguna Ditambahkan', description: `${data.name} telah berhasil ditambahkan.` });
       }
@@ -282,7 +410,7 @@ export default function UsersPage() {
                         </div>
                       </TableCell>
                       <TableCell>{user.email}</TableCell>
-                      <TableCell>{user.schoolType}</TableCell>
+                      <TableCell>{user.role === 'admin' ? 'N/A' : user.schoolType}</TableCell>
                       <TableCell>
                         <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
                           {user.role}
@@ -320,118 +448,7 @@ export default function UsersPage() {
               {editingUser ? `Mengubah data untuk ${editingUser.name}.` : 'Isi detail di bawah ini untuk membuat akun baru.'}
             </DialogDescription>
           </DialogHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nama Lengkap</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Nama Lengkap" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Username</FormLabel>
-                    <FormControl>
-                      <Input placeholder="username" {...field} disabled={!!editingUser} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="email@contoh.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder={editingUser ? 'Isi untuk mengubah' : 'Password baru'} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="schoolType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Jenis Sekolah</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Pilih jenis sekolah" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {schoolTypes.map((s) => (
-                              <SelectItem key={s.id} value={s.id}>
-                                {s.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="role"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Peran</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Pilih peran" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="user">User</SelectItem>
-                            <SelectItem value="admin">Admin</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-              </div>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button type="button" variant="outline">Batal</Button>
-                </DialogClose>
-                <Button type="submit" disabled={form.formState.isSubmitting}>
-                  {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Simpan
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
+          <UserForm form={form} onSubmit={onSubmit} editingUser={editingUser} />
         </DialogContent>
       </Dialog>
 
