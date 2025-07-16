@@ -19,12 +19,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const initializeDefaultUsers = () => {
     try {
-        const userKeysStr = localStorage.getItem('user_keys');
-        let userKeys: string[] = userKeysStr ? JSON.parse(userKeysStr) : [];
-        let updated = false;
-
-        // Ensure admin user exists
-        if (!localStorage.getItem('user_admin')) {
+        if (typeof window === 'undefined') return;
+        const adminExists = localStorage.getItem('user_admin');
+        if (!adminExists) {
             const adminUser: User = {
                 name: 'Admin Jenius',
                 username: 'admin',
@@ -35,12 +32,10 @@ const initializeDefaultUsers = () => {
             };
             localStorage.setItem('user_admin', JSON.stringify(adminUser));
             localStorage.setItem('pwd_admin@ayahjenius.com', 'admin123');
-            userKeys.push('user_admin');
-            updated = true;
         }
 
-        // Ensure default user exists
-        if (!localStorage.getItem('user_user')) {
+        const userExists = localStorage.getItem('user_user');
+        if (!userExists) {
              const defaultUser: User = {
                 name: 'Pengguna Jenius',
                 username: 'user',
@@ -51,12 +46,6 @@ const initializeDefaultUsers = () => {
             };
             localStorage.setItem('user_user', JSON.stringify(defaultUser));
             localStorage.setItem('pwd_user@ayahjenius.com', 'password123');
-            userKeys.push('user_user');
-            updated = true;
-        }
-
-        if (updated) {
-            localStorage.setItem('user_keys', JSON.stringify(Array.from(new Set(userKeys))));
         }
     } catch (error) {
         console.error("Failed to initialize default users in localStorage", error);
@@ -109,7 +98,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const oldUsername = prevUser.username;
         const newUsername = userData.username || oldUsername;
         
-        const newUser = { ...prevUser, ...userData };
+        const newUser: User = { ...prevUser, ...userData };
+        if (userData.password) {
+            delete newUser.password;
+        }
 
         // Update main user session
         localStorage.setItem('user', JSON.stringify(newUser));
@@ -117,18 +109,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Update the specific user entry
         localStorage.setItem(`user_${newUsername}`, JSON.stringify(newUser));
 
-        // If username changed, clean up old entry and update keys
+        // If username changed, clean up old entry
         if (oldUsername !== newUsername) {
             localStorage.removeItem(`user_${oldUsername}`);
-            try {
-                const userKeysStr = localStorage.getItem('user_keys') || '[]';
-                let userKeys: string[] = JSON.parse(userKeysStr);
-                userKeys = userKeys.filter(key => key !== `user_${oldUsername}`);
-                userKeys.push(`user_${newUsername}`);
-                localStorage.setItem('user_keys', JSON.stringify(Array.from(new Set(userKeys))));
-            } catch (e) {
-                console.error("Failed to update user_keys on username change", e);
-            }
+        }
+        
+        if (userData.password && userData.email) {
+             localStorage.setItem(`pwd_${userData.email}`, userData.password);
+             if (prevUser.email !== userData.email) {
+                localStorage.removeItem(`pwd_${prevUser.email}`);
+             }
         }
 
         return newUser;
