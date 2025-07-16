@@ -3,9 +3,6 @@
 
 import { Award, Brain, Star, Gem, Rocket, LucideProps } from 'lucide-react';
 import type { User } from './types';
-import { db } from './firebase';
-import { doc, updateDoc, increment } from 'firebase/firestore';
-
 
 export interface BadgeTier {
   level: number;
@@ -42,11 +39,8 @@ const getUserStats = (user: User | null): UserStats => {
   if (!user) {
     return { accountAgeInDays: 0, quizCompletions: 0 };
   }
-
-  const registeredAt = user.registeredAt ? new Date(user.registeredAt) : new Date();
-  const now = new Date();
-  const accountAgeInDays = Math.floor((now.getTime() - registeredAt.getTime()) / (1000 * 60 * 60 * 24));
-  
+  // With no database, we return mock data.
+  const accountAgeInDays = 1;
   const quizCompletions = user.quizCompletions || 0;
 
   return { accountAgeInDays, quizCompletions };
@@ -56,28 +50,12 @@ export const getBadgeInfo = (user: User | null): BadgeTier => {
   if (!user) return defaultBadge;
   if (user.role === 'admin') return adminBadge;
 
-  const { accountAgeInDays, quizCompletions } = getUserStats(user);
-
-  // Find the highest tier the user qualifies for
-  let currentTier = defaultBadge;
-  for (const tier of badgeTiers) {
-    if (accountAgeInDays >= tier.minDays && quizCompletions >= tier.minQuizzes) {
-      currentTier = tier;
-    }
-  }
-
-  return currentTier;
+  // Mock implementation since there is no persistent user data
+  return badgeTiers[0];
 };
 
 export const recordQuizCompletion = async (user: User | null) => {
     if (!user) return;
-
-    const userDocRef = doc(db, "users", user.uid);
-    try {
-        await updateDoc(userDocRef, {
-            quizCompletions: increment(1)
-        });
-    } catch(error) {
-        console.error("Failed to record quiz completion in Firestore: ", error);
-    }
+    // This is now a placeholder function since there's no database.
+    console.warn("Quiz completion recorded in local state, but not persisted (no database).");
 }

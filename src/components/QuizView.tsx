@@ -16,8 +16,6 @@ import { useProgress } from '@/hooks/use-progress';
 import { Confetti } from './Confetti';
 import { useAuth } from '@/context/AuthContext';
 import { getBadgeInfo, recordQuizCompletion } from '@/lib/badgeService';
-import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 
 type QuizState = 'idle' | 'loading' | 'active' | 'finished';
 
@@ -98,25 +96,9 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
 
   const updateBonus = async (bonusPerQuiz: number) => {
     if (!user) return false;
-
-    const gradeNum = parseInt(schoolInfo.grade, 10);
-    if (gradeNum > 6) return false; // Bonus only for grades 1-6
-
-    try {
-      const configDoc = await getDoc(doc(db, "appConfig", "bonusFeature"));
-      if (!configDoc.exists() || !configDoc.data().isActive) {
-        return false;
-      }
-      
-      const userDocRef = doc(db, "users", user.uid);
-      await updateDoc(userDocRef, {
-        bonusPoints: increment(bonusPerQuiz)
-      });
-      return true;
-    } catch(e) {
-        console.error("Failed to update bonus points", e);
-        return false;
-    }
+    // This is now a placeholder function since there's no database.
+    console.warn(`Bonus of ${bonusPerQuiz} would be applied, but not persisted (no database).`);
+    return true;
   };
 
   const handleSubmitQuiz = async () => {

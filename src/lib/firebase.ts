@@ -1,7 +1,6 @@
 
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 
@@ -17,10 +16,11 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
-// Initialize Firebase
+// This file is now primarily for reference, as initialization is handled
+// directly within AuthContext.tsx to prevent race conditions.
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 
-export { app, db, auth, storage };
+// Firestore (db) has been removed.
+export { app, auth, storage };

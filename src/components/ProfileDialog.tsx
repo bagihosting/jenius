@@ -65,7 +65,7 @@ async function compressAndConvertToWebP(file: File): Promise<string> {
 
 export function ProfileDialog({ children }: { children: React.ReactNode }) {
   const { user, updateUser, updatePassword: updateAuthPassword, logout } = useAuth();
-  const [name, setName] = useState(user?.name || '');
+  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isEditingName, setIsEditingName] = useState(false);
@@ -204,8 +204,8 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
 
                 <p className="text-muted-foreground">{user.email}</p>
                 <div className="flex items-center gap-2 mt-2">
-                    {user.role === 'user' && (
-                        <Badge variant="secondary">{user.schoolName || user.schoolType}</Badge>
+                    {(user.role === 'user' || user.role === 'mahasiswa') && (
+                        <Badge variant="secondary">{user.schoolName || user.major || user.schoolType}</Badge>
                     )}
                     {badgeInfo && UserBadge && (
                        <div className="flex items-center gap-1.5 p-1 px-2 bg-secondary rounded-full">

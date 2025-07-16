@@ -13,9 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { SchoolType, User } from '@/lib/types';
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore"; 
-import { db } from '@/lib/firebase';
+import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 
 const schoolTypes: { id: SchoolType; name: string }[] = [
   { id: 'SDN', name: 'SD Negeri' },
@@ -38,12 +36,6 @@ export default function RegisterPage() {
   const [schoolName, setSchoolName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const isUsernameTaken = async (username: string) => {
-    const docRef = doc(db, "usernames", username);
-    const docSnap = await getDoc(docRef);
-    return docSnap.exists();
-  }
-
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!schoolType || !schoolName) {
@@ -56,39 +48,20 @@ export default function RegisterPage() {
     }
     setIsLoading(true);
 
-    if (await isUsernameTaken(username)) {
-      toast({
-        title: "Pendaftaran Gagal",
-        description: "Username ini sudah terdaftar. Silakan gunakan username lain.",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-      return;
-    }
-
     try {
       const auth = getAuth();
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const authUser = userCredential.user;
-
-      const newUser: User = { 
-          uid: authUser.uid,
-          name, 
-          username, 
-          email, 
-          schoolType, 
-          schoolName, 
-          role: 'user',
-          registeredAt: new Date().toISOString(),
-          quizCompletions: 0,
-          bonusPoints: 0,
-      };
-
-      // Create user document in Firestore
-      await setDoc(doc(db, "users", authUser.uid), newUser);
       
-      // Reserve username
-      await setDoc(doc(db, "usernames", username), { uid: authUser.uid });
+      await updateProfile(userCredential.user, { displayName: name });
+      
+      const userData = {
+        username,
+        schoolType,
+        schoolName,
+        role: 'user',
+      };
+      // Since there's no database, we store non-auth info in localStorage
+      localStorage.setItem(`user_${userCredential.user.uid}`, JSON.stringify(userData));
 
       toast({
           title: "Pendaftaran Berhasil",

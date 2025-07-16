@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, Save, Gift, CheckCircle, Info } from 'lucide-react';
+import { ArrowLeft, Loader2, Save, Gift, Info, DatabaseZap } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -15,10 +15,6 @@ import { useAuth } from '@/context/AuthContext';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import type { Grade } from '@/lib/types';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-
-const ROBUX_PER_QUIZ = 0.01;
 
 export default function BonusPage() {
   const router = useRouter();
@@ -44,20 +40,7 @@ export default function BonusPage() {
       router.push('/login');
       return;
     }
-    
-    if (grade) {
-        const gradeNum = parseInt(grade, 10);
-        if (gradeNum > 6) {
-            toast({
-                title: "Fitur Tidak Tersedia",
-                description: "Bonus Robux hanya tersedia untuk siswa kelas 1-6.",
-                variant: "destructive"
-            });
-            router.push(backlink);
-        }
-    }
-
-  }, [loading, isAuthenticated, router, grade, backlink, toast]);
+  }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
     if (user) {
@@ -70,10 +53,11 @@ export default function BonusPage() {
     if (!user) return;
     setIsSaving(true);
     try {
+        // This only updates the local state now.
         await updateUser({ robloxUsername: robloxUsername });
         toast({
             title: 'Berhasil!',
-            description: 'Username Roblox kamu telah disimpan.',
+            description: 'Username Roblox kamu telah disimpan (secara lokal).',
         });
     } catch(e) {
         toast({
@@ -85,10 +69,6 @@ export default function BonusPage() {
         setIsSaving(false);
     }
   };
-  
-  const quizzesCompleted = Math.floor(bonusPoints / ROBUX_PER_QUIZ);
-  const quizzesNeededForNextPoint = 1;
-  const progressPercentage = (quizzesCompleted % quizzesNeededForNextPoint) * 100;
 
   if (!isClient || loading || !isAuthenticated) {
     return (
@@ -109,52 +89,24 @@ export default function BonusPage() {
           </Link>
           <Card>
             <CardHeader className="text-center">
-              <div className="mx-auto bg-accent/20 p-4 rounded-full w-fit mb-4">
-                <Gift className="h-12 w-12 text-accent"/>
+              <div className="mx-auto bg-destructive/20 p-4 rounded-full w-fit mb-4">
+                <DatabaseZap className="h-12 w-12 text-destructive"/>
               </div>
-              <CardTitle className="text-3xl font-headline">Bonus Robux</CardTitle>
-              <CardDescription>Selesaikan lebih banyak kuis untuk mendapatkan poin dan menukarkannya dengan Robux!</CardDescription>
+              <CardTitle className="text-3xl font-headline">Fitur Bonus Dinonaktifkan</CardTitle>
+              <CardDescription>Database tidak terhubung, sehingga poin bonus tidak dapat disimpan.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-8">
                 <div className="text-center">
                     <Label className="text-muted-foreground">Total Poin Bonus Kamu</Label>
-                    <p className="text-5xl font-bold text-primary">{bonusPoints.toFixed(4)}</p>
-                    <p className="text-sm text-muted-foreground mt-1">Setara dengan {quizzesCompleted} kuis selesai</p>
-                </div>
-
-                <div className="space-y-4">
-                    <h3 className="text-center font-semibold">Kemajuan Bonus Berikutnya</h3>
-                     <Progress value={progressPercentage} className="h-4"/>
-                     <p className="text-center text-sm text-muted-foreground">
-                        Selesaikan {quizzesNeededForNextPoint - (quizzesCompleted % quizzesNeededForNextPoint)} kuis lagi untuk mendapatkan {ROBUX_PER_QUIZ} poin berikutnya.
-                    </p>
-                </div>
-
-                <div className="space-y-4">
-                    <Label htmlFor="roblox-username" className="text-lg font-semibold">Username Roblox Kamu</Label>
-                    <p className="text-sm text-muted-foreground">
-                        Masukkan username Roblox kamu di sini agar admin dapat mengirimkan hadiah Robux.
-                    </p>
-                    <div className="flex items-center gap-2">
-                        <Input
-                            id="roblox-username"
-                            placeholder="Masukkan username Roblox..."
-                            value={robloxUsername}
-                            onChange={(e) => setRobloxUsername(e.target.value)}
-                        />
-                        <Button onClick={handleSaveUsername} disabled={isSaving}>
-                            {isSaving ? <Loader2 className="animate-spin" /> : <Save />}
-                            Simpan
-                        </Button>
-                    </div>
+                    <p className="text-5xl font-bold text-muted-foreground">{bonusPoints.toFixed(4)}</p>
                 </div>
             </CardContent>
             <CardFooter>
-                 <Alert>
+                 <Alert variant="destructive">
                     <Info className="h-4 w-4" />
-                    <AlertTitle>Bagaimana Cara Kerjanya?</AlertTitle>
+                    <AlertTitle>Fungsionalitas Terbatas</AlertTitle>
                     <AlertDescription>
-                        Setiap kali kamu menyelesaikan kuis dengan nilai di atas 60, kamu akan mendapatkan 0.01 Poin Bonus. Kumpulkan poin sebanyak-banyaknya! Admin akan memeriksa bonusmu secara berkala untuk mengirimkan Robux.
+                        Fitur bonus memerlukan koneksi database untuk melacak dan menyimpan poin Anda. Fungsi ini akan dinonaktifkan sampai database terhubung kembali.
                     </AlertDescription>
                 </Alert>
             </CardFooter>

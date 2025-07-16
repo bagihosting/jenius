@@ -1,26 +1,18 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { doc, updateDoc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 
 type ProgressData = {
   [subjectId: string]: number;
 };
 
+// NOTE: This hook now uses component state and is NOT persisted.
+// Progress will be lost on page refresh.
 export const useProgress = () => {
   const { user } = useAuth();
   const [progress, setProgress] = useState<ProgressData>({});
-
-  useEffect(() => {
-    if (user && user.progress) {
-      setProgress(user.progress);
-    } else {
-      setProgress({});
-    }
-  }, [user]);
 
   const updateSubjectProgress = useCallback(async (subjectId: string, score: number) => {
     if (!user) return;
@@ -31,16 +23,8 @@ export const useProgress = () => {
     };
     
     setProgress(newProgress);
+    console.warn("Progress saved to local state, but not persisted (no database).");
 
-    try {
-      const userDocRef = doc(db, 'users', user.uid);
-      await updateDoc(userDocRef, {
-        progress: newProgress
-      });
-    } catch (error) {
-      console.error('Failed to save progress to Firestore', error);
-      // Optionally revert state or show toast
-    }
   }, [user, progress]);
 
   const getSubjectProgress = useCallback(

@@ -4,18 +4,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Gift, Loader2 } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import { db } from '@/lib/firebase';
-import { collection, getDocs, doc, getDoc, query, where } from 'firebase/firestore';
 
-
-async function getFeatureStatus(): Promise<boolean> {
-    const docRef = doc(db, "appConfig", "bonusFeature");
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-        return docSnap.data().isActive;
-    }
-    return false;
-}
 
 export default function AdminDashboardPage() {
     const [userCount, setUserCount] = useState(0);
@@ -29,22 +18,10 @@ export default function AdminDashboardPage() {
 
     useEffect(() => {
         if (isClient) {
-            const fetchData = async () => {
-                setIsLoading(true);
-                try {
-                    const usersCollection = collection(db, 'users');
-                    const userSnapshot = await getDocs(usersCollection);
-                    setUserCount(userSnapshot.size);
-
-                    const bonusStatus = await getFeatureStatus();
-                    setIsBonusFeatureActive(bonusStatus);
-                } catch (error) {
-                    console.error("Error fetching dashboard data:", error);
-                } finally {
-                    setIsLoading(false);
-                }
-            };
-            fetchData();
+            // Mock data since database is removed
+            setUserCount(0);
+            setIsBonusFeatureActive(false);
+            setIsLoading(false);
         }
     }, [isClient]);
 
@@ -75,7 +52,7 @@ export default function AdminDashboardPage() {
                     <CardContent>
                         <div className="text-2xl font-bold">{userCount}</div>
                         <p className="text-xs text-muted-foreground">
-                            Jumlah akun terdaftar
+                            Database tidak terhubung
                         </p>
                     </CardContent>
                 </Card>
@@ -91,7 +68,7 @@ export default function AdminDashboardPage() {
                             {isBonusFeatureActive ? 'Aktif' : 'Nonaktif'}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                            Status fitur bonus Robux
+                             Database tidak terhubung
                         </p>
                     </CardContent>
                 </Card>
@@ -101,7 +78,7 @@ export default function AdminDashboardPage() {
                     <CardHeader>
                         <CardTitle>Selamat Datang, Admin!</CardTitle>
                         <CardDescription>
-                            Gunakan menu di sebelah kiri untuk menavigasi panel admin. Anda dapat mengelola pengguna dan fitur bonus Robux.
+                           Manajemen pengguna dan bonus dinonaktifkan karena database telah dihapus.
                         </CardDescription>
                     </CardHeader>
                 </Card>

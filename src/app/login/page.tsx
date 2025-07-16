@@ -28,15 +28,14 @@ export default function LoginPage() {
 
     try {
       const auth = getAuth();
-      // Firebase Auth uses email for login, not username
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       // The onAuthStateChanged listener in AuthContext will handle the redirect.
       toast({
           title: "Login Berhasil",
           description: `Selamat datang kembali!`,
       });
-      // No need to call login() here, it's handled by the listener
-    } catch (error: any) { {
+       // The onAuthStateChanged listener in AuthContext will redirect.
+    } catch (error: any) {
       console.error("Login error:", error);
       let errorMessage = "Terjadi kesalahan saat login.";
       switch (error.code) {
@@ -56,7 +55,6 @@ export default function LoginPage() {
           description: errorMessage,
           variant: "destructive",
       });
-    }
     } finally {
         setIsLoading(false);
     }
