@@ -96,6 +96,7 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
   };
 
   const handleAvatarClick = () => {
+    if (isUploading) return;
     fileInputRef.current?.click();
   };
 
@@ -144,7 +145,14 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
   const userBadge = user.badge && badgeMap[user.badge];
 
   return (
-    <Dialog onOpenChange={() => setIsEditingName(false)}>
+    <Dialog onOpenChange={(open) => {
+        if (open) {
+            setName(user.name);
+            setPassword('');
+            setConfirmPassword('');
+        }
+        setIsEditingName(false);
+    }}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-md p-0">
         <DialogHeader className="p-6 pb-2">
@@ -167,6 +175,7 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
                 onChange={handleFileChange}
                 className="hidden"
                 accept="image/png, image/jpeg, image/gif"
+                disabled={isUploading}
               />
             </div>
             
@@ -174,7 +183,7 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
                 {isEditingName ? (
                    <div className="w-full flex items-center gap-2">
                       <Input value={name} onChange={(e) => setName(e.target.value)} className="text-xl h-10" />
-                      <Button onClick={handleSaveName} size="sm"><Save /></Button>
+                      <Button onClick={handleSaveName} size="icon"><Save className="h-4 w-4"/></Button>
                    </div>
                 ) : (
                    <h2 className="text-2xl font-bold cursor-pointer" onClick={() => setIsEditingName(true)}>
