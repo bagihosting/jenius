@@ -51,4 +51,5 @@ export interface User {
   role: 'user' | 'admin';
   badge?: string;
   photoUrl?: string;
+  password?: string;
 }

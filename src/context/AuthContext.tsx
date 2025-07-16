@@ -11,6 +11,7 @@ interface AuthContextType {
   login: (userData: User) => void;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
+  updatePassword: (password: string) => void;
   loading: boolean;
 }
 
@@ -132,10 +133,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const updatePassword = (password: string) => {
+    if (!user) return;
+    try {
+        localStorage.setItem(`pwd_${user.email}`, password);
+    } catch (e) {
+        console.error("Failed to update password in localStorage", e);
+    }
+  };
+
   const isAuthenticated = !!user;
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, updateUser, loading }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, updateUser, updatePassword, loading }}>
       {children}
     </AuthContext.Provider>
   );

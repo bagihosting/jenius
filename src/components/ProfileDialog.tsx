@@ -7,8 +7,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogClose,
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from './ui/button';
@@ -17,8 +15,9 @@ import { Label } from './ui/label';
 import { useAuth } from '@/context/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Badge } from './ui/badge';
-import { Award, Brain, Camera, LogOut, Star, User as UserIcon } from 'lucide-react';
+import { Award, Brain, Camera, KeyRound, LogOut, Star, User as UserIcon, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Separator } from './ui/separator';
 
 const schoolTypeMap: { [key: string]: string } = {
   SDN: 'SD Negeri',
@@ -74,9 +73,11 @@ async function compressAndConvertToWebP(file: File): Promise<string> {
 
 
 export function ProfileDialog({ children }: { children: React.ReactNode }) {
-  const { user, updateUser, logout } = useAuth();
+  const { user, updateUser, updatePassword, logout } = useAuth();
   const [name, setName] = useState(user?.name || '');
-  const [isEditing, setIsEditing] = useState(false);
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isEditingName, setIsEditingName] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -89,7 +90,7 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
       return;
     }
     updateUser({ name });
-    setIsEditing(false);
+    setIsEditingName(false);
     toast({ title: 'Nama berhasil diperbarui!', variant: 'default' });
   };
 
@@ -119,66 +120,106 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const handlePasswordChange = () => {
+    if (password === '' || confirmPassword === '') {
+        toast({ title: 'Password tidak boleh kosong', variant: 'destructive' });
+        return;
+    }
+    if (password !== confirmPassword) {
+        toast({ title: 'Password tidak cocok', description: 'Pastikan konfirmasi password sama.', variant: 'destructive' });
+        return;
+    }
+    if (password.length < 6) {
+        toast({ title: 'Password terlalu pendek', description: 'Password minimal harus 6 karakter.', variant: 'destructive' });
+        return;
+    }
+    
+    updatePassword(password);
+    toast({ title: 'Password berhasil diperbarui!', variant: 'default' });
+    setPassword('');
+    setConfirmPassword('');
+  };
+
   const userBadge = user.badge && badgeMap[user.badge];
 
   return (
-    <Dialog onOpenChange={() => setIsEditing(false)}>
+    <Dialog onOpenChange={() => setIsEditingName(false)}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl font-headline">Profil Saya</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col items-center gap-4 py-4">
-          <div className="relative group">
-            <Avatar className="h-24 w-24 cursor-pointer" onClick={handleAvatarClick}>
-              <AvatarImage src={user.photoUrl} alt={user.name} />
-              <AvatarFallback className="text-4xl">
-                 <UserIcon className="h-12 w-12"/>
-              </AvatarFallback>
-            </Avatar>
-            <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-               {isUploading ? <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Camera className="h-8 w-8 text-white" />}
-            </div>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              className="hidden"
-              accept="image/png, image/jpeg, image/gif"
-            />
-          </div>
-          
-          {isEditing ? (
-             <div className="w-full flex items-center gap-2">
-                <Input value={name} onChange={(e) => setName(e.target.value)} className="text-xl text-center" />
-                <Button onClick={handleSaveName} size="sm">Simpan</Button>
-                <Button onClick={() => setIsEditing(false)} size="sm" variant="ghost">Batal</Button>
-             </div>
-          ) : (
-             <div className="flex items-center gap-2">
-                <h2 className="text-2xl font-bold cursor-pointer" onClick={() => setIsEditing(true)}>
+        <div className="space-y-4 py-4">
+            <div className="flex flex-col items-center gap-4">
+              <div className="relative group">
+                <Avatar className="h-24 w-24 cursor-pointer" onClick={handleAvatarClick}>
+                  <AvatarImage src={user.photoUrl} alt={user.name} />
+                  <AvatarFallback className="text-4xl">
+                     <UserIcon className="h-12 w-12"/>
+                  </AvatarFallback>
+                </Avatar>
+                <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                   {isUploading ? <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Camera className="h-8 w-8 text-white" />}
+                </div>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  className="hidden"
+                  accept="image/png, image/jpeg, image/gif"
+                />
+              </div>
+              
+              {isEditingName ? (
+                 <div className="w-full flex items-center gap-2">
+                    <Input value={name} onChange={(e) => setName(e.target.value)} className="text-xl text-center" />
+                    <Button onClick={handleSaveName} size="sm"><Save className="mr-2"/> Simpan</Button>
+                    <Button onClick={() => setIsEditingName(false)} size="sm" variant="ghost">Batal</Button>
+                 </div>
+              ) : (
+                 <h2 className="text-2xl font-bold cursor-pointer" onClick={() => setIsEditingName(true)}>
                     {user.name}
                 </h2>
-             </div>
-          )}
+              )}
 
-          <p className="text-muted-foreground">{user.email}</p>
-          <Badge variant="secondary">{schoolTypeMap[user.schoolType] || user.schoolType}</Badge>
+              <p className="text-muted-foreground">{user.email}</p>
+              <Badge variant="secondary">{schoolTypeMap[user.schoolType] || user.schoolType}</Badge>
 
-          {userBadge && (
-             <div className="flex items-center gap-2 p-2 bg-secondary rounded-md mt-2">
-                <userBadge.icon className={`h-6 w-6 ${userBadge.color}`} />
-                <span className="font-semibold text-secondary-foreground">{userBadge.label}</span>
-             </div>
-          )}
+              {userBadge && (
+                 <div className="flex items-center gap-2 p-2 bg-secondary rounded-md mt-2">
+                    <userBadge.icon className={`h-6 w-6 ${userBadge.color}`} />
+                    <span className="font-semibold text-secondary-foreground">{userBadge.label}</span>
+                 </div>
+              )}
+            </div>
 
+            <Separator />
+            
+            <div className="space-y-4 px-4">
+                <h3 className="font-semibold text-center">Ubah Password</h3>
+                <div className="space-y-2">
+                    <Label htmlFor="new-password">Password Baru</Label>
+                    <Input id="new-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Minimal 6 karakter" />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="confirm-password">Konfirmasi Password Baru</Label>
+                    <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Ulangi password baru" />
+                </div>
+                <Button onClick={handlePasswordChange} className="w-full">
+                    <KeyRound className="mr-2"/>
+                    Ubah Password
+                </Button>
+            </div>
+            
+            <Separator />
+
+            <div className="px-4">
+                <Button onClick={logout} variant="destructive" className="w-full">
+                    <LogOut className="mr-2" />
+                    Keluar
+                </Button>
+            </div>
         </div>
-        <DialogFooter className="!justify-center">
-            <Button onClick={logout} variant="destructive" className="w-full">
-                <LogOut className="mr-2" />
-                Keluar
-            </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
