@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, PartyPopper, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, PartyPopper, CheckCircle, MessageSquare } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -13,10 +13,10 @@ import { useAuth } from '@/context/AuthContext';
 
 export default function UpgradePage() {
   const router = useRouter();
-  const { user, loading, isAuthenticated, updateUser } = useAuth();
+  const { user, loading, isAuthenticated } = useAuth();
   const { toast } = useToast();
   
-  const [isUpgrading, setIsUpgrading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {
@@ -28,28 +28,26 @@ export default function UpgradePage() {
     }
   }, [loading, isAuthenticated, router, user]);
   
-  const handleUpgrade = () => {
+  const handleUpgradeRequest = () => {
     if (!user) return;
-    setIsUpgrading(true);
+    setIsSubmitting(true);
 
-    setTimeout(() => {
-        try {
-            updateUser({ role: 'mahasiswa' });
-            toast({
-                title: 'Upgrade Berhasil!',
-                description: 'Selamat, Anda kini memiliki akun Mahasiswa.',
-            });
-            setIsSuccess(true);
-        } catch (e) {
-            toast({
-                title: 'Upgrade Gagal',
-                description: 'Terjadi kesalahan saat melakukan upgrade. Silakan coba lagi.',
-                variant: 'destructive',
-            });
-        } finally {
-            setIsUpgrading(false);
-        }
-    }, 1500); // Simulate payment processing time
+    const adminPhoneNumber = '6285156125329';
+    const message = encodeURIComponent(
+        `Halo Admin Ayah Jenius,\n\nSaya ingin mengajukan permintaan upgrade akun ke Mahasiswa.\n\nNama: ${user.name}\nEmail: ${user.email}\nUsername: ${user.username}\n\nMohon informasinya untuk proses donasi. Terima kasih!`
+    );
+    
+    const whatsappUrl = `https://wa.me/${adminPhoneNumber}?text=${message}`;
+
+    // Redirect to WhatsApp
+    window.location.href = whatsappUrl;
+    
+    toast({
+        title: 'Mengarahkan ke WhatsApp',
+        description: 'Anda akan diarahkan ke WhatsApp untuk mengirim permintaan upgrade kepada admin.',
+    });
+
+    // We don't need to set isSubmitting to false, as the user is leaving the page.
   };
 
   if (loading || !isAuthenticated) {
@@ -74,14 +72,14 @@ export default function UpgradePage() {
               <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
                   {isSuccess ? <CheckCircle className="h-12 w-12 text-green-500" /> : <PartyPopper className="h-12 w-12 text-primary" />}
               </div>
-              <CardTitle className="text-3xl font-headline">{isSuccess ? 'Upgrade Berhasil!' : 'Upgrade ke Akun Mahasiswa'}</CardTitle>
+              <CardTitle className="text-3xl font-headline">{isSuccess ? 'Akun Anda Sudah Mahasiswa!' : 'Upgrade ke Akun Mahasiswa'}</CardTitle>
               <CardDescription className="text-lg">
-                {isSuccess ? 'Akun Anda telah berhasil di-upgrade.' : 'Buka akses ke fitur-fitur canggih untuk jenjang kuliah.'}
+                {isSuccess ? 'Anda sudah dapat menggunakan fitur Asisten Akademik AI.' : 'Buka akses ke fitur canggih untuk jenjang kuliah dengan berdonasi.'}
               </CardDescription>
             </CardHeader>
             {isSuccess ? (
                 <CardContent className="text-center space-y-4">
-                    <p>Selamat datang di tingkat selanjutnya! Anda kini dapat menggunakan Asisten Akademik AI dan fitur-fitur eksklusif lainnya.</p>
+                    <p>Selamat datang di tingkat selanjutnya! Lanjutkan ke dasbor untuk mulai menggunakan fitur eksklusif Anda.</p>
                     <Button asChild size="lg">
                         <Link href="/mahasiswa/dashboard">Lanjutkan ke Dasbor Mahasiswa</Link>
                     </Button>
@@ -105,13 +103,18 @@ export default function UpgradePage() {
             )}
             {!isSuccess && (
                 <CardFooter>
-                  <Button className="w-full" size="lg" onClick={handleUpgrade} disabled={isUpgrading}>
-                    {isUpgrading ? (
+                  <Button className="w-full" size="lg" onClick={handleUpgradeRequest} disabled={isSubmitting}>
+                    {isSubmitting ? (
                         <>
                             <Loader2 className="animate-spin mr-2"/> 
-                            Memproses Donasi...
+                            Mempersiapkan...
                         </>
-                    ) : 'Donasi dan Upgrade Sekarang'}
+                    ) : (
+                        <>
+                            <MessageSquare className="mr-2" />
+                            Ajukan Upgrade via WhatsApp
+                        </>
+                    )}
                   </Button>
                 </CardFooter>
             )}
