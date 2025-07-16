@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { SchoolType } from '@/lib/types';
+import type { SchoolType, User } from '@/lib/types';
 
 const schoolTypes: { id: SchoolType; name: string }[] = [
   { id: 'SDN', name: 'SD Negeri' },
@@ -71,9 +71,18 @@ export default function RegisterPage() {
             }
         }
 
-        const newUser = { name, username, email, schoolType, schoolName, role: 'user' as 'user' };
+        const newUser: Omit<User, 'password'> = { 
+            name, 
+            username, 
+            email, 
+            schoolType, 
+            schoolName, 
+            role: 'user',
+            registeredAt: new Date().toISOString(), // Add registration date
+        };
         localStorage.setItem(`user_${username}`, JSON.stringify(newUser));
         localStorage.setItem(`pwd_${email}`, password);
+        localStorage.setItem(`quizCompletions_${email}`, '0'); // Initialize quiz count
 
         console.log('Registering user:', newUser);
         toast({

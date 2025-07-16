@@ -5,21 +5,17 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/context/AuthContext';
 import { User } from '@/lib/types';
-import { Loader2, User as UserIcon, Star, Award, Brain, Trophy } from 'lucide-react';
+import { Loader2, User as UserIcon, Trophy } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
 import { Badge } from './ui/badge';
 import { ScrollArea } from './ui/scroll-area';
+import { getBadgeInfo, BadgeTier } from '@/lib/badgeService';
 
 interface StudentRank {
   user: User;
   averageScore: number;
+  badge: BadgeTier;
 }
-
-const badgeMap: { [key: string]: { icon: React.ElementType; color: string } } = {
-  star_student: { icon: Star, color: 'text-yellow-500' },
-  diligent_learner: { icon: Award, color: 'text-blue-500' },
-  little_genius: { icon: Brain, color: 'text-purple-500' },
-};
 
 const getAverageScore = (userEmail: string): number => {
   if (typeof window === 'undefined') return 0;
@@ -66,6 +62,7 @@ export function LeaderboardCard() {
         .map(user => ({
           user,
           averageScore: getAverageScore(user.email),
+          badge: getBadgeInfo(user),
         }))
         .filter(student => student.averageScore > 0) // Only show users who have scores
         .sort((a, b) => b.averageScore - a.averageScore);
@@ -97,7 +94,7 @@ export function LeaderboardCard() {
           <ScrollArea className="h-80 pr-4">
             <ul className="space-y-4">
               {leaderboard.map((student, index) => {
-                const studentBadge = student.user.badge && badgeMap[student.user.badge];
+                const BadgeIcon = student.badge.icon;
                 const isCurrentUser = student.user.username === currentUser?.username;
                 
                 return (
@@ -119,7 +116,7 @@ export function LeaderboardCard() {
                     <div className="flex-grow flex justify-between items-start gap-2">
                         <div>
                             <div className="flex items-center gap-1.5">
-                                {studentBadge && <studentBadge.icon className={`w-4 h-4 ${studentBadge.color}`} />}
+                                <BadgeIcon className={`w-4 h-4 ${student.badge.color}`} />
                                 <p className="font-semibold leading-tight">{student.user.name}</p>
                             </div>
                             <p className="text-xs text-muted-foreground ml-[1.125rem]">{student.user.schoolName}</p>

@@ -65,4 +65,5 @@ export interface User {
   photoUrl?: string;
   password?: string;
   robloxUsername?: string;
+  registeredAt?: string; // ISO string date
 }

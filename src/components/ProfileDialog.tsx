@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -15,17 +15,11 @@ import { Label } from './ui/label';
 import { useAuth } from '@/context/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Badge } from './ui/badge';
-import { Award, Brain, Camera, KeyRound, LogOut, Star, User as UserIcon, Save, Loader2, Crown } from 'lucide-react';
+import { Camera, KeyRound, LogOut, User as UserIcon, Save, Loader2, Crown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from './ui/separator';
 import { ScrollArea } from './ui/scroll-area';
-
-const badgeMap: { [key: string]: { icon: React.ElementType; label: string; color: string } } = {
-  star_student: { icon: Star, label: 'Bintang Kelas', color: 'text-yellow-500' },
-  diligent_learner: { icon: Award, label: 'Rajin Belajar', color: 'text-blue-500' },
-  little_genius: { icon: Brain, label: 'Jenius Cilik', color: 'text-purple-500' },
-  super_admin: { icon: Crown, label: 'Super Admin', color: 'text-amber-500' },
-};
+import { getBadgeInfo, BadgeTier } from '@/lib/badgeService';
 
 async function compressAndConvertToWebP(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -77,6 +71,13 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const [badgeInfo, setBadgeInfo] = useState<BadgeTier | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      setBadgeInfo(getBadgeInfo(user));
+    }
+  }, [user]);
 
   if (!user) return null;
 
@@ -137,7 +138,7 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
     setConfirmPassword('');
   };
 
-  const userBadge = user.badge && badgeMap[user.badge];
+  const UserBadge = badgeInfo ? badgeInfo.icon : null;
 
   return (
     <Dialog onOpenChange={(open) => {
@@ -145,6 +146,7 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
             setName(user.name);
             setPassword('');
             setConfirmPassword('');
+            setBadgeInfo(getBadgeInfo(user));
         }
         setIsEditingName(false);
     }}>
@@ -191,10 +193,10 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
                     {user.role === 'user' && (
                         <Badge variant="secondary">{user.schoolName || user.schoolType}</Badge>
                     )}
-                    {userBadge && (
+                    {badgeInfo && UserBadge && (
                        <div className="flex items-center gap-1.5 p-1 px-2 bg-secondary rounded-full">
-                          <userBadge.icon className={`h-4 w-4 ${userBadge.color}`} />
-                          <span className="font-semibold text-secondary-foreground text-xs">{userBadge.label}</span>
+                          <UserBadge className={`h-4 w-4 ${badgeInfo.color}`} />
+                          <span className="font-semibold text-secondary-foreground text-xs">{badgeInfo.name}</span>
                        </div>
                     )}
                 </div>

@@ -14,16 +14,9 @@ import { Progress } from './ui/progress';
 import { useProgress } from '@/hooks/use-progress';
 import { Confetti } from './Confetti';
 import { useAuth } from '@/context/AuthContext';
+import { getBadgeInfo, recordQuizCompletion } from '@/lib/badgeService';
 
 type QuizState = 'idle' | 'loading' | 'active' | 'finished';
-
-const ROBUX_PER_QUIZ = 0.01;
-
-interface QuizViewProps {
-  subjectId: string;
-  subjectContent: string;
-  schoolInfo: SchoolInfo;
-}
 
 export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProps) {
   const { user } = useAuth();
@@ -90,7 +83,7 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
     }
   };
 
-  const updateBonus = () => {
+  const updateBonus = (bonusPerQuiz: number) => {
     if (typeof window === 'undefined' || !user) return false;
     const bonusStatus = localStorage.getItem('bonus_feature_status');
     if (bonusStatus !== 'active') return false;
@@ -98,7 +91,7 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
     const bonusKey = `bonus_points_${user.email}`;
     try {
         const currentBonus = parseFloat(localStorage.getItem(bonusKey) || '0');
-        const newBonus = currentBonus + ROBUX_PER_QUIZ;
+        const newBonus = currentBonus + bonusPerQuiz;
         localStorage.setItem(bonusKey, newBonus.toFixed(4));
         return true;
     } catch(e) {
@@ -117,13 +110,15 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
     const percentageScore = Math.round((finalScore / quiz!.quiz.length) * 100);
     setScore(percentageScore);
     updateSubjectProgress(subjectId, percentageScore);
+    recordQuizCompletion(user);
     
     if (percentageScore >= 60) {
-        const bonusGiven = updateBonus();
+        const badgeInfo = getBadgeInfo(user);
+        const bonusGiven = updateBonus(badgeInfo.bonusPerQuiz);
         if(bonusGiven) {
             toast({
-                title: 'Bonus Didapatkan!',
-                description: `Selamat! Kamu mendapatkan ${ROBUX_PER_QUIZ} Poin Bonus karena nilaimu di atas 60!`,
+                title: 'Selamat, Kamu Hebat!',
+                description: `Kamu mendapatkan ${badgeInfo.bonusPerQuiz} Poin Bonus karena nilaimu di atas 60! Terus tingkatkan!`,
             });
         }
     }
