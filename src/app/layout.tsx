@@ -31,7 +31,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className={`${poppins.variable} ${lato.variable}`}>
       <head>
       </head>
-      <body className="font-body antialiased">
+      <body className="font-body antialiased" suppressHydrationWarning>
         <AuthProvider>
             <Suspense>
             {children}
