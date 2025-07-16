@@ -34,6 +34,10 @@ const schoolTypeMap: { [key: string]: string } = {
   MI: 'Madrasah Ibtidaiyah'
 };
 
+function renderMarkdownBold(text: string) {
+    return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+}
+
 export default function ExamPracticePage() {
   const searchParams = useSearchParams();
   const schoolType = (searchParams.get('school') as SchoolType) || 'SDN';
@@ -158,7 +162,7 @@ export default function ExamPracticePage() {
                                       <Badge variant="secondary">Jawaban Benar: {q.correctAnswer}</Badge>
                                        <div className="p-3 bg-primary/10 rounded-md border border-primary/20 text-sm">
                                           <p className="font-bold flex items-center gap-1.5 text-primary/80"><Sparkles size={14}/> Penjelasan Jenius</p>
-                                          <p className="text-muted-foreground mt-1">{q.explanation}</p>
+                                          <p className="text-muted-foreground mt-1" dangerouslySetInnerHTML={{ __html: renderMarkdownBold(q.explanation) }}></p>
                                       </div>
                                     </div>
                                   </li>
