@@ -65,7 +65,9 @@ const schoolTypeMap: Record<SchoolType, string> = {
   SMP: 'SMP',
   MTs: 'Madrasah Tsanawiyah',
   SMA: 'SMA',
-  MA: 'Madrasah Aliyah'
+  MA: 'Madrasah Aliyah',
+  AKADEMI: 'Akademi',
+  UNIVERSITAS: 'Universitas'
 };
 
 const semesterTopics: Record<Semester, Record<string, string[]>> = {
@@ -189,8 +191,3 @@ export const getSubjectById = (school: SchoolType, grade: Grade, semester: Semes
   const subjects = getSubjects(school, grade, semester);
   return subjects.find((subject) => subject.id === id);
 };
-
-export const isValidSubject = (school: SchoolType, grade: Grade, semester: Semester, subjectId: string): boolean => {
-    const subjects = getSubjects(school, grade, semester);
-    return subjects.some(subject => subject.id === subjectId);
-}
