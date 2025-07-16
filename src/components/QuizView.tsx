@@ -18,6 +18,12 @@ import { getBadgeInfo, recordQuizCompletion } from '@/lib/badgeService';
 
 type QuizState = 'idle' | 'loading' | 'active' | 'finished';
 
+interface QuizViewProps {
+  subjectId: string;
+  subjectContent: string;
+  schoolInfo: SchoolInfo;
+}
+
 export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProps) {
   const { user } = useAuth();
   const [quizState, setQuizState] = useState<QuizState>('idle');
@@ -43,7 +49,7 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
     
     const result = await generateQuizAction({
       subjectContent,
-      numberOfQuestions: 5,
+      numberOfQuestions: 10,
       schoolType: schoolInfo.schoolType,
       grade: schoolInfo.grade,
       semester: schoolInfo.semester,
@@ -117,8 +123,8 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
         const bonusGiven = updateBonus(badgeInfo.bonusPerQuiz);
         if(bonusGiven) {
             toast({
-                title: 'Selamat, Kamu Hebat!',
-                description: `Kamu mendapatkan ${badgeInfo.bonusPerQuiz} Poin Bonus karena nilaimu di atas 60! Terus tingkatkan!`,
+                title: `Selamat, Kamu Dapat Bonus!`,
+                description: `Kamu mendapatkan ${badgeInfo.bonusPerQuiz} Poin Bonus Robux karena nilaimu hebat! Terus tingkatkan!`,
             });
         }
     }

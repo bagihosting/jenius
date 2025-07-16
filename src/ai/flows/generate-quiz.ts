@@ -19,7 +19,7 @@ const GenerateQuizInputSchema = z.object({
     .describe('The content of the subject to generate the quiz from.'),
   numberOfQuestions: z
     .number()
-    .default(5)
+    .default(10)
     .describe('The number of questions to generate for the quiz.'),
   schoolType: z.string().describe('The type of school (e.g., SDN, MI).'),
   grade: z.string().describe('The grade level (e.g., 1, 5).'),
