@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/context/AuthContext';
 import { User } from '@/lib/types';
-import { Loader2, Trophy, User as UserIcon } from 'lucide-react';
+import { Loader2, Trophy, User as UserIcon, Star, Award, Brain } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
 import { Badge } from './ui/badge';
 import { ScrollArea } from './ui/scroll-area';
@@ -15,6 +15,12 @@ interface StudentRank {
   user: User;
   averageScore: number;
 }
+
+const badgeMap: { [key: string]: { icon: React.ElementType; color: string } } = {
+  star_student: { icon: Star, color: 'text-yellow-500' },
+  diligent_learner: { icon: Award, color: 'text-blue-500' },
+  little_genius: { icon: Brain, color: 'text-purple-500' },
+};
 
 const getAverageScore = (userEmail: string): number => {
   if (typeof window === 'undefined') return 0;
@@ -88,31 +94,37 @@ export function LeaderboardCard() {
         ) : (
           <ScrollArea className="h-80 pr-4">
             <ul className="space-y-4">
-              {leaderboard.map((student, index) => (
-                <li
-                  key={student.user.username}
-                  className={`flex items-center gap-3 p-2 rounded-md ${
-                    student.user.username === currentUser?.username ? 'bg-primary/10 border border-primary/20' : ''
-                  }`}
-                >
-                  <div className="flex items-center gap-3 w-16 shrink-0">
-                    <span className="font-bold text-lg w-6 text-center text-muted-foreground">{index + 1}</span>
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src={student.user.photoUrl} alt={student.user.name} />
-                      <AvatarFallback>
-                          <UserIcon className="w-4 h-4"/>
-                      </AvatarFallback>
-                    </Avatar>
-                  </div>
-                  <div className="flex-grow flex justify-between items-start gap-2">
-                    <div>
-                      <p className="font-semibold leading-tight">{student.user.name}</p>
-                      <p className="text-xs text-muted-foreground">{student.user.schoolName}</p>
+              {leaderboard.map((student, index) => {
+                const studentBadge = student.user.badge && badgeMap[student.user.badge];
+                return (
+                    <li
+                    key={student.user.username}
+                    className={`flex items-center gap-3 p-2 rounded-md ${
+                        student.user.username === currentUser?.username ? 'bg-primary/10 border border-primary/20' : ''
+                    }`}
+                    >
+                    <div className="flex items-center gap-3 w-16 shrink-0">
+                        <span className="font-bold text-lg w-6 text-center text-muted-foreground">{index + 1}</span>
+                        <Avatar className="h-9 w-9">
+                        <AvatarImage src={student.user.photoUrl} alt={student.user.name} />
+                        <AvatarFallback>
+                            <UserIcon className="w-4 h-4"/>
+                        </AvatarFallback>
+                        </Avatar>
                     </div>
-                     <Badge variant="secondary" className="font-bold shrink-0">{student.averageScore}%</Badge>
-                  </div>
-                </li>
-              ))}
+                    <div className="flex-grow flex justify-between items-start gap-2">
+                        <div>
+                            <div className="flex items-center gap-1.5">
+                                {studentBadge && <studentBadge.icon className={`w-4 h-4 ${studentBadge.color}`} />}
+                                <p className="font-semibold leading-tight">{student.user.name}</p>
+                            </div>
+                            <p className="text-xs text-muted-foreground ml-[1.125rem]">{student.user.schoolName}</p>
+                        </div>
+                        <Badge variant="secondary" className="font-bold shrink-0">{student.averageScore}%</Badge>
+                    </div>
+                    </li>
+                );
+            })}
             </ul>
           </ScrollArea>
         )}
