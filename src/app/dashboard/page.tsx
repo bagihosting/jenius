@@ -12,6 +12,7 @@ import { ArrowLeft, Edit, MessageSquareQuote, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import type { SchoolType, Grade, Semester } from '@/lib/types';
 import { useAuth } from '@/context/AuthContext';
+import { LeaderboardCard } from '@/components/LeaderboardCard';
 
 function DashboardContent() {
     const router = useRouter();
@@ -80,14 +81,8 @@ function DashboardContent() {
                     </p>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 mb-8">
-                    {subjects.map((subject) => (
-                        <SubjectCard key={subject.id} subject={subject} schoolInfo={schoolInfo} />
-                    ))}
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
-                     <Card className="bg-secondary/50">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <Card className="bg-secondary/50">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <MessageSquareQuote/>
@@ -96,14 +91,14 @@ function DashboardContent() {
                             <CardDescription>Punya PR yang bikin pusing? Tanyakan di sini dan dapatkan penjelasan langkah demi langkah dari Ayah Jenius.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                           <Button asChild>
+                            <Button asChild>
                                 <Link href={`/pr-helper?grade=${grade}&semester=${semester}`}>
                                     Tanya PR
                                 </Link>
-                           </Button>
+                            </Button>
                         </CardContent>
                     </Card>
-                     <Card className="bg-secondary/50">
+                    <Card className="bg-secondary/50">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <Edit />
@@ -113,12 +108,26 @@ function DashboardContent() {
                         </CardHeader>
                         <CardContent>
                             <Button asChild>
-                                 <Link href={`/exam-practice?grade=${grade}&semester=${semester}`}>
+                                    <Link href={`/exam-practice?grade=${grade}&semester=${semester}`}>
                                     Mulai Latihan
                                 </Link>
-                           </Button>
+                            </Button>
                         </CardContent>
                     </Card>
+                </div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="lg:col-span-2">
+                         <h2 className="text-2xl font-bold font-headline mb-4">Pilih Mata Pelajaran</h2>
+                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                            {subjects.map((subject) => (
+                                <SubjectCard key={subject.id} subject={subject} schoolInfo={schoolInfo} />
+                            ))}
+                        </div>
+                    </div>
+                    <div className="lg:col-span-1">
+                        <LeaderboardCard />
+                    </div>
                 </div>
 
             </div>
