@@ -3,22 +3,24 @@
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import type { Subject } from '@/lib/types';
+import type { Subject, SchoolInfo } from '@/lib/types';
 import { useProgress } from '@/hooks/use-progress';
 import { getIcon } from '@/lib/icons';
 
 interface SubjectCardProps {
   subject: Subject;
+  schoolInfo: SchoolInfo;
 }
 
-export function SubjectCard({ subject }: SubjectCardProps) {
+export function SubjectCard({ subject, schoolInfo }: SubjectCardProps) {
   const { getSubjectProgress } = useProgress();
   const progress = getSubjectProgress(subject.id);
 
   const Icon = getIcon(subject.icon);
+  const link = `/subjects/${subject.id}?school=${schoolInfo.schoolType}&grade=${schoolInfo.grade}`;
 
   return (
-    <Link href={`/subjects/${subject.id}`} className="group">
+    <Link href={link} className="group">
       <Card className="h-full flex flex-col justify-between text-center transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1 border-2 border-transparent hover:border-primary">
         <CardHeader className="flex-grow">
           <div className="flex justify-center mb-4">

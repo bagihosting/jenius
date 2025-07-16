@@ -8,14 +8,20 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, BrainCircuit, PartyPopper, RotateCw, CheckCircle2, XCircle } from 'lucide-react';
-import type { QuizData, Question } from '@/lib/types';
+import type { QuizData, SchoolInfo } from '@/lib/types';
 import { Progress } from './ui/progress';
 import { useProgress } from '@/hooks/use-progress';
 import { Confetti } from './Confetti';
 
 type QuizState = 'idle' | 'loading' | 'active' | 'finished';
 
-export function QuizView({ subjectId, subjectContent }: { subjectId: string; subjectContent: string }) {
+interface QuizViewProps {
+  subjectId: string;
+  subjectContent: string;
+  schoolInfo: SchoolInfo;
+}
+
+export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProps) {
   const [quizState, setQuizState] = useState<QuizState>('idle');
   const [quiz, setQuiz] = useState<QuizData | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -26,7 +32,13 @@ export function QuizView({ subjectId, subjectContent }: { subjectId: string; sub
 
   const handleStartQuiz = async () => {
     setQuizState('loading');
-    const result = await generateQuizAction(subjectContent);
+    const result = await generateQuizAction({
+      subjectContent,
+      numberOfQuestions: 5,
+      schoolType: schoolInfo.schoolType,
+      grade: schoolInfo.grade,
+    });
+
     if (result.error) {
       toast({
         title: 'Gagal Membuat Kuis',

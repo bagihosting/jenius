@@ -1,7 +1,7 @@
 'use server';
 
 /**
- * @fileOverview Generates a quiz based on the subject content.
+ * @fileOverview Generates a quiz based on the subject content, grade, and school type.
  *
  * - generateQuiz - A function that handles the quiz generation process.
  * - GenerateQuizInput - The input type for the generateQuiz function.
@@ -10,7 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import type { QuizData } from '@/lib/types';
+import type { QuizData, SchoolType, Grade } from '@/lib/types';
 
 const GenerateQuizInputSchema = z.object({
   subjectContent: z
@@ -20,6 +20,8 @@ const GenerateQuizInputSchema = z.object({
     .number()
     .default(5)
     .describe('The number of questions to generate for the quiz.'),
+  schoolType: z.string().describe('The type of school (e.g., SDN, MI).'),
+  grade: z.string().describe('The grade level (e.g., 1, 5).')
 });
 export type GenerateQuizInput = z.infer<typeof GenerateQuizInputSchema>;
 
@@ -43,7 +45,9 @@ const prompt = ai.definePrompt({
   name: 'generateQuizPrompt',
   input: {schema: GenerateQuizInputSchema},
   output: {schema: GenerateQuizOutputSchema},
-  prompt: `Anda adalah seorang ahli pembuat kuis untuk siswa sekolah dasar. Buatlah kuis berdasarkan konten mata pelajaran yang diberikan. Setiap pertanyaan harus memiliki teks pertanyaan, minimal 3 pilihan jawaban, dan jawaban yang benar. Semua konten harus dalam Bahasa Indonesia.
+  prompt: `Anda adalah seorang ahli pembuat kuis untuk siswa sekolah dasar di Indonesia.
+Buatlah kuis berdasarkan konteks yang diberikan. Pastikan tingkat kesulitan soal sesuai untuk siswa kelas {{{grade}}} di sekolah jenis {{{schoolType}}}.
+Setiap pertanyaan harus memiliki teks pertanyaan, minimal 3 pilihan jawaban, dan jawaban yang benar. Semua konten harus dalam Bahasa Indonesia.
 
 Konten Mata Pelajaran: {{{subjectContent}}}
 Jumlah Pertanyaan: {{{numberOfQuestions}}}

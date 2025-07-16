@@ -1,68 +1,96 @@
-import type { Subject } from './types';
+import type { Subject, SchoolType, Grade } from './types';
+import { getIcon } from './icons';
 
-export const subjects: Subject[] = [
-  {
-    id: 'matematika',
-    title: 'Matematika',
-    icon: 'Calculator',
-    content: `Dalam Kurikulum Merdeka, Matematika kelas 5 mendalami bilangan cacah hingga 1.000.000, operasi hitung pecahan (termasuk desimal dan persen), serta menemukan Faktor Persekutuan Terbesar (FPB) dan Kelipatan Persekutuan Terkecil (KPK). Siswa juga belajar tentang sifat bangun datar dan bangun ruang, serta menghitung volume kubus dan balok.`,
-  },
-  {
-    id: 'ipa',
-    title: 'Ilmu Pengetahuan Alam & Sosial (IPAS)',
-    icon: 'FlaskConical',
-    content: `Dalam Kurikulum Merdeka, IPA dan IPS digabung menjadi IPAS. Siswa kelas 5 akan belajar tentang sifat cahaya dan bunyi, cara kerja organ pernapasan dan peredaran darah manusia, serta ekosistem dan jaring-jaring makanan. Selain itu, mereka akan mempelajari perjuangan pahlawan dalam meraih kemerdekaan dan mengenal keragaman budaya Indonesia.`,
-  },
-  {
-    id: 'ips',
-    title: 'Ilmu Pengetahuan Sosial',
-    icon: 'Globe',
-    content: `Dalam Kurikulum Merdeka, materi IPS kelas 5 terintegrasi dalam IPAS. Siswa mempelajari bagaimana manusia berinteraksi dengan lingkungan sekitarnya, sejarah perjuangan kemerdekaan Indonesia, serta menghargai keragaman budaya sebagai bagian dari identitas bangsa.`,
-  },
-  {
-    id: 'bahasa-indonesia',
-    title: 'Bahasa Indonesia',
-    icon: 'BookOpen',
-    content: `Fokus pelajaran Bahasa Indonesia kelas 5 Kurikulum Merdeka adalah meningkatkan literasi. Siswa berlatih membaca dan memahami teks informatif dan fiksi, menulis berbagai jenis teks seperti narasi dan argumentasi, serta menyajikan informasi secara lisan dengan efektif dan santun.`,
-  },
-  {
-    id: 'bahasa-inggris',
-    title: 'Bahasa Inggris',
-    icon: 'Languages',
-    content: `Bahasa Inggris kelas 5 sesuai Kurikulum Merdeka bertujuan agar siswa mampu mendeskripsikan orang, benda, dan tempat di sekitar mereka. Mereka akan belajar menggunakan "adjectives" dan "prepositions of place" dalam kalimat sederhana untuk berkomunikasi sehari-hari.`,
-  },
-  {
-    id: 'quran-hadis',
-    title: 'Al-Qur\'an Hadis',
-    icon: 'BookCopy',
-    content: `Mata pelajaran Al-Qur'an Hadis kelas 5 MI sesuai kurikulum terbaru menekankan pada pemahaman dan hafalan surat-surat pendek pilihan seperti At-Tin dan Al-Ma'un, serta mengaplikasikan hukum bacaan nun sukun/tanwin dan mim sukun. Siswa juga mempelajari hadis tentang pentingnya persatuan dan menghargai perbedaan.`,
-  },
-  {
-    id: 'akidah-akhlak',
-    title: 'Akidah Akhlak',
-    icon: 'HeartHandshake',
-    content: `Akidah Akhlak kelas 5 MI berfokus pada penguatan iman melalui pemahaman Asmaul Husna (Al-Qawiyy, Al-Qayyum) dan mengenal kitab-kitab Allah. Siswa juga dibimbing untuk menerapkan akhlak terpuji seperti tanggung jawab, adil, dan berbaik sangka, serta menjauhi akhlak tercela.`,
-  },
-  {
-    id: 'fikih',
-    title: 'Fikih',
-    icon: 'Scale',
-    content: `Pelajaran Fikih di kelas 5 MI membahas secara lebih rinci tentang ketentuan zakat, infak, dan sedekah sebagai bentuk kepedulian sosial. Siswa juga akan mempelajari tata cara ibadah kurban dan akikah, serta hikmah di baliknya.`,
-  },
-  {
-    id: 'sejarah-kebudayaan-islam',
-    title: 'Sejarah Kebudayaan Islam',
-    icon: 'Landmark',
-    content: `Sejarah Kebudayaan Islam (SKI) kelas 5 MI mengajak siswa meneladani ketabahan Nabi Muhammad SAW dan para sahabat dalam menghadapi kesulitan di awal dakwah Islam. Materi juga mencakup kisah hijrah ke Habasyah dan Madinah sebagai peristiwa penting dalam sejarah Islam.`,
-  },
-  {
-    id: 'bahasa-arab',
-    title: 'Bahasa Arab',
-    icon: 'Speech',
-    content: `Bahasa Arab untuk kelas 5 MI sesuai kurikulum terbaru fokus pada penggunaan bahasa dalam konteks kehidupan sehari-hari (الْحَيَاةُ الْيَوْمِيَّةُ) dan profesi (الْمِهْنَةُ). Siswa belajar menyusun kalimat sederhana menggunakan struktur kalimat dasar (jumlah ismiyyah dan fi'liyyah) untuk berkomunikasi.`,
-  },
+// Base subjects for public schools (SDN/SDIT)
+const baseSubjectsSD: Omit<Subject, 'content' | 'id'>[] = [
+  { title: 'Matematika', icon: 'Calculator' },
+  { title: 'Ilmu Pengetahuan Alam & Sosial (IPAS)', icon: 'FlaskConical' },
+  { title: 'Bahasa Indonesia', icon: 'BookOpen' },
+  { title: 'Bahasa Inggris', icon: 'Languages' },
+  { title: 'Pendidikan Pancasila', icon: 'Landmark' },
+  { title: 'Pendidikan Agama & Budi Pekerti', icon: 'HeartHandshake' },
 ];
 
-export const getSubjectById = (id: string): Subject | undefined => {
+// Madrasah-specific subjects
+const subjectsMI: Omit<Subject, 'content' | 'id'>[] = [
+  { title: 'Al-Qur\'an Hadis', icon: 'BookCopy' },
+  { title: 'Akidah Akhlak', icon: 'HeartHandshake' },
+  { title: 'Fikih', icon: 'Scale' },
+  { title: 'Sejarah Kebudayaan Islam', icon: 'Landmark' },
+  { title: 'Bahasa Arab', icon: 'Speech' },
+];
+
+const schoolTypeMap: Record<string, string> = {
+  SDN: 'SD Negeri',
+  SDIT: 'SD Islam Terpadu',
+  MI: 'Madrasah Ibtidaiyah'
+};
+
+/**
+ * "Generates" subject content based on school, grade, and subject title.
+ * This is a "genius" way to avoid hardcoding tons of content.
+ * The AI will use this as a seed to generate specific details.
+ */
+function generateSubjectContent(school: SchoolType, grade: Grade, title: string): string {
+    const schoolName = schoolTypeMap[school] || 'sekolah';
+    const gradeNumber = grade.toString();
+
+    const commonTopics: { [key: string]: string[] } = {
+        'Matematika': ['Bilangan dan Operasi Hitung', 'Geometri dan Pengukuran', 'Analisis Data dan Peluang'],
+        'IPAS': ['Makhluk Hidup dan Lingkungannya', 'Zat dan Perubahannya', 'Bumi dan Alam Semesta', 'Keragaman Budaya dan Sejarah Lokal'],
+        'Bahasa Indonesia': ['Membaca dan Memahami Teks', 'Menulis Kreatif dan Informatif', 'Berbicara dan Presentasi'],
+        'Bahasa Inggris': ['Vocabulary and Simple Conversations', 'Basic Grammar', 'Reading Short Stories'],
+        'Pendidikan Pancasila': ['Nilai-nilai Pancasila', 'Norma dan Aturan', 'Bhinneka Tunggal Ika'],
+        'Pendidikan Agama & Budi Pekerti': ['Sejarah Nabi dan Rasul', 'Akhlak Mulia', 'Praktik Ibadah (sesuai agama masing-masing)'],
+        'Al-Qur\'an Hadis': ['Hafalan Surat Pendek', 'Hukum Bacaan (Tajwid)', 'Memahami Hadis Pilihan'],
+        'Akidah Akhlak': ['Asmaul Husna', 'Iman kepada Kitab dan Rasul', 'Akhlak Terpuji dan Tercela'],
+        'Fikih': ['Thaharah (Bersuci)', 'Salat Fardhu dan Sunnah', 'Puasa dan Zakat'],
+        'SKI': ['Kisah Nabi Muhammad SAW', 'Kisah Para Sahabat', 'Sejarah Perkembangan Islam'],
+        'Bahasa Arab': ['Mufradat (Kosakata)', 'Hiwar (Percakapan)', 'Qira\'ah (Membaca)'],
+    };
+    
+    const topics = commonTopics[title] || ['Topik-topik dasar sesuai kurikulum'];
+    return `Materi pelajaran "${title}" untuk kelas ${gradeNumber} di ${schoolName}, sesuai Kurikulum Merdeka. Fokus utama mencakup: ${topics.join(', ')}. "Ayah Tirta" akan menggunakan ringkasan ini untuk membuat konten belajar yang lebih detail.`;
+}
+
+
+export function getSubjects(school: SchoolType, grade: Grade): Subject[] {
+  let subjectList: Omit<Subject, 'content'| 'id'>[] = [];
+
+  switch (school) {
+    case 'SDN':
+      subjectList = baseSubjectsSD;
+      break;
+    case 'SDIT':
+      // SDIT has base subjects + some religious subjects, often integrated
+      subjectList = [
+        ...baseSubjectsSD,
+        { title: 'Al-Qur\'an dan Hadis', icon: 'BookCopy' },
+        { title: 'Bahasa Arab', icon: 'Speech' },
+      ].filter(s => s.title !== 'Pendidikan Agama & Budi Pekerti');
+      break;
+    case 'MI':
+      // MI has some base subjects and replaces others with specific religious ones
+      subjectList = [
+        ...baseSubjectsSD.filter(s => 
+          s.title !== 'Pendidikan Pancasila' && 
+          s.title !== 'Pendidikan Agama & Budi Pekerti'
+        ),
+        ...subjectsMI
+      ];
+      break;
+    default:
+      subjectList = baseSubjectsSD;
+  }
+  
+  return subjectList.map(s => ({
+    ...s,
+    id: s.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+    content: generateSubjectContent(school, grade, s.title)
+  }));
+}
+
+export const getSubjectById = (school: SchoolType, grade: Grade, id: string): Subject | undefined => {
+  const subjects = getSubjects(school, grade);
   return subjects.find((subject) => subject.id === id);
 };

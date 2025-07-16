@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, Edit, Loader2, AlertCircle, Sparkles } from 'lucide-react';
 import { Header } from '@/components/Header';
 import {
@@ -11,12 +12,13 @@ import {
 } from '@/components/ui/accordion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { subjects } from '@/lib/subjects';
-import { useState, useCallback } from 'react';
-import type { ExamData, Subject } from '@/lib/types';
+import { getSubjects } from '@/lib/subjects';
+import { useState, useCallback, useMemo } from 'react';
+import type { ExamData, Subject, SchoolType, Grade } from '@/lib/types';
 import { generateExamAction } from '../actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 type ExamState = 'idle' | 'loading' | 'success' | 'error';
 
@@ -26,44 +28,76 @@ interface SubjectExam {
   error?: string;
 }
 
+const schoolTypeMap: { [key: string]: string } = {
+  SDN: 'SD Negeri',
+  SDIT: 'SD Islam Terpadu',
+  MI: 'Madrasah Ibtidaiyah'
+};
+
 export default function ExamPracticePage() {
+  const searchParams = useSearchParams();
+  const schoolType = (searchParams.get('school') as SchoolType) || 'SDN';
+  const grade = (searchParams.get('grade') as Grade) || '5';
+
+  const subjects = useMemo(() => getSubjects(schoolType, grade), [schoolType, grade]);
   const [examData, setExamData] = useState<Record<string, SubjectExam>>({});
 
   const fetchExam = useCallback(async (subject: Subject) => {
-    // Don't refetch if already loading or successful
     if (examData[subject.id]?.state === 'loading' || examData[subject.id]?.state === 'success') {
       return;
     }
 
-    setExamData(prev => ({
-      ...prev,
-      [subject.id]: { state: 'loading' }
-    }));
+    setExamData(prev => ({ ...prev, [subject.id]: { state: 'loading' } }));
 
-    const result = await generateExamAction(subject.content);
+    const dateSeed = new Date().toISOString().split('T')[0];
+    const result = await generateExamAction({
+      subjectContent: subject.content,
+      dateSeed,
+      schoolType,
+      grade,
+    });
 
     if (result.error) {
-      setExamData(prev => ({
-        ...prev,
-        [subject.id]: { state: 'error', error: result.error }
-      }));
+      setExamData(prev => ({ ...prev, [subject.id]: { state: 'error', error: result.error } }));
     } else if (result.data) {
-      setExamData(prev => ({
-        ...prev,
-        [subject.id]: { state: 'success', data: result.data }
-      }));
+      setExamData(prev => ({ ...prev, [subject.id]: { state: 'success', data: result.data } }));
     }
-  }, [examData]);
+  }, [examData, schoolType, grade]);
 
+  if (!schoolType || !grade) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <Header />
+        <main className="flex-grow p-4 md:p-8 flex items-center justify-center">
+          <Card className="text-center">
+            <CardHeader>
+              <CardTitle>Parameter Tidak Lengkap</CardTitle>
+              <CardDescription>Silakan kembali ke halaman utama untuk memilih sekolah dan kelas.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild>
+                <Link href="/">
+                  <ArrowLeft className="mr-2" />
+                  Kembali ke Halaman Utama
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    )
+  }
+
+  const schoolName = schoolTypeMap[schoolType] || 'Sekolah';
 
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow p-4 md:p-8">
         <div className="max-w-4xl mx-auto">
-          <Link href="/" className="flex items-center gap-2 text-primary hover:underline mb-4">
+          <Link href={`/belajar?school=${schoolType}&grade=${grade}`} className="flex items-center gap-2 text-primary hover:underline mb-4">
             <ArrowLeft size={16} />
-            Kembali ke halaman utama
+            Kembali ke dasbor
           </Link>
           <Card>
             <CardHeader>
@@ -72,7 +106,7 @@ export default function ExamPracticePage() {
                 Latihan Soal Ujian Harian
               </CardTitle>
               <CardDescription>
-                Soal-soal ini dibuat baru oleh Ayah Tirta setiap hari! Klik mata pelajaran untuk mulai berlatih.
+                Untuk {schoolName} Kelas {grade}. Soal dibuat baru oleh Ayah Tirta setiap hari!
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -170,10 +204,12 @@ const listAlpha = `
 }
 `;
 
-// Injecting the style into the head
 if (typeof window !== 'undefined') {
-    const styleSheet = document.createElement("style");
-    styleSheet.type = "text/css";
+  let styleSheet = document.querySelector('#list-alpha-style');
+  if (!styleSheet) {
+    styleSheet = document.createElement("style");
+    styleSheet.id = "list-alpha-style";
     styleSheet.innerText = listAlpha;
     document.head.appendChild(styleSheet);
+  }
 }

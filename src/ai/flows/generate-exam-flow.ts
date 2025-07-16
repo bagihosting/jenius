@@ -1,7 +1,7 @@
 'use server';
 
 /**
- * @fileOverview Generates daily exam questions based on a subject's content.
+ * @fileOverview Generates daily exam questions based on a subject's content, grade, and school type.
  *
  * - generateDailyExam - A function that handles the exam generation process.
  * - GenerateExamInput - The input type for the generateDailyExam function.
@@ -15,6 +15,8 @@ import type { MultipleChoiceQuestion, EssayQuestion } from '@/lib/types';
 const GenerateExamInputSchema = z.object({
   subjectContent: z.string().describe('The content of the subject to generate the exam from.'),
   dateSeed: z.string().describe('The current date (YYYY-MM-DD) to ensure daily variety.'),
+  schoolType: z.string().describe('The type of school (e.g., SDN, MI).'),
+  grade: z.string().describe('The grade level (e.g., 1, 5).')
 });
 export type GenerateExamInput = z.infer<typeof GenerateExamInputSchema>;
 
@@ -45,14 +47,14 @@ const prompt = ai.definePrompt({
   name: 'generateExamPrompt',
   input: {schema: GenerateExamInputSchema},
   output: {schema: GenerateExamOutputSchema},
-  prompt: `Anda adalah seorang ahli pembuat soal ujian untuk siswa kelas 5 SD di Indonesia yang jenius. Anda mengikuti Kurikulum Merdeka.
-Buat satu set soal latihan ujian berdasarkan konten mata pelajaran yang diberikan. Pastikan soal relevan dengan kurikulum terbaru.
+  prompt: `Anda adalah seorang ahli pembuat soal ujian yang jenius untuk siswa di Indonesia. Anda mengikuti Kurikulum Merdeka.
+Buat satu set soal latihan ujian berdasarkan konteks yang diberikan. Pastikan tingkat kesulitan soal sesuai untuk siswa kelas {{{grade}}} di sekolah jenis {{{schoolType}}}.
 Gunakan string tanggal berikut sebagai 'benih' untuk memastikan soal yang Anda buat bervariasi setiap harinya: {{{dateSeed}}}
 
 Buat 5 soal pilihan ganda dengan 4 pilihan jawaban (A, B, C, D). Untuk setiap soal pilihan ganda, sertakan penjelasan singkat dan cerdas untuk jawaban yang benar.
 Buat juga 2 soal esai dengan jawaban penjelasan yang cerdas dan mendalam.
 Jawaban esai harus mengikuti format: Analisis Masalah, Langkah-langkah Penyelesaian, dan Kesimpulan.
-Semua konten harus dalam Bahasa Indonesia.
+Semua konten harus dalam Bahasa Indonesia, kecuali jika mata pelajarannya adalah Bahasa Inggris atau Bahasa Arab.
 
 Konten Mata Pelajaran: {{{subjectContent}}}
 `,

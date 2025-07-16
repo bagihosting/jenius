@@ -1,47 +1,96 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
-import { SubjectCard } from '@/components/SubjectCard';
-import { subjects } from '@/lib/subjects';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { Lightbulb, Edit } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { ArrowRight } from 'lucide-react';
+
+const schoolTypes = [
+  { id: 'SDN', name: 'SD Negeri' },
+  { id: 'SDIT', name: 'SD Islam Terpadu' },
+  { id: 'MI', name: 'Madrasah Ibtidaiyah (MI)' },
+];
+
+const gradeLevels = [
+  { id: '1', name: 'Kelas 1' },
+  { id: '2', name: 'Kelas 2' },
+  { id: '3', name: 'Kelas 3' },
+  { id: '4', name: 'Kelas 4' },
+  { id: '5', name: 'Kelas 5' },
+  { id: '6', name: 'Kelas 6' },
+];
 
 export default function Home() {
+  const router = useRouter();
+  const [schoolType, setSchoolType] = useState('');
+  const [grade, setGrade] = useState('');
+
+  const handleStartLearning = () => {
+    if (schoolType && grade) {
+      router.push(`/belajar?school=${schoolType}&grade=${grade}`);
+    }
+  };
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
-      <main className="flex-grow p-4 md:p-8">
-        <div className="text-center mb-8 md:mb-12">
-          <h1 className="text-4xl sm:text-5xl font-bold font-headline text-gray-800 dark:text-gray-200">
-            Selamat Datang di Ayah Jenius!
-          </h1>
-          <p className="text-lg sm:text-xl text-muted-foreground mt-2 max-w-2xl mx-auto">
-            Pilih pelajaran untuk mulai belajar dan berlatih, atau gunakan fitur di bawah ini.
-          </p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
-          <Button asChild size="lg" className="w-full sm:w-auto">
-            <Link href="/pr-helper">
-              <Lightbulb className="mr-2" />
-              Bantuan PR Cerdas
-            </Link>
-          </Button>
-           <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
-            <Link href="/exam-practice">
-              <Edit className="mr-2" />
-              Latihan Soal Ujian
-            </Link>
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6 max-w-6xl mx-auto">
-          {subjects.map((subject) => (
-            <SubjectCard key={subject.id} subject={subject} />
-          ))}
-        </div>
+      <main className="flex-grow flex items-center justify-center p-4">
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="text-center">
+            <CardTitle className="text-3xl font-headline">Selamat Datang di Ayah Jenius!</CardTitle>
+            <CardDescription className="text-lg">Platform belajar cerdas untuk siswa SD & MI.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="school-type" className="text-base">Pilih Jenis Sekolah</Label>
+                <Select value={schoolType} onValueChange={setSchoolType}>
+                  <SelectTrigger id="school-type" className="w-full text-base h-12">
+                    <SelectValue placeholder="Pilih sekolah..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {schoolTypes.map((s) => (
+                      <SelectItem key={s.id} value={s.id} className="text-base">
+                        {s.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="grade-level" className="text-base">Pilih Kelas</Label>
+                <Select value={grade} onValueChange={setGrade}>
+                  <SelectTrigger id="grade-level" className="w-full text-base h-12">
+                    <SelectValue placeholder="Pilih kelas..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {gradeLevels.map((g) => (
+                      <SelectItem key={g.id} value={g.id} className="text-base">
+                        {g.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                size="lg"
+                className="w-full h-12 text-lg"
+                disabled={!schoolType || !grade}
+                onClick={handleStartLearning}
+              >
+                Mulai Belajar
+                <ArrowRight className="ml-2" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </main>
       <footer className="text-center p-4 text-muted-foreground text-sm">
-        © 2024 Ayah Jenius. All rights reserved.
+        © 2024 Ayah Jenius. Dirancang untuk semua siswa cerdas.
       </footer>
     </div>
   );

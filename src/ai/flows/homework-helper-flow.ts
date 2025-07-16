@@ -1,7 +1,7 @@
 'use server';
 
 /**
- * @fileOverview Provides homework help for 5th grade subjects.
+ * @fileOverview Provides homework help for elementary school subjects.
  *
  * - answerHomework - A function that handles the homework question answering process.
  * - HomeworkHelpInput - The input type for the answerHomework function.
@@ -14,6 +14,8 @@ import { z } from 'genkit';
 const HomeworkHelpInputSchema = z.object({
   subject: z.string().describe('The school subject for the homework question.'),
   question: z.string().describe('The homework question to be answered.'),
+  schoolType: z.string().describe('The type of school (e.g., SDN, MI).'),
+  grade: z.string().describe('The grade level (e.g., 1, 5).'),
 });
 export type HomeworkHelpInput = z.infer<typeof HomeworkHelpInputSchema>;
 
@@ -30,7 +32,8 @@ const prompt = ai.definePrompt({
   name: 'homeworkHelperPrompt',
   input: { schema: HomeworkHelpInputSchema },
   output: { schema: HomeworkHelpOutputSchema },
-  prompt: `Anda adalah seorang guru yang ramah dan suportif yang membantu siswa kelas 5 mengerjakan pekerjaan rumah mereka.
+  prompt: `Anda adalah seorang guru yang ramah dan suportif yang membantu siswa mengerjakan pekerjaan rumah mereka.
+Anda akan menjawab pertanyaan untuk siswa kelas {{{grade}}} di sekolah jenis {{{schoolType}}}.
 Tujuan Anda adalah menjelaskan konsep dan membimbing mereka menuju jawaban, bukan hanya memberikan jawaban langsung.
 Pengguna akan memberikan mata pelajaran dan sebuah pertanyaan.
 
@@ -42,7 +45,7 @@ Pengecualian:
 Mata Pelajaran: {{{subject}}}
 Pertanyaan: {{{question}}}
 
-Berikan penjelasan langkah demi langkah yang dapat dipahami oleh siswa kelas 5.
+Berikan penjelasan langkah demi langkah yang dapat dipahami oleh siswa kelas {{{grade}}}.
 Uraikan masalahnya, jelaskan konsep-konsep kunci, lalu berikan jawaban akhirnya.
 Gunakan bahasa yang sederhana dan nada yang positif.
 `,

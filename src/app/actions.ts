@@ -3,17 +3,16 @@
 import { generateQuiz as generateQuizFlow } from '@/ai/flows/generate-quiz';
 import { answerHomework as answerHomeworkFlow } from '@/ai/flows/homework-helper-flow';
 import { generateDailyExam as generateDailyExamFlow } from '@/ai/flows/generate-exam-flow';
-import type { QuizData, ExamData } from '@/lib/types';
+import type { QuizData, ExamData, SchoolInfo } from '@/lib/types';
 import type { HomeworkHelpInput, HomeworkHelpOutput } from '@/ai/flows/homework-helper-flow';
+import type { GenerateQuizInput } from '@/ai/flows/generate-quiz';
+import type { GenerateExamInput } from '@/ai/flows/generate-exam-flow';
 
 export async function generateQuizAction(
-  subjectContent: string
+  input: GenerateQuizInput
 ): Promise<{ data?: QuizData; error?: string }> {
   try {
-    const quizData = await generateQuizFlow({
-      subjectContent,
-      numberOfQuestions: 5,
-    });
+    const quizData = await generateQuizFlow(input);
 
     if (!quizData || !quizData.quiz || !Array.isArray(quizData.quiz)) {
       throw new Error('Menerima format kuis yang tidak valid dari Ayah Tirta.');
@@ -48,14 +47,10 @@ export async function homeworkHelperAction(
 }
 
 export async function generateExamAction(
-  subjectContent: string
+  input: GenerateExamInput
 ): Promise<{ data?: ExamData; error?: string }> {
   try {
-    const dateSeed = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    const examData = await generateDailyExamFlow({
-      subjectContent,
-      dateSeed,
-    });
+    const examData = await generateDailyExamFlow(input);
 
     if (!examData || !examData.multipleChoice || !examData.essay) {
       throw new Error('Menerima format soal ujian yang tidak valid dari Ayah Tirta.');

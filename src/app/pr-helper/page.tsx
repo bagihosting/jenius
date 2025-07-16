@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, Loader2, Send } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
@@ -10,13 +11,25 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { subjects } from '@/lib/subjects';
+import { getSubjects } from '@/lib/subjects';
 import { homeworkHelperAction } from '@/app/actions';
 import type { HomeworkHelpInput } from '@/ai/flows/homework-helper-flow';
+import type { SchoolType, Grade } from '@/lib/types';
 
 type PrHelperState = 'idle' | 'loading' | 'answered';
 
+const schoolTypeMap: { [key: string]: string } = {
+  SDN: 'SD Negeri',
+  SDIT: 'SD Islam Terpadu',
+  MI: 'Madrasah Ibtidaiyah'
+};
+
 export default function PrHelperPage() {
+  const searchParams = useSearchParams();
+  const schoolType = (searchParams.get('school') as SchoolType) || 'SDN';
+  const grade = (searchParams.get('grade') as Grade) || '5';
+
+  const subjects = useMemo(() => getSubjects(schoolType, grade), [schoolType, grade]);
   const [state, setState] = useState<PrHelperState>('idle');
   const [subject, setSubject] = useState('');
   const [question, setQuestion] = useState('');
@@ -35,7 +48,7 @@ export default function PrHelperPage() {
     }
 
     setState('loading');
-    const input: HomeworkHelpInput = { subject, question };
+    const input: HomeworkHelpInput = { subject, question, schoolType, grade };
     const result = await homeworkHelperAction(input);
 
     if (result.error) {
@@ -57,15 +70,17 @@ export default function PrHelperPage() {
     setAnswer('');
     setState('idle');
   };
+  
+  const backlink = `/belajar?school=${schoolType}&grade=${grade}`;
 
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow p-4 md:p-8">
         <div className="max-w-2xl mx-auto">
-          <Link href="/" className="flex items-center gap-2 text-primary hover:underline mb-4">
+          <Link href={backlink} className="flex items-center gap-2 text-primary hover:underline mb-4">
             <ArrowLeft size={16} />
-            Kembali ke halaman utama
+            Kembali ke dasbor
           </Link>
           <Card>
             <CardHeader>

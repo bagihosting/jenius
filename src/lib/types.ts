@@ -1,3 +1,11 @@
+export type SchoolType = 'SDN' | 'SDIT' | 'MI';
+export type Grade = '1' | '2' | '3' | '4' | '5' | '6';
+
+export interface SchoolInfo {
+    schoolType: SchoolType;
+    grade: Grade;
+}
+
 export interface Subject {
   id: string;
   title: string;
