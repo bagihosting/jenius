@@ -5,26 +5,16 @@
  * @fileOverview Provides academic assistance for university-level subjects.
  *
  * - academicAssistant - A function that handles academic queries.
- * - AcademicAssistantInput - The input type for the function.
- * - AcademicAssistantOutput - The return type for the function.
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import {
+  AcademicAssistantInputSchema,
+  AcademicAssistantOutputSchema,
+  type AcademicAssistantInput,
+  type AcademicAssistantOutput,
+} from '@/lib/types';
 
-export const AcademicAssistantInputSchema = z.object({
-  major: z.string().describe('The university major or field of study (e.g., Teknik Informatika, Ekonomi, Hukum, Kedokteran).'),
-  topic: z.string().describe('The specific topic or subject matter within the major.'),
-  request: z.string().describe('The user\'s specific question or request (e.g., "Jelaskan konsep OOP", "Buatkan ringkasan tentang hukum permintaan dan penawaran", "Apa saja jenis-jenis sel punca?").'),
-});
-export type AcademicAssistantInput = z.infer<typeof AcademicAssistantInputSchema>;
-
-export const AcademicAssistantOutputSchema = z.object({
-  explanation: z.string().describe('A comprehensive, university-level explanation answering the user\'s request. The explanation should be clear, well-structured, and use Markdown for formatting (e.g., headings, bold text, lists).'),
-  imagePrompt: z.string().optional().describe("If the explanation would be significantly enhanced by an image, diagram, or chart, provide a concise, descriptive prompt for an image generation model. E.g., 'Diagram of a neural network architecture', 'Supply and demand curve graph', 'Illustration of the Krebs cycle'. Otherwise, this field should be omitted."),
-  imageUrl: z.string().optional().describe("URL of the generated image, if any."),
-});
-export type AcademicAssistantOutput = z.infer<typeof AcademicAssistantOutputSchema>;
 
 export async function academicAssistant(input: AcademicAssistantInput): Promise<AcademicAssistantOutput> {
   return academicAssistantFlow(input);

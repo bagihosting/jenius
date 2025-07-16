@@ -6,10 +6,7 @@ import { answerHomework as answerHomeworkFlow } from '@/ai/flows/homework-helper
 import { generateDailyExam as generateDailyExamFlow } from '@/ai/flows/generate-exam-flow';
 import { academicAssistant as academicAssistantFlow } from '@/ai/flows/academic-assistant-flow';
 
-import type { QuizData, ExamData, GenerateQuizInput } from '@/lib/types';
-import type { HomeworkHelpInput, HomeworkHelpOutput } from '@/ai/flows/homework-helper-flow';
-import type { GenerateExamInput } from '@/ai/flows/generate-exam-flow';
-import type { AcademicAssistantInput, AcademicAssistantOutput } from '@/ai/flows/academic-assistant-flow';
+import type { QuizData, ExamData, GenerateQuizInput, HomeworkHelpInput, HomeworkHelpOutput, GenerateExamInput, AcademicAssistantInput, AcademicAssistantOutput } from '@/lib/types';
 
 
 export async function generateQuizAction(

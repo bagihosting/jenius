@@ -5,28 +5,16 @@
  * @fileOverview Provides homework help for elementary school subjects.
  *
  * - answerHomework - A function that handles the homework question answering process.
- * - HomeworkHelpInput - The input type for the answerHomework function.
- * - HomeworkHelpOutput - The return type for the answerHomework function.
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import {
+  HomeworkHelpInputSchema,
+  HomeworkHelpOutputSchema,
+  type HomeworkHelpInput,
+  type HomeworkHelpOutput
+} from '@/lib/types';
 
-const HomeworkHelpInputSchema = z.object({
-  subject: z.string().describe('The school subject for the homework question.'),
-  question: z.string().describe('The homework question to be answered.'),
-  schoolType: z.string().describe('The type of school (e.g., SDN, MTs, SMA).'),
-  grade: z.string().describe('The grade level (e.g., 1, 8, 11).'),
-  semester: z.string().describe('The semester (1 or 2).'),
-});
-export type HomeworkHelpInput = z.infer<typeof HomeworkHelpInputSchema>;
-
-const HomeworkHelpOutputSchema = z.object({
-  answer: z.string().describe('The explanation and answer to the homework question.'),
-  imagePrompt: z.string().optional().describe("If the answer is best explained with an image, provide a concise, descriptive prompt for an image generation model. E.g., 'Diagram of the water cycle', 'Map of ancient Indonesian kingdoms'. Otherwise, this field should be omitted."),
-  imageUrl: z.string().optional().describe("URL of the generated image, if any."),
-});
-export type HomeworkHelpOutput = z.infer<typeof HomeworkHelpOutputSchema>;
 
 export async function answerHomework(input: HomeworkHelpInput): Promise<HomeworkHelpOutput> {
   return homeworkHelperFlow(input);
