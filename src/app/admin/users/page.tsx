@@ -34,10 +34,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/types';
-import { Loader2, PlusCircle, Search, Trash, Edit, User as UserIcon } from 'lucide-react';
+import { Loader2, PlusCircle, Search, Trash, Edit, User as UserIcon, School, Mail, KeyRound } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
 import { UserForm, userSchema } from '@/components/UserForm';
@@ -215,7 +215,9 @@ export default function UsersPage() {
               />
             </div>
           </div>
-          <div className="overflow-x-auto">
+
+          {/* Table View for Desktop */}
+          <div className="overflow-x-auto hidden md:block">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -284,6 +286,72 @@ export default function UsersPage() {
               </TableBody>
             </Table>
           </div>
+
+          {/* Card View for Mobile */}
+          <div className="md:hidden">
+             {isLoading ? (
+                <div className="text-center p-8">
+                  <Loader2 className="mx-auto my-4 h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : filteredUsers.length === 0 ? (
+                <div className="text-center p-8 text-muted-foreground">
+                  Tidak ada pengguna yang ditemukan.
+                </div>
+              ) : (
+                <div className="divide-y">
+                {filteredUsers.map((user) => (
+                    <div key={user.username} className="p-4">
+                        <div className="flex items-start justify-between">
+                             <div className="flex items-start gap-4">
+                                <Avatar>
+                                    <AvatarImage src={user.photoUrl} alt={user.name} />
+                                    <AvatarFallback>
+                                        <UserIcon className="w-4 h-4"/>
+                                    </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <p className="font-semibold">{user.name}</p>
+                                    <p className="text-sm text-muted-foreground">@{user.username}</p>
+                                    <Badge variant={user.role === 'admin' ? 'default' : 'secondary'} className="mt-2">
+                                        {user.role}
+                                    </Badge>
+                                </div>
+                            </div>
+                            <div className="flex flex-col items-end gap-2 -mr-2 -mt-2">
+                                <Button variant="ghost" size="icon" onClick={() => handleEdit(user)}>
+                                    <Edit className="h-4 w-4" />
+                                    <span className="sr-only">Edit</span>
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleDelete(user)}
+                                    disabled={activeUser?.username === user.username}
+                                    >
+                                    <Trash className="h-4 w-4" />
+                                    <span className="sr-only">Hapus</span>
+                                </Button>
+                            </div>
+                        </div>
+                        <div className="mt-4 space-y-2 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-2">
+                                <Mail className="h-4 w-4" />
+                                <span>{user.email}</span>
+                            </div>
+                            {user.role === 'user' && (
+                                <div className="flex items-center gap-2">
+                                    <School className="h-4 w-4" />
+                                    <span>{user.schoolName || user.schoolType}</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                ))}
+                </div>
+              )
+             }
+          </div>
+
         </CardContent>
       </Card>
 
@@ -327,3 +395,5 @@ export default function UsersPage() {
     </>
   );
 }
+
+    
