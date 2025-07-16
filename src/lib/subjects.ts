@@ -8,7 +8,6 @@ const baseSubjects: Omit<Subject, 'content' | 'id'>[] = [
   { title: 'Bahasa Inggris', icon: 'Languages' },
   { title: 'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)', icon: 'PersonStanding' },
   { title: 'Seni Budaya dan Prakarya (SBDP)', icon: 'Paintbrush' },
-  { title: 'Bahasa Daerah', icon: 'LanguageIcon' } // Muatan Lokal
 ];
 
 // Subjects that vary by school type
@@ -36,42 +35,65 @@ const schoolTypeMap: Record<string, string> = {
  */
 function generateSubjectContent(school: SchoolType, grade: Grade, title: string): string {
     const schoolName = schoolTypeMap[school] || 'sekolah';
-    const gradeNumber = grade.toString();
+    const gradeNumber = parseInt(grade, 10);
+    const fase = gradeNumber <= 2 ? 'A' : gradeNumber <= 4 ? 'B' : 'C';
+
+    // Topics for Lower Grades (Fase A & B)
+    const lowerGradeTopics: { [key: string]: string[] } = {
+        'Matematika': ['Bilangan cacah sampai 1.000', 'Penjumlahan & Pengurangan', 'Bentuk geometri dasar', 'Pengukuran panjang dan waktu'],
+        'Bahasa Indonesia': ['Membaca dan menulis permulaan', 'Memahami isi bacaan sederhana', 'Menulis kalimat sederhana'],
+        'IPAS': ['Bagian tubuh dan panca indra', 'Ciri-ciri makhluk hidup', 'Lingkungan sekitar', 'Perubahan wujud benda', 'Cerita dan kearifan lokal'],
+        'Pendidikan Pancasila': ['Simbol-simbol Pancasila', 'Aturan di rumah dan sekolah', 'Menghargai perbedaan', 'Gotong royong'],
+    };
+
+    // Topics for Higher Grades (Fase C)
+    const higherGradeTopics: { [key: string]: string[] } = {
+        'Matematika': ['Bilangan cacah besar, pecahan, dan desimal', 'Operasi hitung campuran', 'Sifat-sifat bangun datar dan ruang', 'Analisis data (diagram batang & lingkaran)'],
+        'Bahasa Indonesia': ['Memahami teks informasional dan fiksi', 'Menulis laporan dan teks argumentasi', 'Menyampaikan pendapat secara efektif'],
+        'Ilmu Pengetahuan Alam (IPA)': ['Rangka dan organ tubuh', 'Sistem pernapasan dan pencernaan', 'Sifat benda dan perubahannya', 'Gaya, gerak, dan energi', 'Siklus air dan ekosistem'],
+        'Ilmu Pengetahuan Sosial (IPS)': ['Kerajaan Hindu-Buddha dan Islam di Indonesia', 'Perjuangan pahlawan kemerdekaan', 'Kegiatan ekonomi dan sumber daya alam', 'Kenampakan alam dan sosial di Indonesia'],
+        'Pendidikan Pancasila': ['Implementasi nilai-nilai Pancasila', 'Norma dan konstitusi', 'Bhinneka Tunggal Ika dalam masyarakat', 'Hak dan kewajiban sebagai warga negara'],
+    };
 
     const commonTopics: { [key: string]: string[] } = {
-        'Matematika': ['Bilangan dan Operasi Hitung', 'Geometri dan Pengukuran', 'Analisis Data dan Peluang'],
-        'IPAS': ['Makhluk Hidup dan Lingkungannya', 'Zat dan Perubahannya', 'Bumi dan Alam Semesta', 'Keragaman Budaya dan Sejarah Lokal'],
-        'Ilmu Pengetahuan Alam (IPA)': ['Rangka Manusia dan Hewan', 'Sistem Pernapasan', 'Sifat Benda', 'Gaya dan Gerak', 'Siklus Air'],
-        'Ilmu Pengetahuan Sosial (IPS)': ['Kerajaan Hindu-Buddha dan Islam', 'Pahlawan Nasional', 'Kegiatan Ekonomi', 'Kenampakan Alam dan Buatan'],
-        'Bahasa Indonesia': ['Membaca dan Memahami Teks', 'Menulis Kreatif dan Informatif', 'Berbicara dan Presentasi'],
         'Bahasa Inggris': ['Vocabulary and Simple Conversations', 'Basic Grammar', 'Reading Short Stories'],
-        'Pendidikan Pancasila': ['Nilai-nilai Pancasila', 'Norma dan Aturan', 'Bhinneka Tunggal Ika', 'Hak dan Kewajiban'],
+        'PJOK': ['Gerak Dasar Lokomotor, Non-lokomotor, dan Manipulatif', 'Permainan Bola Besar dan Kecil', 'Kebugaran Jasmani'],
+        'SBDP': ['Menggambar dan Mewarnai', 'Seni Musik (Lagu Daerah & Nasional)', 'Kerajinan Tangan dari bahan alam'],
+        'Bahasa Daerah': ['Menyimak cerita lokal', 'Berbicara menggunakan undak-usuk basa (jika ada)', 'Menulis aksara daerah sederhana'],
         'Pendidikan Agama & Budi Pekerti': ['Sejarah Nabi dan Rasul', 'Akhlak Mulia', 'Praktik Ibadah (sesuai agama masing-masing)'],
-        'PJOK': ['Gerak Dasar Lokomotor', 'Non-lokomotor, dan Manipulatif', 'Permainan Bola Besar dan Kecil', 'Kebugaran Jasmani'],
-        'SBDP': ['Menggambar dan Mewarnai', 'Seni Musik (Lagu Daerah & Nasional)', 'Kerajinan Tangan'],
-        'Bahasa Daerah': ['Menyimak cerita lokal', 'Berbicara menggunakan undak-usuk basa', 'Menulis aksara daerah'],
-        'Al-Qur\'an Hadis': ['Hafalan Surat Pendek', 'Hukum Bacaan (Tajwid)', 'Memahami Hadis Pilihan'],
-        'Akidah Akhlak': ['Asmaul Husna', 'Iman kepada Kitab dan Rasul', 'Akhlak Terpuji dan Tercela'],
-        'Fikih': ['Thaharah (Bersuci)', 'Salat Fardhu dan Sunnah', 'Puasa dan Zakat'],
-        'Sejarah Kebudayaan Islam': ['Kisah Nabi Muhammad SAW', 'Kisah Para Sahabat', 'Sejarah Perkembangan Islam'],
-        'Bahasa Arab': ['Mufradat (Kosakata)', 'Hiwar (Percakapan)', 'Qira\'ah (Membaca)'],
+        'Al-Qur\'an Hadis': ['Hafalan Surat Pendek pilihan', 'Hukum Bacaan (Tajwid dasar)', 'Memahami Hadis Pilihan tentang akhlak'],
+        'Akidah Akhlak': ['Asmaul Husna', 'Iman kepada Kitab dan Rasul', 'Akhlak Terpuji dan Tercela dalam kehidupan sehari-hari'],
+        'Fikih': ['Thaharah (Bersuci)', 'Salat Fardhu dan Sunnah', 'Puasa dan Zakat Fitrah'],
+        'Sejarah Kebudayaan Islam': ['Kisah Nabi Muhammad SAW periode Mekkah dan Madinah', 'Kisah Para Sahabat Utama', 'Sejarah Perkembangan Islam di Nusantara'],
+        'Bahasa Arab': school === 'MI' 
+            ? ['Mufradat (Kosakata sehari-hari)', 'Hiwar (Percakapan sederhana)', 'Qira\'ah (Membaca teks pendek)', 'Kitabah (Menulis huruf hijaiyah sambung)']
+            : ['Perkenalan diri (Ta\'aruf)', 'Kosakata benda di sekolah dan rumah', 'Ungkapan sederhana sehari-hari'],
     };
     
-    const topics = commonTopics[title] || ['Topik-topik dasar sesuai kurikulum'];
-    return `Materi pelajaran "${title}" untuk kelas ${gradeNumber} di ${schoolName}, sesuai Kurikulum Merdeka. Fokus utama mencakup: ${topics.join(', ')}. "Ayah Tirta" akan menggunakan ringkasan ini untuk membuat konten belajar yang lebih detail.`;
+    let topics: string[];
+    if (gradeNumber < 4) {
+        topics = lowerGradeTopics[title] || commonTopics[title] || ['Topik-topik dasar sesuai kurikulum Fase A/B'];
+    } else {
+        topics = higherGradeTopics[title] || commonTopics[title] || ['Topik-topik lanjutan sesuai kurikulum Fase C'];
+    }
+    
+    return `Materi pelajaran "${title}" untuk Fase ${fase} (Kelas ${grade}) di ${schoolName}, sesuai Kurikulum Merdeka. Fokus utama mencakup: ${topics.join(', ')}. "Ayah Tirta" akan menggunakan ringkasan ini untuk membuat konten belajar yang lebih detail.`;
 }
 
 
 export function getSubjects(school: SchoolType, grade: Grade): Subject[] {
   let subjectList: Omit<Subject, 'content'| 'id'>[] = [...baseSubjects];
 
+  // Add Muatan Lokal (optional)
+  subjectList.push({ title: 'Bahasa Daerah', icon: 'LanguageIcon' });
+
   // Logic for science subjects based on grade
   const gradeNum = parseInt(grade, 10);
-  if (gradeNum >= 4) { // Kelas 4, 5, 6
+  if (gradeNum >= 4) { // Kelas 4, 5, 6 (Fase C)
       subjectList.push({ title: 'Ilmu Pengetahuan Alam (IPA)', icon: 'Atom' });
       subjectList.push({ title: 'Ilmu Pengetahuan Sosial (IPS)', icon: 'Users' });
-  } else { // Kelas 1, 2, 3
-      subjectList.push({ title: 'Ilmu Pengetahuan Alam & Sosial (IPAS)', icon: 'FlaskConical' });
+  } else { // Kelas 1, 2, 3 (Fase A & B)
+      subjectList.push({ title: 'Ilmu Pengetahuan Alam dan Sosial (IPAS)', icon: 'FlaskConical' });
   }
 
   // Logic for school type
@@ -87,11 +109,8 @@ export function getSubjects(school: SchoolType, grade: Grade): Subject[] {
       break;
     case 'MI':
       // MI has specific islamic subjects instead of the general one.
-      // And often Pancasila is integrated differently or named PKn. We keep Pancasila for simplicity.
       subjectList.push(...religiousSubjects.mi);
       break;
-    default:
-      subjectList.push(religiousSubjects.sdn_sdit);
   }
   
   return subjectList
