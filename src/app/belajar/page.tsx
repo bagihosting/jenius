@@ -40,8 +40,6 @@ function BelajarSelection() {
 
   const handleStartLearning = () => {
     if (schoolType && grade && semester) {
-      // This will redirect to a new dashboard page, let's assume it's `/dashboard` for now
-      // We will create this page later.
       router.push(`/dashboard?school=${schoolType}&grade=${grade}&semester=${semester}`);
     }
   };
