@@ -25,6 +25,12 @@ interface QuizViewProps {
   schoolInfo: SchoolInfo;
 }
 
+// Function to normalize answers for comparison
+const normalizeAnswer = (answer: string): string => {
+  // Removes "A. ", "B. ", etc., trims whitespace, and converts to lowercase
+  return answer.replace(/^[A-D]\.\s*/, '').trim().toLowerCase();
+};
+
 export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProps) {
   const { user } = useAuth();
   const [quizState, setQuizState] = useState<QuizState>('idle');
@@ -110,10 +116,13 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
   const handleSubmitQuiz = () => {
     let finalScore = 0;
     quiz?.quiz.forEach((q, index) => {
-      if(q.correctAnswer === userAnswers[index]) {
+      // Use normalization for robust comparison
+      const userAnswer = userAnswers[index] || '';
+      if (normalizeAnswer(q.correctAnswer) === normalizeAnswer(userAnswer)) {
         finalScore++;
       }
     });
+
     const percentageScore = Math.round((finalScore / quiz!.quiz.length) * 100);
     setScore(percentageScore);
     updateSubjectProgress(subjectId, percentageScore);
@@ -128,7 +137,7 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
         if(bonusGiven) {
             toast({
                 title: "Selamat, Kamu Dapat Bonus!",
-                description: `Kamu mendapatkan ${badgeInfo.bonusPerQuiz.toFixed(4)} Poin Bonus Robux karena nilaimu hebat! Terus tingkatkan!`,
+                description: `Kamu mendapatkan ${badgeInfo.bonusPerQuiz.toFixed(4)} Poin Bonus karena nilaimu hebat! Terus tingkatkan!`,
             });
         }
     }
@@ -220,24 +229,27 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
             <CardContent>
                 <p className="text-muted-foreground mb-4">Berikut adalah ringkasan jawabanmu:</p>
                  <div className="text-left space-y-4 max-h-60 overflow-y-auto p-2 rounded-md bg-secondary/50">
-                    {quiz?.quiz.map((q, index) => (
-                        <div key={index} className="border-b pb-2">
-                            <p className="font-semibold">{index + 1}. {q.question}</p>
-                            <div className="flex items-center gap-2 mt-1">
-                                {userAnswers[index] === q.correctAnswer ? (
-                                    <CheckCircle2 className="text-green-500 w-4 h-4 shrink-0" />
-                                ) : (
-                                    <XCircle className="text-red-500 w-4 h-4 shrink-0" />
+                    {quiz?.quiz.map((q, index) => {
+                        const isCorrect = normalizeAnswer(userAnswers[index] || '') === normalizeAnswer(q.correctAnswer);
+                        return (
+                            <div key={index} className="border-b pb-2">
+                                <p className="font-semibold">{index + 1}. {q.question}</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                    {isCorrect ? (
+                                        <CheckCircle2 className="text-green-500 w-4 h-4 shrink-0" />
+                                    ) : (
+                                        <XCircle className="text-red-500 w-4 h-4 shrink-0" />
+                                    )}
+                                    <p className={isCorrect ? 'text-green-600' : 'text-red-600'}>
+                                        Jawabanmu: {userAnswers[index] || "Tidak dijawab"}
+                                    </p>
+                                </div>
+                                {!isCorrect && (
+                                    <p className="text-sm text-blue-600">Jawaban benar: {q.correctAnswer}</p>
                                 )}
-                                <p className={userAnswers[index] === q.correctAnswer ? 'text-green-600' : 'text-red-600'}>
-                                    Jawabanmu: {userAnswers[index] || "Tidak dijawab"}
-                                </p>
                             </div>
-                            {userAnswers[index] !== q.correctAnswer && (
-                                <p className="text-sm text-blue-600">Jawaban benar: {q.correctAnswer}</p>
-                            )}
-                        </div>
-                    ))}
+                        )
+                    })}
                 </div>
             </CardContent>
             <CardFooter className="justify-center">
