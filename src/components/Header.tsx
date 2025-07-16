@@ -1,7 +1,7 @@
 
 'use client';
 
-import { BookHeart, LogIn, LayoutDashboard, User } from 'lucide-react';
+import { BookHeart, LogIn, LayoutDashboard, User, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -38,7 +38,9 @@ export function Header() {
             <p className="text-sm text-muted-foreground hidden md:block">Platform belajar cerdas untuk semua</p>
           </div>
           <div className="flex items-center gap-2">
-            {isClient && !loading && (
+            {!isClient || loading ? (
+              <Loader2 className="h-6 w-6 animate-spin" />
+            ) : (
               <>
                 {isAuthenticated && user ? (
                     <>

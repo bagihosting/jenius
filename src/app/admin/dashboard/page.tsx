@@ -2,20 +2,35 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Gift } from "lucide-react";
-import React from "react";
+import { Users, Gift, Loader2 } from "lucide-react";
+import React, { useState, useEffect } from "react";
 
 export default function AdminDashboardPage() {
-    const [userCount, setUserCount] = React.useState(0);
-    const [isBonusFeatureActive, setIsBonusFeatureActive] = React.useState(false);
+    const [userCount, setUserCount] = useState(0);
+    const [isBonusFeatureActive, setIsBonusFeatureActive] = useState(false);
+    const [isClient, setIsClient] = useState(false);
 
-    React.useEffect(() => {
-        const allUsers = Object.keys(localStorage).filter(k => k.startsWith('user_'));
-        setUserCount(allUsers.length);
-
-        const bonusStatus = localStorage.getItem('bonus_feature_status');
-        setIsBonusFeatureActive(bonusStatus === 'active');
+    useEffect(() => {
+        setIsClient(true);
     }, []);
+
+    useEffect(() => {
+        if (isClient) {
+            const allUsers = Object.keys(localStorage).filter(k => k.startsWith('user_'));
+            setUserCount(allUsers.length);
+
+            const bonusStatus = localStorage.getItem('bonus_feature_status');
+            setIsBonusFeatureActive(bonusStatus === 'active');
+        }
+    }, [isClient]);
+
+    if (!isClient) {
+        return (
+            <div className="flex h-full w-full items-center justify-center">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col gap-6">

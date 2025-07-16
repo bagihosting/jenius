@@ -23,6 +23,11 @@ export default function BonusPage() {
   const searchParams = useSearchParams();
   const { user, loading, isAuthenticated, updateUser } = useAuth();
   const { toast } = useToast();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const grade = searchParams.get('grade') as Grade;
   const semester = searchParams.get('semester');
@@ -38,7 +43,6 @@ export default function BonusPage() {
       return;
     }
     
-    // Redirect if grade is not between 1 and 6
     if (grade) {
         const gradeNum = parseInt(grade, 10);
         if (gradeNum > 6) {
@@ -51,7 +55,7 @@ export default function BonusPage() {
         }
     }
 
-  }, [loading, isAuthenticated, router, grade, backlink]);
+  }, [loading, isAuthenticated, router, grade, backlink, toast]);
 
   useEffect(() => {
     if (user) {
@@ -86,10 +90,9 @@ export default function BonusPage() {
   const quizzesNeededForNextPoint = 1;
   const progressPercentage = (quizzesCompleted % quizzesNeededForNextPoint) * 100;
 
-
-  if (loading || !isAuthenticated) {
+  if (!isClient || loading || !isAuthenticated) {
     return (
-      <div className="flex-grow flex items-center justify-center">
+      <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );

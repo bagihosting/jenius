@@ -18,6 +18,11 @@ export default function UpgradePage() {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -50,9 +55,9 @@ export default function UpgradePage() {
     // We don't need to set isSubmitting to false, as the user is leaving the page.
   };
 
-  if (loading || !isAuthenticated) {
+  if (!isClient || loading || !isAuthenticated) {
     return (
-      <div className="flex-grow flex items-center justify-center">
+      <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );

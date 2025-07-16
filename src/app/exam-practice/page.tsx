@@ -45,6 +45,11 @@ export default function ExamPracticePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading, isAuthenticated } = useAuth();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -88,9 +93,9 @@ export default function ExamPracticePage() {
     }
   }, [examData, schoolType, grade, semester, userEmail]);
 
-  if (loading || !isAuthenticated || !schoolType) {
+  if (!isClient || loading || !isAuthenticated || !schoolType) {
     return (
-      <div className="flex-grow flex items-center justify-center">
+      <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );

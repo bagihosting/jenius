@@ -29,6 +29,11 @@ export default function PrHelperPage() {
   const grade = (searchParams.get('grade') as Grade) || '5';
   const semester = (searchParams.get('semester') as Semester) || '1';
   const schoolType = user?.schoolType;
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -85,9 +90,9 @@ export default function PrHelperPage() {
   
   const backlink = `/dashboard?grade=${grade}&semester=${semester}`;
 
-  if (loading || !isAuthenticated) {
+  if (!isClient || loading || !isAuthenticated) {
     return (
-      <div className="flex-grow flex items-center justify-center">
+      <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );

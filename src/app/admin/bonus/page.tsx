@@ -45,6 +45,11 @@ export default function BonusManagementPage() {
   
   const [editingUserEmail, setEditingUserEmail] = useState<string | null>(null);
   const [newBonusValue, setNewBonusValue] = useState('');
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const loadData = () => {
     setIsLoading(true);
@@ -78,8 +83,10 @@ export default function BonusManagementPage() {
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (isClient) {
+      loadData();
+    }
+  }, [isClient]);
 
   const handleToggleFeature = (isActive: boolean) => {
     localStorage.setItem('bonus_feature_status', isActive ? 'active' : 'inactive');
@@ -138,6 +145,14 @@ export default function BonusManagementPage() {
       (item.user.robloxUsername?.toLowerCase() || '').includes(searchTerm.toLowerCase())
     );
   }, [users, searchTerm]);
+
+  if (!isClient) {
+    return (
+        <div className="flex h-screen w-full items-center justify-center">
+            <Loader2 className="h-12 w-12 animate-spin text-primary"/>
+        </div>
+    )
+  }
 
   return (
     <>

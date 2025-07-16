@@ -30,6 +30,11 @@ export default function MahasiswaDashboardPage() {
     
     const [state, setState] = useState<AssistantState>('idle');
     const [result, setResult] = useState<AcademicAssistantOutput | null>(null);
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
 
     useEffect(() => {
@@ -95,9 +100,9 @@ export default function MahasiswaDashboardPage() {
         setState('idle');
     };
 
-    if (loading || !isAuthenticated) {
+    if (!isClient || loading || !isAuthenticated) {
         return (
-            <div className="flex-grow flex items-center justify-center">
+            <div className="flex h-screen w-full items-center justify-center">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
             </div>
         );
