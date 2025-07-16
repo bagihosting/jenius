@@ -1,3 +1,4 @@
+
 export type SchoolType = 'SDN' | 'SDIT' | 'MI';
 export type Grade = '1' | '2' | '3' | '4' | '5' | '6';
 export type Semester = '1' | '2';
@@ -48,4 +49,5 @@ export interface User {
   schoolType: SchoolType;
   role: 'user' | 'admin';
   badge?: string;
+  photoUrl?: string;
 }

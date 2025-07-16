@@ -8,7 +8,7 @@ import { SubjectCard } from '@/components/SubjectCard';
 import { getSubjects } from '@/lib/subjects';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Edit, MessageSquareQuote, Loader2, LogOut } from 'lucide-react';
+import { ArrowLeft, Edit, MessageSquareQuote, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import type { SchoolType, Grade, Semester } from '@/lib/types';
 import { useAuth } from '@/context/AuthContext';
@@ -22,10 +22,10 @@ const schoolTypeMap: { [key: string]: string } = {
 function DashboardContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { user, loading, isAuthenticated, logout } = useAuth();
+    const { user, loading, isAuthenticated } = useAuth();
 
     const grade = (searchParams.get('grade') as Grade) || '1';
-    const semester = (searchParams.get('semester') as Semester) || '1';
+    const semester = (search_params.get('semester') as Semester) || '1';
     const schoolType = user?.schoolType;
 
     useEffect(() => {
@@ -78,10 +78,6 @@ function DashboardContent() {
                             <ArrowLeft size={16} />
                             Ganti Kelas
                         </Link>
-                        <Button variant="ghost" size="sm" onClick={logout}>
-                           <LogOut className="mr-2 h-4 w-4" />
-                           Keluar
-                        </Button>
                     </div>
                     <h1 className="text-3xl md:text-4xl font-bold font-headline">Dasbor Belajar</h1>
                     <p className="text-muted-foreground text-lg">

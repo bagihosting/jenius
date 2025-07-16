@@ -3,20 +3,14 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import type { SchoolType } from '@/lib/types';
-
-interface User {
-  name: string;
-  email: string;
-  schoolType: SchoolType;
-  role: 'user' | 'admin';
-}
+import type { User } from '@/lib/types';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
   login: (userData: User) => void;
   logout: () => void;
+  updateUser: (userData: Partial<User>) => void;
   loading: boolean;
 }
 
@@ -57,10 +51,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     router.push('/login');
   };
 
+  const updateUser = (userData: Partial<User>) => {
+    setUser(prevUser => {
+        if (!prevUser) return null;
+        const newUser = { ...prevUser, ...userData };
+        localStorage.setItem('user', JSON.stringify(newUser));
+        return newUser;
+    });
+  };
+
   const isAuthenticated = !!user;
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, loading }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, updateUser, loading }}>
       {children}
     </AuthContext.Provider>
   );
