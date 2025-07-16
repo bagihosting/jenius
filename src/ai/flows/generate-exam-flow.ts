@@ -22,6 +22,7 @@ const MultipleChoiceQuestionSchema = z.object({
   question: z.string().describe("The text of the multiple-choice question."),
   options: z.array(z.string()).min(4).max(4).describe("An array of 4 possible answers in 'A. ...', 'B. ...' format."),
   correctAnswer: z.string().describe("The correct answer to the question, matching one of the options exactly."),
+  explanation: z.string().describe("A short and genius-level explanation for the correct answer."),
 });
 
 const EssayQuestionSchema = z.object({
@@ -48,7 +49,8 @@ const prompt = ai.definePrompt({
 Buat satu set soal latihan ujian berdasarkan konten mata pelajaran yang diberikan. Pastikan soal relevan dengan kurikulum terbaru.
 Gunakan string tanggal berikut sebagai 'benih' untuk memastikan soal yang Anda buat bervariasi setiap harinya: {{{dateSeed}}}
 
-Buat 5 soal pilihan ganda dengan 4 pilihan jawaban (A, B, C, D) dan 2 soal esai dengan jawaban penjelasan yang cerdas dan mendalam.
+Buat 5 soal pilihan ganda dengan 4 pilihan jawaban (A, B, C, D). Untuk setiap soal pilihan ganda, sertakan penjelasan singkat dan cerdas untuk jawaban yang benar.
+Buat juga 2 soal esai dengan jawaban penjelasan yang cerdas dan mendalam.
 Jawaban esai harus mengikuti format: Analisis Masalah, Langkah-langkah Penyelesaian, dan Kesimpulan.
 Semua konten harus dalam Bahasa Indonesia.
 

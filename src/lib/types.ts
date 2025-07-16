@@ -19,6 +19,7 @@ export interface MultipleChoiceQuestion {
   question: string;
   options: string[];
   correctAnswer: string;
+  explanation: string;
 }
 
 export interface EssayQuestion {

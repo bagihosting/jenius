@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, Edit, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Edit, Loader2, AlertCircle, Sparkles } from 'lucide-react';
 import { Header } from '@/components/Header';
 import {
   Accordion,
@@ -16,6 +16,7 @@ import { useState, useCallback } from 'react';
 import type { ExamData, Subject } from '@/lib/types';
 import { generateExamAction } from '../actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 
 type ExamState = 'idle' | 'loading' | 'success' | 'error';
 
@@ -119,10 +120,13 @@ export default function ExamPracticePage() {
                                         <li key={i}>{opt}</li>
                                       ))}
                                     </ul>
-                                    <p className="mt-2 text-sm">
-                                      <strong>Jawaban Benar:</strong>{' '}
-                                      <span className="text-primary font-bold">{q.correctAnswer}</span>
-                                    </p>
+                                    <div className="mt-3 space-y-2">
+                                      <Badge variant="secondary">Jawaban Benar: {q.correctAnswer}</Badge>
+                                       <div className="p-3 bg-primary/10 rounded-md border border-primary/20 text-sm">
+                                          <p className="font-bold flex items-center gap-1.5 text-primary/80"><Sparkles size={14}/> Penjelasan Jenius</p>
+                                          <p className="text-muted-foreground mt-1">{q.explanation}</p>
+                                      </div>
+                                    </div>
                                   </li>
                                 ))}
                               </ol>
