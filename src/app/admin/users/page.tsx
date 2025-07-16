@@ -34,13 +34,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Card, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/types';
 import { Loader2, PlusCircle, Search, Trash, Edit, User as UserIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
 import { UserForm, userSchema } from '@/components/UserForm';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 type UserFormValues = z.infer<typeof userSchema>;
 
