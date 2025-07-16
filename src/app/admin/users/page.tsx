@@ -44,6 +44,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { PlusCircle, Edit, Trash2, Award, Star, Brain, Loader2 } from "lucide-react";
 import type { SchoolType, User } from "@/lib/types";
+import { useAuth } from "@/context/AuthContext";
 
 const schoolTypeMap: { [key in SchoolType]: string } = {
   SDN: 'SD Negeri',
@@ -64,37 +65,47 @@ export default function AdminUsersPage() {
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [formData, setFormData] = useState({ name: '', username: '', email: '', schoolType: 'SDN' as SchoolType, password: '', badge: '' });
     const { toast } = useToast();
+    const { user: activeUser, updateUser } = useAuth();
 
     const loadUsers = useCallback(() => {
         setIsLoading(true);
         try {
-            const loadedUsers: User[] = [];
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key && key.startsWith('user_')) {
-                    try {
-                        const userData = JSON.parse(localStorage.getItem(key) || '{}');
-                        if (userData.username && userData.email && userData.name && userData.schoolType && userData.role) {
-                             loadedUsers.push(userData);
-                        }
-                    } catch (e) {
-                        console.error("Could not parse user data from local storage", e);
-                    }
-                }
+            const userKeysStr = localStorage.getItem('user_keys');
+            if (!userKeysStr) {
+                const initialUsers = [];
+                const adminData = localStorage.getItem('user_admin');
+                const userData = localStorage.getItem('user_user');
+                if (adminData) initialUsers.push(JSON.parse(adminData));
+                if (userData) initialUsers.push(JSON.parse(userData));
+                setUsers(initialUsers);
+                return;
             }
-            const uniqueUsers = Array.from(new Map(loadedUsers.map(user => [user.email, user])).values());
-            setUsers(uniqueUsers);
+
+            const userKeys: string[] = JSON.parse(userKeysStr);
+            const loadedUsers: User[] = userKeys
+                .map(key => {
+                    try {
+                        const userData = localStorage.getItem(key);
+                        return userData ? JSON.parse(userData) : null;
+                    } catch {
+                        return null;
+                    }
+                })
+                .filter((user): user is User => user !== null && user.username);
+
+            setUsers(loadedUsers);
         } catch (error) {
             console.error("Error loading users from local storage", error);
             toast({
                 title: 'Gagal Memuat Pengguna',
-                description: 'Terjadi kesalahan saat mengakses data dari local storage.',
+                description: 'Terjadi kesalahan saat mengakses data pengguna.',
                 variant: 'destructive',
             });
         } finally {
             setIsLoading(false);
         }
     }, [toast]);
+
 
     useEffect(() => {
         loadUsers();
@@ -119,9 +130,9 @@ export default function AdminUsersPage() {
 
     const handleFormChange = (value: string, field: string) => {
         setFormData(prev => ({...prev, [field]: value}));
-    };
+    }
     
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
         setFormData(prev => ({...prev, [e.target.name]: e.target.value}));
     };
 
@@ -132,51 +143,84 @@ export default function AdminUsersPage() {
             return;
         }
 
-        if (currentUser) { 
-            if (currentUser.username !== username && localStorage.getItem(`user_${username}`)) {
-                toast({ title: "Error", description: "Pengguna dengan username baru ini sudah ada.", variant: "destructive" });
-                return;
-            }
-            
-            localStorage.removeItem(`user_${currentUser.username}`);
-            if (currentUser.email !== email) { 
-                 localStorage.removeItem(`pwd_${currentUser.email}`);
-            }
-            
-            const updatedUser: User = { ...currentUser, name, username, email, schoolType, badge: badge || undefined };
-            localStorage.setItem(`user_${username}`, JSON.stringify(updatedUser));
-            if (password) {
+        try {
+            const userKeysStr = localStorage.getItem('user_keys') || '[]';
+            let userKeys: string[] = JSON.parse(userKeysStr);
+
+            if (currentUser) {
+                const updatedUser: User = { ...currentUser, name, username, email, schoolType, badge: badge || undefined };
+                
+                if (currentUser.username !== username) {
+                    if (localStorage.getItem(`user_${username}`)) {
+                        toast({ title: "Error", description: "Username baru sudah digunakan.", variant: "destructive" });
+                        return;
+                    }
+                    localStorage.removeItem(`user_${currentUser.username}`);
+                    userKeys = userKeys.filter(k => k !== `user_${currentUser.username}`);
+                }
+
+                localStorage.setItem(`user_${username}`, JSON.stringify(updatedUser));
+                
+                if (!userKeys.includes(`user_${username}`)) {
+                    userKeys.push(`user_${username}`);
+                }
+                
+                if (password) {
+                    localStorage.setItem(`pwd_${email}`, password);
+                }
+
+                if(activeUser?.username === currentUser.username) {
+                    updateUser(updatedUser);
+                }
+
+                toast({ title: "Sukses", description: "Data pengguna berhasil diperbarui." });
+
+            } else {
+                if (!password) {
+                     toast({ title: "Error", description: "Password harus diisi untuk pengguna baru.", variant: "destructive" });
+                     return;
+                }
+                if (localStorage.getItem(`user_${username}`)) {
+                     toast({ title: "Error", description: "Pengguna dengan username ini sudah ada.", variant: "destructive" });
+                     return;
+                }
+                const newUser: User = { name, username, email, schoolType, role: 'user', badge: badge || undefined };
+                localStorage.setItem(`user_${username}`, JSON.stringify(newUser));
                 localStorage.setItem(`pwd_${email}`, password);
+                userKeys.push(`user_${username}`);
+                toast({ title: "Sukses", description: "Pengguna baru berhasil ditambahkan." });
             }
-            toast({ title: "Sukses", description: "Data pengguna berhasil diperbarui." });
-        } else { 
-            if (!password) {
-                 toast({ title: "Error", description: "Password harus diisi untuk pengguna baru.", variant: "destructive" });
-                 return;
-            }
-            if (localStorage.getItem(`user_${username}`)) {
-                 toast({ title: "Error", description: "Pengguna dengan username ini sudah ada.", variant: "destructive" });
-                 return;
-            }
-            const newUser: User = { name, username, email, schoolType, role: 'user', badge: badge || undefined };
-             localStorage.setItem(`user_${username}`, JSON.stringify(newUser));
-             localStorage.setItem(`pwd_${email}`, password);
-             toast({ title: "Sukses", description: "Pengguna baru berhasil ditambahkan." });
+            
+            localStorage.setItem('user_keys', JSON.stringify(Array.from(new Set(userKeys))));
+            loadUsers();
+            setIsDialogOpen(false);
+        } catch (error) {
+            console.error("Failed to save user:", error);
+            toast({ title: "Error", description: "Gagal menyimpan data pengguna.", variant: "destructive" });
         }
-        
-        loadUsers();
-        setIsDialogOpen(false);
     };
 
-    const handleDeleteUser = (user: User) => {
+    const handleDeleteUser = async (user: User) => {
         if (user.role === 'admin') {
             toast({ title: "Aksi Ditolak", description: "Tidak dapat menghapus akun admin.", variant: "destructive" });
             return;
         }
-        localStorage.removeItem(`user_${user.username}`);
-        localStorage.removeItem(`pwd_${user.email}`);
-        toast({ title: "Sukses", description: "Pengguna berhasil dihapus." });
-        loadUsers();
+
+        try {
+            localStorage.removeItem(`user_${user.username}`);
+            localStorage.removeItem(`pwd_${user.email}`);
+
+            const userKeysStr = localStorage.getItem('user_keys') || '[]';
+            let userKeys: string[] = JSON.parse(userKeysStr);
+            userKeys = userKeys.filter(key => key !== `user_${user.username}`);
+            localStorage.setItem('user_keys', JSON.stringify(userKeys));
+
+            toast({ title: "Sukses", description: "Pengguna berhasil dihapus." });
+            loadUsers();
+        } catch(error) {
+            console.error("Failed to delete user:", error);
+            toast({ title: "Error", description: "Gagal menghapus pengguna.", variant: "destructive" });
+        }
     };
 
     return (
