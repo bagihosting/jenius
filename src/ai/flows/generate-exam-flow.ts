@@ -32,7 +32,7 @@ const MultipleChoiceQuestionSchema = z.object({
 
 const EssayQuestionSchema = z.object({
     question: z.string().describe("The text of the essay question."),
-    answer: z.string().describe("A detailed, genius-level explanation for the answer, structured with analysis, steps, and conclusion."),
+    answer: z.string().describe("A simple, smart, and genius explanation for the answer. Format: 'Konsep Kunci: [explanation]\n\nJawaban Cerdas: [answer]'."),
 });
 
 const GenerateExamOutputSchema = z.object({
@@ -50,20 +50,25 @@ const prompt = ai.definePrompt({
   name: 'generateExamPrompt',
   input: {schema: GenerateExamInputSchema},
   output: {schema: GenerateExamOutputSchema},
-  prompt: `Anda adalah seorang ahli pembuat soal ujian yang jenius untuk siswa di Indonesia. Anda mengikuti Kurikulum Merdeka.
+  prompt: `Anda adalah seorang ahli pembuat soal ujian yang jenius untuk siswa di Indonesia. Anda mengikuti Kurikulum Merdeka dan mempersiapkan siswa untuk ujian tahun 2025.
 Buat satu set soal latihan ujian berdasarkan konteks yang diberikan. Pastikan tingkat kesulitan soal sesuai untuk siswa kelas {{{grade}}} di sekolah jenis {{{schoolType}}} untuk semester {{{semester}}}.
-Gunakan string tanggal berikut sebagai 'benih' untuk memastikan soal yang Anda buat unik dan bervariasi setiap harinya:
+Gunakan string tanggal berikut sebagai 'benih' untuk memastikan soal yang Anda buat UNIK dan BERBEDA setiap harinya:
 - Tanggal: {{{dateSeed}}}
 - Email Pengguna (untuk variasi per pengguna): {{{userEmail}}}
 
 PENTING: Sesuaikan kompleksitas soal dan bahasa dengan tingkatan kelas:
 - Kelas 1-2 (Fase A): Gunakan bahasa yang sangat sederhana dan pertanyaan konkret. Fokus pada pemahaman dasar. Contoh soal harus mudah divisualisasikan.
 - Kelas 3-4 (Fase B): Gunakan bahasa yang jelas dan mulai perkenalkan soal yang membutuhkan penalaran sederhana. Jawaban mungkin memerlukan satu atau dua langkah pemikiran.
-- Kelas 5-6 (Fase C): Buat soal yang lebih analitis dan membutuhkan pemikiran tingkat tinggi (HOTS). Boleh menyertakan soal cerita atau studi kasus singkat.
+- Kelas 5-6 (Fase C): Buat soal yang lebih analitis dan membutuhkan pemikiran tingkat tinggi (HOTS). Fokus pada soal-soal yang prediktif akan keluar di ujian 2025. Boleh menyertakan soal cerita atau studi kasus singkat.
 
 Buat setidaknya 10 soal pilihan ganda dengan 4 pilihan jawaban (A, B, C, D). Untuk setiap soal pilihan ganda, berikan penjelasan singkat, cerdas, dan mudah dimengerti. Dalam penjelasan, **tebalkan (gunakan Markdown: **kata**) kata-kata kunci atau jawaban yang benar** agar mudah dikenali.
-Buat juga 5 soal esai dengan jawaban penjelasan yang cerdas dan mendalam.
-Jawaban esai harus mengikuti format: Analisis Masalah, Langkah-langkah Penyelesaian, dan Kesimpulan.
+
+Buat juga 5 soal esai dengan jawaban penjelasan yang CERDAS, SIMPEL, dan JENIUS.
+Jawaban esai HARUS mengikuti format berikut:
+Konsep Kunci: [Jelaskan konsep utama yang relevan dengan pertanyaan secara singkat]
+
+Jawaban Cerdas: [Berikan jawaban yang lugas dan tepat sasaran]
+
 Semua konten harus dalam Bahasa Indonesia, kecuali jika mata pelajarannya adalah Bahasa Inggris atau Bahasa Arab.
 
 Konten Mata Pelajaran (termasuk fokus semester): {{{subjectContent}}}
