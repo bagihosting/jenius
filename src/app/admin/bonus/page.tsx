@@ -15,7 +15,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/types';
-import { Loader2, Search, Gift, ToggleLeft, ToggleRight, Trash2, Crown } from 'lucide-react';
+import { Loader2, Search, Gift, ToggleLeft, ToggleRight, Trash2, Crown, Edit, Save, XCircle } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -42,6 +42,9 @@ export default function BonusManagementPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isFeatureActive, setIsFeatureActive] = useState(false);
   const [userToReset, setUserToReset] = useState<User | null>(null);
+  
+  const [editingUserEmail, setEditingUserEmail] = useState<string | null>(null);
+  const [newBonusValue, setNewBonusValue] = useState('');
 
   const loadData = () => {
     setIsLoading(true);
@@ -100,6 +103,34 @@ export default function BonusManagementPage() {
     }
   };
 
+  const handleEditBonus = (user: User, currentBonus: number) => {
+    setEditingUserEmail(user.email);
+    setNewBonusValue(currentBonus.toString());
+  };
+
+  const handleCancelEdit = () => {
+    setEditingUserEmail(null);
+    setNewBonusValue('');
+  };
+
+  const handleSaveBonus = (email: string) => {
+    const newBonus = parseFloat(newBonusValue);
+    if (isNaN(newBonus) || newBonus < 0) {
+      toast({ title: 'Nilai Tidak Valid', description: 'Bonus harus berupa angka positif.', variant: 'destructive' });
+      return;
+    }
+    
+    try {
+      localStorage.setItem(`bonus_points_${email}`, newBonus.toFixed(4));
+      toast({ title: 'Bonus Diperbarui', description: `Bonus telah berhasil diperbarui.` });
+      loadData();
+    } catch (error) {
+      toast({ title: 'Gagal Memperbarui Bonus', variant: 'destructive' });
+    } finally {
+      handleCancelEdit();
+    }
+  };
+
   const filteredUsers = useMemo(() => {
     return users.filter(item =>
       (item.user.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
@@ -130,7 +161,7 @@ export default function BonusManagementPage() {
       <Card>
         <CardHeader>
             <CardTitle>Peringkat Bonus Siswa</CardTitle>
-            <CardDescription>Daftar siswa berdasarkan poin bonus yang terkumpul. Reset bonus setelah dikirimkan.</CardDescription>
+            <CardDescription>Daftar siswa berdasarkan poin bonus yang terkumpul. Edit atau reset bonus setelah dikirimkan.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="p-4 border-b">
@@ -187,16 +218,41 @@ export default function BonusManagementPage() {
                       </TableCell>
                       <TableCell>{user.robloxUsername || <span className="text-muted-foreground italic">Belum diisi</span>}</TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2 font-bold">
-                            <Crown className="w-4 h-4 text-amber-500" />
-                            {bonus.toFixed(4)}
-                        </div>
+                        {editingUserEmail === user.email ? (
+                           <Input 
+                                type="number"
+                                value={newBonusValue}
+                                onChange={(e) => setNewBonusValue(e.target.value)}
+                                className="h-8 w-32"
+                                step="0.01"
+                           />
+                        ) : (
+                           <div className="flex items-center gap-2 font-bold">
+                               <Crown className="w-4 h-4 text-amber-500" />
+                               {bonus.toFixed(4)}
+                           </div>
+                        )}
                       </TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="outline" size="sm" onClick={() => setUserToReset(user)} disabled={bonus === 0}>
-                            <Trash2 className="mr-2 h-3 w-3" />
-                            Reset Bonus
-                        </Button>
+                      <TableCell className="text-right space-x-1">
+                        {editingUserEmail === user.email ? (
+                            <>
+                                <Button variant="ghost" size="icon" onClick={() => handleSaveBonus(user.email)}>
+                                    <Save className="h-4 w-4 text-green-600"/>
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={handleCancelEdit}>
+                                    <XCircle className="h-4 w-4 text-red-600"/>
+                                </Button>
+                            </>
+                        ) : (
+                            <>
+                                <Button variant="ghost" size="icon" onClick={() => handleEditBonus(user, bonus)}>
+                                    <Edit className="h-4 w-4"/>
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => setUserToReset(user)} disabled={bonus === 0}>
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))
