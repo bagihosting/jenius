@@ -11,12 +11,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const { toast } = useToast();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('user@ayahjenius.com');
+  const [password, setPassword] = useState('password123');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = (e: React.FormEvent) => {
@@ -25,13 +27,12 @@ export default function LoginPage() {
 
     // Placeholder for actual login logic
     setTimeout(() => {
-        // Here you would typically call a server action or API route for authentication
-        console.log('Login attempt with:', { email, password });
         toast({
             title: "Login Berhasil (Simulasi)",
             description: "Anda akan diarahkan untuk memilih kelas.",
         });
-        router.push('/belajar');
+        // For simulation, we'll use a mock user object
+        login({ name: 'Pengguna Jenius', email });
         setIsLoading(false);
     }, 1500);
   };

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
+import { AuthProvider } from '@/context/AuthContext';
 
 export const metadata: Metadata = {
   title: 'Ayah Jenius',
@@ -21,10 +22,12 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <Suspense>
-          {children}
-        </Suspense>
-        <Toaster />
+        <AuthProvider>
+            <Suspense>
+            {children}
+            </Suspense>
+            <Toaster />
+        </AuthProvider>
       </body>
     </html>
   );

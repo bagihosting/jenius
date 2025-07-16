@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
@@ -8,9 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { ArrowRight } from 'lucide-react';
-import Link from 'next/link';
 import { Suspense } from 'react';
-
+import { useAuth } from '@/context/AuthContext';
+import { Loader2 } from 'lucide-react';
 
 const schoolTypes = [
   { id: 'SDN', name: 'SD Negeri' },
@@ -34,15 +34,31 @@ const semesters = [
 
 function BelajarSelection() {
   const router = useRouter();
+  const { isAuthenticated, loading } = useAuth();
   const [schoolType, setSchoolType] = useState('');
   const [grade, setGrade] = useState('');
   const [semester, setSemester] = useState('');
+  
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [isAuthenticated, loading, router]);
+
 
   const handleStartLearning = () => {
     if (schoolType && grade && semester) {
       router.push(`/dashboard?school=${schoolType}&grade=${grade}&semester=${semester}`);
     }
   };
+
+  if (loading || !isAuthenticated) {
+    return (
+        <div className="flex-grow flex items-center justify-center">
+            <Loader2 className="h-12 w-12 animate-spin text-primary"/>
+        </div>
+    )
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
