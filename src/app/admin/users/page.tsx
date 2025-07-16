@@ -62,7 +62,7 @@ export default function AdminUsersPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
-    const [formData, setFormData] = useState({ name: '', email: '', schoolType: '' as SchoolType, password: '', badge: '' });
+    const [formData, setFormData] = useState({ name: '', email: '', schoolType: 'SDN' as SchoolType, password: '', badge: '' });
     const { toast } = useToast();
 
     const loadUsers = useCallback(() => {
@@ -124,13 +124,13 @@ export default function AdminUsersPage() {
         setIsDialogOpen(true);
     };
 
-    const handleFormChange = (e: React.ChangeEvent<HTMLInputElement> | string, field: string) => {
-        if (typeof e === 'string') {
-            setFormData(prev => ({...prev, [field]: e}));
-        } else {
-            setFormData(prev => ({...prev, [e.target.name]: e.target.value}));
-        }
+    const handleFormChange = (value: string, field: string) => {
+        setFormData(prev => ({...prev, [field]: value}));
     };
+    
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData(prev => ({...prev, [e.target.name]: e.target.value}));
+    }
 
     const handleFormSubmit = () => {
         const { name, email, schoolType, password, badge } = formData;
@@ -286,15 +286,15 @@ export default function AdminUsersPage() {
                     <div className="grid gap-4 py-4">
                          <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="name" className="text-right">Nama</Label>
-                            <Input id="name" name="name" value={formData.name} onChange={(e) => handleFormChange(e, 'name')} className="col-span-3" />
+                            <Input id="name" name="name" value={formData.name} onChange={handleInputChange} className="col-span-3" />
                          </div>
                          <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="email" className="text-right">Email</Label>
-                            <Input id="email" name="email" type="email" value={formData.email} onChange={(e) => handleFormChange(e, 'email')} className="col-span-3" />
+                            <Input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} className="col-span-3" />
                          </div>
                          <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="password_field" className="text-right">Password</Label>
-                            <Input id="password_field" name="password" type="password" value={formData.password} onChange={(e) => handleFormChange(e, 'password')} className="col-span-3" placeholder={currentUser ? "Kosongkan jika tidak ingin mengubah" : "Wajib diisi"}/>
+                            <Input id="password_field" name="password" type="password" value={formData.password} onChange={handleInputChange} className="col-span-3" placeholder={currentUser ? "Kosongkan jika tidak ingin mengubah" : "Wajib diisi"}/>
                          </div>
                          <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="schoolType" className="text-right">Jenis Sekolah</Label>
@@ -336,4 +336,5 @@ export default function AdminUsersPage() {
             </Dialog>
         </Card>
     );
-}
+
+    
