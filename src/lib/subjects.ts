@@ -1,3 +1,4 @@
+
 import type { Subject, SchoolType, Grade, Semester } from './types';
 
 // Base subjects applicable to most grades and schools
@@ -36,6 +37,7 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
         'Ilmu Pengetahuan Alam (IPA)': ['Rangka dan Organ Manusia', 'Sifat-sifat Cahaya', 'Penyesuaian Diri Makhluk Hidup'],
         'Ilmu Pengetahuan Sosial (IPS)': ['Peninggalan Sejarah (Kerajaan Hindu-Buddha)', 'Kenampakan Alam', 'Kegiatan Ekonomi Berdasarkan Sumber Daya Alam'],
         'Pendidikan Pancasila': ['Makna dan Penerapan Sila Pancasila', 'Norma dan Aturan di Masyarakat'],
+        'Pendidikan Agama & Budi Pekerti': ['Kisah Nabi Adam A.S.', 'Asmaul Husna', 'Tata Cara Wudhu'],
         'Bahasa Inggris': ['Greetings and Introductions', 'Things in the Classroom', 'Family Members'],
         'PJOK': ['Gerak Dasar Lokomotor', 'Permainan Bola Besar (Sepak Bola, Voli)'],
         'SBDP': ['Menggambar Ilustrasi', 'Lagu Wajib Nasional'],
@@ -53,6 +55,7 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
         'Ilmu Pengetahuan Alam (IPA)': ['Sistem Tata Surya', 'Listrik dan Magnet', 'Sistem Pernapasan dan Pencernaan Manusia'],
         'Ilmu Pengetahuan Sosial (IPS)': ['Perjuangan Melawan Penjajah', 'Proklamasi Kemerdekaan', 'Koperasi dan Usaha Ekonomi'],
         'Pendidikan Pancasila': ['Bhinneka Tunggal Ika', 'Hak dan Kewajiban sebagai Warga Negara', 'Musyawarah untuk Mufakat'],
+        'Pendidikan Agama & Budi Pekerti': ['Kisah Nabi Nuh A.S.', 'Iman kepada Malaikat', 'Tata Cara Shalat'],
         'Bahasa Inggris': ['Telling Time', 'Daily Activities', 'Describing Animals'],
         'PJOK': ['Senam Lantai', 'Permainan Bola Kecil (Kasti, Bulu Tangkis)'],
         'SBDP': ['Membuat Karya Montase dan Kolase', 'Lagu Daerah'],
