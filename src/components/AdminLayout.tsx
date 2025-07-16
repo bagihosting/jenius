@@ -26,6 +26,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const { state } = useSidebar();
 
+    const dashboardHref = user?.role === 'admin' ? '/admin/dashboard' : '/belajar';
+
     return (
         <div className="flex min-h-screen w-full">
             <Sidebar>
@@ -45,6 +47,14 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                                 <Link href="/admin/dashboard">
                                     <Home />
                                     <span>Dasbor</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                         <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/users')} tooltip="Pengguna">
+                                <Link href="/admin/users">
+                                    <Users />
+                                    <span>Pengguna</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
