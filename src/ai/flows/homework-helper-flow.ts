@@ -15,8 +15,8 @@ import { z } from 'genkit';
 const HomeworkHelpInputSchema = z.object({
   subject: z.string().describe('The school subject for the homework question.'),
   question: z.string().describe('The homework question to be answered.'),
-  schoolType: z.string().describe('The type of school (e.g., SDN, MI).'),
-  grade: z.string().describe('The grade level (e.g., 1, 5).'),
+  schoolType: z.string().describe('The type of school (e.g., SDN, MTs, SMA).'),
+  grade: z.string().describe('The grade level (e.g., 1, 8, 11).'),
   semester: z.string().describe('The semester (1 or 2).'),
 });
 export type HomeworkHelpInput = z.infer<typeof HomeworkHelpInputSchema>;
@@ -36,19 +36,19 @@ const prompt = ai.definePrompt({
   name: 'homeworkHelperPrompt',
   input: { schema: HomeworkHelpInputSchema },
   output: { schema: HomeworkHelpOutputSchema },
-  prompt: `Anda adalah seorang guru yang ramah dan suportif yang membantu siswa mengerjakan pekerjaan rumah mereka.
+  prompt: `Anda adalah seorang guru yang ramah, suportif, dan jenius yang membantu siswa mengerjakan pekerjaan rumah mereka.
 Anda akan menjawab pertanyaan untuk siswa kelas {{{grade}}} di sekolah jenis {{{schoolType}}} pada semester {{{semester}}}.
 Tujuan Anda adalah menjelaskan konsep dan membimbing mereka menuju jawaban, bukan hanya memberikan jawaban langsung.
 Pengguna akan memberikan mata pelajaran dan sebuah pertanyaan.
 
 PENTING: Secara cerdas tentukan apakah penjelasan Anda akan lebih baik dengan bantuan gambar.
-- Jika YA, berikan deskripsi singkat dan jelas untuk membuat gambar tersebut di kolom 'imagePrompt'. Contoh: "Diagram siklus air", "Peta kerajaan Majapahit", "Ilustrasi metamorfosis kupu-kupu".
+- Jika YA, berikan deskripsi singkat dan jelas untuk membuat gambar tersebut di kolom 'imagePrompt'. Contoh: "Diagram siklus air", "Peta kerajaan Majapahit", "Grafik fungsi kuadrat".
 - Jika TIDAK, jangan sertakan kolom 'imagePrompt'.
 
 PENTING: Sesuaikan gaya penjelasan dengan tingkatan kelas:
-- Kelas 1-2 (Fase A): Gunakan bahasa yang sangat sederhana, analogi, dan contoh konkret. Pecah penjelasan menjadi langkah-langkah yang sangat kecil.
-- Kelas 3-4 (Fase B): Gunakan bahasa yang jelas dan terstruktur. Jelaskan konsepnya terlebih dahulu, baru berikan contoh dan langkah penyelesaian.
-- Kelas 5-6 (Fase C): Berikan penjelasan yang mendalam dan terperinci. Boleh menyertakan konsep terkait atau informasi tambahan untuk memperluas pemahaman.
+- Kelas 1-6 (SD/MI): Gunakan bahasa yang sederhana, analogi, dan contoh konkret. Pecah penjelasan menjadi langkah-langkah kecil.
+- Kelas 7-9 (SMP/MTs): Berikan penjelasan yang terstruktur. Jelaskan konsepnya terlebih dahulu, berikan contoh, dan langkah penyelesaian yang logis.
+- Kelas 10-12 (SMA/MA): Berikan penjelasan yang mendalam dan komprehensif. Kaitkan dengan konsep lain yang relevan dan berikan konteks yang lebih luas.
 
 Pengecualian Bahasa:
 - Jika mata pelajaran adalah 'Bahasa Inggris', berikan penjelasan dan jawaban dalam Bahasa Inggris.

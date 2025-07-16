@@ -21,8 +21,8 @@ const GenerateQuizInputSchema = z.object({
     .number()
     .default(10)
     .describe('The number of questions to generate for the quiz.'),
-  schoolType: z.string().describe('The type of school (e.g., SDN, MI).'),
-  grade: z.string().describe('The grade level (e.g., 1, 5).'),
+  schoolType: z.string().describe('The type of school (e.g., SDN, MTs, SMA).'),
+  grade: z.string().describe('The grade level (e.g., 1, 8, 11).'),
   semester: z.string().describe('The semester (1 or 2).'),
   dateSeed: z.string().describe('The current date (YYYY-MM-DD) to ensure daily variety.'),
   userEmail: z.string().describe('The email of the user to ensure question uniqueness per user.'),
@@ -51,20 +51,20 @@ const prompt = ai.definePrompt({
   name: 'generateQuizPrompt',
   input: {schema: GenerateQuizInputSchema},
   output: {schema: GenerateQuizOutputSchema},
-  prompt: `Anda adalah seorang ahli pembuat kuis untuk siswa sekolah dasar di Indonesia.
+  prompt: `Anda adalah seorang ahli pembuat kuis untuk siswa sekolah di Indonesia.
 Buatlah kuis berdasarkan konteks yang diberikan. Pastikan tingkat kesulitan soal sesuai untuk siswa kelas {{{grade}}} di sekolah jenis {{{schoolType}}} untuk semester {{{semester}}}.
 Gunakan string berikut sebagai 'benih' untuk memastikan soal yang Anda buat UNIK dan BERBEDA setiap kali diminta:
 - Tanggal: {{{dateSeed}}}
 - Email Pengguna: {{{userEmail}}}
 
 PENTING: Untuk setiap pertanyaan, secara cerdas tentukan apakah pertanyaan tersebut akan lebih mudah dipahami dengan bantuan gambar.
-- Jika YA, berikan deskripsi singkat dan jelas untuk membuat gambar tersebut di kolom 'imagePrompt'. Contoh: "Ilustrasi rantai makanan di sawah", "Gambar bangun ruang kubus", "Bendera negara-negara ASEAN".
+- Jika YA, berikan deskripsi singkat dan jelas untuk membuat gambar tersebut di kolom 'imagePrompt'. Contoh: "Ilustrasi rantai makanan di sawah", "Gambar bangun ruang kubus", "Grafik permintaan dan penawaran".
 - Jika TIDAK, jangan sertakan kolom 'imagePrompt'.
 
 PENTING: Sesuaikan kompleksitas soal dan bahasa dengan tingkatan kelas:
-- Kelas 1-2 (Fase A): Gunakan bahasa yang sangat sederhana dan pertanyaan yang sangat mendasar. Pilihan jawaban harus jelas dan tidak membingungkan.
-- Kelas 3-4 (Fase B): Gunakan bahasa yang jelas. Pertanyaan boleh menguji pemahaman konsep dasar, bukan hanya hafalan.
-- Kelas 5-6 (Fase C): Buat pertanyaan yang menguji penerapan konsep atau analisis sederhana.
+- Kelas 1-6 (SD/MI): Gunakan bahasa yang sederhana dan pertanyaan yang menguji pemahaman dasar hingga penerapan konsep sederhana.
+- Kelas 7-9 (SMP/MTs): Gunakan bahasa yang lebih formal. Pertanyaan boleh menguji pemahaman konsep, analisis sederhana, dan penerapan rumus.
+- Kelas 10-12 (SMA/MA): Buat pertanyaan yang menguji analisis mendalam, pemikiran kritis, dan penerapan konsep kompleks.
 
 Setiap pertanyaan harus memiliki:
 1.  Teks pertanyaan.

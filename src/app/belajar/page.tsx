@@ -15,12 +15,18 @@ import { Loader2 } from 'lucide-react';
 import type { Grade } from '@/lib/types';
 
 const gradeLevels = [
-  { id: '1', name: 'Kelas 1' },
-  { id: '2', name: 'Kelas 2' },
-  { id: '3', name: 'Kelas 3' },
-  { id: '4', name: 'Kelas 4' },
-  { id: '5', name: 'Kelas 5' },
-  { id: '6', name: 'Kelas 6' },
+  { id: '1', name: 'Kelas 1 SD/MI' },
+  { id: '2', name: 'Kelas 2 SD/MI' },
+  { id: '3', name: 'Kelas 3 SD/MI' },
+  { id: '4', name: 'Kelas 4 SD/MI' },
+  { id: '5', name: 'Kelas 5 SD/MI' },
+  { id: '6', name: 'Kelas 6 SD/MI' },
+  { id: '7', name: 'Kelas 7 SMP/MTs' },
+  { id: '8', name: 'Kelas 8 SMP/MTs' },
+  { id: '9', name: 'Kelas 9 SMP/MTs' },
+  { id: '10', name: 'Kelas 10 SMA/MA' },
+  { id: '11', name: 'Kelas 11 SMA/MA' },
+  { id: '12', name: 'Kelas 12 SMA/MA' },
 ];
 
 const semesters = [

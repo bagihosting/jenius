@@ -18,6 +18,10 @@ const schoolTypes: { id: SchoolType; name: string }[] = [
   { id: 'SDN', name: 'SD Negeri' },
   { id: 'SDIT', name: 'SD Islam Terpadu' },
   { id: 'MI', name: 'Madrasah Ibtidaiyah (MI)' },
+  { id: 'SMP', name: 'SMP (Sekolah Menengah Pertama)' },
+  { id: 'MTs', name: 'MTs (Madrasah Tsanawiyah)' },
+  { id: 'SMA', name: 'SMA (Sekolah Menengah Atas)' },
+  { id: 'MA', name: 'MA (Madrasah Aliyah)' },
 ];
 
 export default function RegisterPage() {
@@ -180,7 +184,7 @@ export default function RegisterPage() {
                 <Input
                   id="school-name"
                   type="text"
-                  placeholder="Contoh: SDN 1 Tangerang"
+                  placeholder="Contoh: SMPN 1 Jakarta"
                   value={schoolName}
                   onChange={(e) => setSchoolName(e.target.value)}
                   required

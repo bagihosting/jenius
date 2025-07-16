@@ -16,8 +16,8 @@ import type { MultipleChoiceQuestion, EssayQuestion } from '@/lib/types';
 const GenerateExamInputSchema = z.object({
   subjectContent: z.string().describe('The content of the subject to generate the exam from, including semester context.'),
   dateSeed: z.string().describe('The current date (YYYY-MM-DD) to ensure daily variety.'),
-  schoolType: z.string().describe('The type of school (e.g., SDN, MI).'),
-  grade: z.string().describe('The grade level (e.g., 1, 5).'),
+  schoolType: z.string().describe('The type of school (e.g., SDN, MTs, SMA).'),
+  grade: z.string().describe('The grade level (e.g., 1, 8, 11).'),
   semester: z.string().describe('The semester (1 or 2).'),
   userEmail: z.string().describe('The email of the user to ensure question uniqueness per user.'),
 });
@@ -61,21 +61,22 @@ Gunakan string tanggal berikut sebagai 'benih' untuk memastikan soal yang Anda b
 - Email Pengguna (untuk variasi per pengguna): {{{userEmail}}}
 
 PENTING: Untuk setiap soal (pilihan ganda dan esai), secara cerdas tentukan apakah soal tersebut akan lebih mudah dipahami dengan bantuan gambar.
-- Jika YA, berikan deskripsi singkat dan jelas untuk membuat gambar tersebut di kolom 'imagePrompt'. Contoh: "Diagram siklus air", "Peta kerajaan Majapahit", "Ilustrasi metamorfosis kupu-kupu".
+- Jika YA, berikan deskripsi singkat dan jelas untuk membuat gambar tersebut di kolom 'imagePrompt'. Contoh: "Diagram siklus air", "Peta kerajaan Majapahit", "Grafik fungsi kuadrat".
 - Jika TIDAK, jangan sertakan kolom 'imagePrompt'.
 
 PENTING: Sesuaikan kompleksitas soal dan bahasa dengan tingkatan kelas:
-- Kelas 1-2 (Fase A): Gunakan bahasa yang sangat sederhana dan pertanyaan konkret. Fokus pada pemahaman dasar. Contoh soal harus mudah divisualisasikan.
-- Kelas 3-4 (Fase B): Gunakan bahasa yang jelas dan mulai perkenalkan soal yang membutuhkan penalaran sederhana. Jawaban mungkin memerlukan satu atau dua langkah pemikiran.
-- Kelas 5-6 (Fase C): Buat soal yang lebih analitis dan membutuhkan pemikiran tingkat tinggi (HOTS). Fokus pada soal-soal yang prediktif akan keluar di ujian 2025. Boleh menyertakan soal cerita atau studi kasus singkat.
+- Kelas 1-3 (Fase A/B): Gunakan bahasa yang sangat sederhana dan pertanyaan konkret. Fokus pada pemahaman dasar.
+- Kelas 4-6 (Fase B/C): Gunakan bahasa yang jelas dan mulai perkenalkan soal yang membutuhkan penalaran sederhana. Jawaban mungkin memerlukan satu atau dua langkah pemikiran.
+- Kelas 7-9 (Fase D): Buat soal yang analitis dan menguji pemahaman konsep tingkat SMP/MTs. Bahasa harus formal namun mudah dipahami. Fokus pada soal HOTS yang relevan.
+- Kelas 10-12 (Fase E/F): Buat soal yang kompleks, analitis, dan membutuhkan pemikiran tingkat tinggi (HOTS) setara SMA/MA. Fokus pada soal-soal yang prediktif akan keluar di ujian 2025 (UTBK, dll). Boleh menyertakan soal cerita atau studi kasus.
 
 Buat setidaknya 10 soal pilihan ganda dengan 4 pilihan jawaban (A, B, C, D). PENTING: Pastikan setiap pilihan jawaban UNIK dan hanya ada SATU jawaban yang benar secara definitif. Untuk setiap soal pilihan ganda, berikan penjelasan singkat, cerdas, dan mudah dimengerti. Dalam penjelasan, **tebalkan (gunakan Markdown: **kata**) kata-kata kunci atau jawaban yang benar** agar mudah dikenali.
 
 Buat juga 5 soal esai dengan jawaban penjelasan yang CERDAS, SIMPEL, dan JENIUS.
 Jawaban esai HARUS mengikuti format berikut:
-Konsep Kunci: [Jelaskan konsep utama yang relevan dengan pertanyaan secara singkat]
+Konsep Kunci: [Jelaskan konsep utama yang relevan dengan pertanyaan secara singkat dan mendalam]
 
-Jawaban Cerdas: [Berikan jawaban yang lugas dan tepat sasaran]
+Jawaban Cerdas: [Berikan jawaban yang lugas, tepat sasaran, dan menunjukkan pemahaman tingkat tinggi]
 
 Semua konten harus dalam Bahasa Indonesia, kecuali jika mata pelajarannya adalah Bahasa Inggris atau Bahasa Arab.
 
