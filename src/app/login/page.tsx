@@ -18,7 +18,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
   const { toast } = useToast();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -28,11 +28,20 @@ export default function LoginPage() {
 
     setTimeout(() => {
         try {
-            const storedPassword = localStorage.getItem(`pwd_${email}`);
-            const storedUser = localStorage.getItem(`user_${email}`);
+            const storedUser = localStorage.getItem(`user_${username}`);
+            if (!storedUser) {
+                 toast({
+                    title: "Login Gagal",
+                    description: "Username tidak ditemukan. Silakan coba lagi.",
+                    variant: "destructive",
+                });
+                return;
+            }
+            
+            const userData: User = JSON.parse(storedUser);
+            const storedPassword = localStorage.getItem(`pwd_${userData.email}`);
 
-            if (storedUser && storedPassword === password) {
-                const userData: User = JSON.parse(storedUser);
+            if (storedPassword === password) {
                 toast({
                     title: "Login Berhasil",
                     description: `Selamat datang kembali, ${userData.name}!`,
@@ -41,7 +50,7 @@ export default function LoginPage() {
             } else {
                  toast({
                     title: "Login Gagal",
-                    description: "Email atau password salah. Silakan coba lagi.",
+                    description: "Password salah. Silakan coba lagi.",
                     variant: "destructive",
                 });
             }
@@ -70,13 +79,13 @@ export default function LoginPage() {
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="username">Username</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="email@contoh.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="username"
+                  type="text"
+                  placeholder="username_anda"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   required
                 />
               </div>

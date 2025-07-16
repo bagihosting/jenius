@@ -23,6 +23,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [schoolType, setSchoolType] = useState('');
@@ -42,19 +43,36 @@ export default function RegisterPage() {
 
     setTimeout(() => {
       try {
-        if (localStorage.getItem(`user_${email}`)) {
+        if (localStorage.getItem(`user_${username}`)) {
           toast({
             title: "Pendaftaran Gagal",
-            description: "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk.",
+            description: "Username ini sudah terdaftar. Silakan gunakan username lain.",
             variant: "destructive",
           });
           setIsLoading(false);
           return;
         }
 
-        const newUser = { name, email, schoolType, role: 'user' };
-        localStorage.setItem(`user_${email}`, JSON.stringify(newUser));
-        localStorage.setItem(`pwd_${email}`, password);
+        // Also check if email is already used by iterating through users
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('user_')) {
+                const userData = JSON.parse(localStorage.getItem(key) || '{}');
+                if (userData.email === email) {
+                    toast({
+                        title: "Pendaftaran Gagal",
+                        description: "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk.",
+                        variant: "destructive",
+                    });
+                    setIsLoading(false);
+                    return;
+                }
+            }
+        }
+
+        const newUser = { name, username, email, schoolType, role: 'user' as 'user' };
+        localStorage.setItem(`user_${username}`, JSON.stringify(newUser));
+        localStorage.setItem(`pwd_${email}`, password); // Keep pwd key with email for now
 
         console.log('Registering user:', newUser);
         toast({
@@ -85,7 +103,7 @@ export default function RegisterPage() {
             <CardDescription>Bergabunglah dengan Ayah Jenius untuk mulai belajar.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleRegister} className="space-y-6">
+            <form onSubmit={handleRegister} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Nama Lengkap</Label>
                 <Input
@@ -95,6 +113,19 @@ export default function RegisterPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
+                />
+              </div>
+               <div className="space-y-2">
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  placeholder="Buat username unik"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value.toLowerCase())}
+                  required
+                  pattern="[a-z0-9_]+"
+                  title="Username hanya boleh berisi huruf kecil, angka, dan garis bawah (_)."
                 />
               </div>
               <div className="space-y-2">

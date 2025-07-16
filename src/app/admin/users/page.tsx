@@ -62,31 +62,36 @@ export default function AdminUsersPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
-    const [formData, setFormData] = useState({ name: '', email: '', schoolType: 'SDN' as SchoolType, password: '', badge: '' });
+    const [formData, setFormData] = useState({ name: '', username: '', email: '', schoolType: 'SDN' as SchoolType, password: '', badge: '' });
     const { toast } = useToast();
 
     const loadUsers = useCallback(() => {
         setIsLoading(true);
         try {
             const loadedUsers: User[] = [];
-            // Ensure admin user exists for login
-            if (!localStorage.getItem('user_admin@ayahjenius.com')) {
-                localStorage.setItem('user_admin@ayahjenius.com', JSON.stringify({
+            
+            // Ensure admin user exists
+            if (!localStorage.getItem('user_admin')) {
+                const adminUser = {
                     name: 'Admin Jenius',
+                    username: 'admin',
                     email: 'admin@ayahjenius.com',
                     schoolType: 'SDN',
-                    role: 'admin'
-                }));
+                    role: 'admin' as 'admin'
+                };
+                localStorage.setItem('user_admin', JSON.stringify(adminUser));
                 localStorage.setItem('pwd_admin@ayahjenius.com', 'admin123');
             }
-             // Ensure default user exists for login
-            if (!localStorage.getItem('user_user@ayahjenius.com')) {
-                localStorage.setItem('user_user@ayahjenius.com', JSON.stringify({
+             // Ensure default user exists
+            if (!localStorage.getItem('user_user')) {
+                 const defaultUser = {
                     name: 'Pengguna Jenius',
+                    username: 'user',
                     email: 'user@ayahjenius.com',
                     schoolType: 'SDN',
-                    role: 'user'
-                }));
+                    role: 'user' as 'user'
+                };
+                localStorage.setItem('user_user', JSON.stringify(defaultUser));
                  localStorage.setItem('pwd_user@ayahjenius.com', 'password123');
             }
 
@@ -95,7 +100,7 @@ export default function AdminUsersPage() {
                 if (key && key.startsWith('user_')) {
                     try {
                         const userData = JSON.parse(localStorage.getItem(key) || '{}');
-                        if (userData.email && userData.name && userData.schoolType && userData.role) {
+                        if (userData.username && userData.email && userData.name && userData.schoolType && userData.role) {
                              loadedUsers.push(userData);
                         }
                     } catch (e) {
@@ -126,13 +131,14 @@ export default function AdminUsersPage() {
         if (user) {
             setFormData({
                 name: user.name,
+                username: user.username,
                 email: user.email,
                 schoolType: user.schoolType,
                 password: '', 
                 badge: user.badge || '',
             });
         } else {
-            setFormData({ name: '', email: '', schoolType: 'SDN', password: '', badge: '' });
+            setFormData({ name: '', username: '', email: '', schoolType: 'SDN', password: '', badge: '' });
         }
         setIsDialogOpen(true);
     };
@@ -146,22 +152,25 @@ export default function AdminUsersPage() {
     };
 
     const handleFormSubmit = () => {
-        const { name, email, schoolType, password, badge } = formData;
-        if (!name || !email || !schoolType) {
-            toast({ title: "Error", description: "Nama, email, dan jenis sekolah harus diisi.", variant: "destructive" });
+        const { name, username, email, schoolType, password, badge } = formData;
+        if (!name || !username || !email || !schoolType) {
+            toast({ title: "Error", description: "Nama, username, email, dan jenis sekolah harus diisi.", variant: "destructive" });
             return;
         }
 
         if (currentUser) { 
-            if (currentUser.email !== email && localStorage.getItem(`user_${email}`)) {
-                toast({ title: "Error", description: "Pengguna dengan email baru ini sudah ada.", variant: "destructive" });
+            if (currentUser.username !== username && localStorage.getItem(`user_${username}`)) {
+                toast({ title: "Error", description: "Pengguna dengan username baru ini sudah ada.", variant: "destructive" });
                 return;
             }
+            
+            localStorage.removeItem(`user_${currentUser.username}`);
             if (currentUser.email !== email) { 
-                 localStorage.removeItem(`user_${currentUser.email}`);
+                 localStorage.removeItem(`pwd_${currentUser.email}`);
             }
-            const updatedUser: User = { ...currentUser, name, email, schoolType, badge: badge || undefined };
-            localStorage.setItem(`user_${email}`, JSON.stringify(updatedUser));
+            
+            const updatedUser: User = { ...currentUser, name, username, email, schoolType, badge: badge || undefined };
+            localStorage.setItem(`user_${username}`, JSON.stringify(updatedUser));
             if (password) {
                 localStorage.setItem(`pwd_${email}`, password);
             }
@@ -171,12 +180,12 @@ export default function AdminUsersPage() {
                  toast({ title: "Error", description: "Password harus diisi untuk pengguna baru.", variant: "destructive" });
                  return;
             }
-            if (localStorage.getItem(`user_${email}`)) {
-                 toast({ title: "Error", description: "Pengguna dengan email ini sudah ada.", variant: "destructive" });
+            if (localStorage.getItem(`user_${username}`)) {
+                 toast({ title: "Error", description: "Pengguna dengan username ini sudah ada.", variant: "destructive" });
                  return;
             }
-            const newUser: User = { name, email, schoolType, role: 'user', badge: badge || undefined };
-             localStorage.setItem(`user_${email}`, JSON.stringify(newUser));
+            const newUser: User = { name, username, email, schoolType, role: 'user', badge: badge || undefined };
+             localStorage.setItem(`user_${username}`, JSON.stringify(newUser));
              localStorage.setItem(`pwd_${email}`, password);
              toast({ title: "Sukses", description: "Pengguna baru berhasil ditambahkan." });
         }
@@ -185,13 +194,13 @@ export default function AdminUsersPage() {
         setIsDialogOpen(false);
     };
 
-    const handleDeleteUser = (email: string) => {
-        if (email === 'admin@ayahjenius.com') {
+    const handleDeleteUser = (user: User) => {
+        if (user.role === 'admin') {
             toast({ title: "Aksi Ditolak", description: "Tidak dapat menghapus akun admin.", variant: "destructive" });
             return;
         }
-        localStorage.removeItem(`user_${email}`);
-        localStorage.removeItem(`pwd_${email}`);
+        localStorage.removeItem(`user_${user.username}`);
+        localStorage.removeItem(`pwd_${user.email}`);
         toast({ title: "Sukses", description: "Pengguna berhasil dihapus." });
         loadUsers();
     };
@@ -215,6 +224,7 @@ export default function AdminUsersPage() {
                     <TableHeader>
                         <TableRow>
                             <TableHead>Nama</TableHead>
+                            <TableHead>Username</TableHead>
                             <TableHead>Email</TableHead>
                             <TableHead>Jenis Sekolah</TableHead>
                              <TableHead>Lencana</TableHead>
@@ -225,7 +235,7 @@ export default function AdminUsersPage() {
                     <TableBody>
                         {isLoading ? (
                              <TableRow>
-                                <TableCell colSpan={6} className="text-center">
+                                <TableCell colSpan={7} className="text-center">
                                     <div className="flex justify-center items-center p-4">
                                         <Loader2 className="h-6 w-6 animate-spin" />
                                     </div>
@@ -235,6 +245,7 @@ export default function AdminUsersPage() {
                             users.map((user) => (
                                 <TableRow key={user.email}>
                                     <TableCell className="font-medium">{user.name}</TableCell>
+                                    <TableCell>{user.username}</TableCell>
                                     <TableCell>{user.email}</TableCell>
                                     <TableCell>{schoolTypeMap[user.schoolType] || user.schoolType}</TableCell>
                                     <TableCell>
@@ -271,7 +282,7 @@ export default function AdminUsersPage() {
                                                 </AlertDialogHeader>
                                                 <AlertDialogFooter>
                                                     <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => handleDeleteUser(user.email)} className="bg-destructive hover:bg-destructive/90">
+                                                    <AlertDialogAction onClick={() => handleDeleteUser(user)} className="bg-destructive hover:bg-destructive/90">
                                                         Hapus
                                                     </AlertDialogAction>
                                                 </AlertDialogFooter>
@@ -282,7 +293,7 @@ export default function AdminUsersPage() {
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center">
+                                <TableCell colSpan={7} className="text-center">
                                     Tidak ada pengguna ditemukan.
                                 </TableCell>
                             </TableRow>
@@ -303,6 +314,10 @@ export default function AdminUsersPage() {
                          <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="name" className="text-right">Nama</Label>
                             <Input id="name" name="name" value={formData.name} onChange={handleInputChange} className="col-span-3" />
+                         </div>
+                         <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="username" className="text-right">Username</Label>
+                            <Input id="username" name="username" value={formData.username} onChange={handleInputChange} className="col-span-3" />
                          </div>
                          <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="email" className="text-right">Email</Label>

@@ -45,6 +45,7 @@ export interface ExamData {
 
 export interface User {
   name: string;
+  username: string;
   email: string;
   schoolType: SchoolType;
   role: 'user' | 'admin';
