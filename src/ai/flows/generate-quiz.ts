@@ -31,7 +31,7 @@ export type GenerateQuizInput = z.infer<typeof GenerateQuizInputSchema>;
 
 const QuestionSchema = z.object({
     question: z.string().describe("The text of the question."),
-    options: z.array(z.string()).min(4).max(4).describe("An array of 4 possible answers, in 'A. ...', 'B. ...' format."),
+    options: z.array(z.string()).min(4).max(4).describe("An array of 4 possible answers, in 'A. ...', 'B. ...' format. Each option must be unique."),
     correctAnswer: z.string().describe("The correct answer to the question. PENTING: Nilai ini HARUS sama persis dengan salah satu string dari array 'options'."),
     imagePrompt: z.string().optional().describe("If the question is best explained with an image, provide a concise, descriptive prompt for an image generation model. E.g., 'Diagram of a plant cell', 'Map of Indonesia provinces'. Otherwise, this field should be omitted."),
     imageUrl: z.string().optional().describe("URL of the generated image, if any."),
@@ -68,8 +68,8 @@ PENTING: Sesuaikan kompleksitas soal dan bahasa dengan tingkatan kelas:
 
 Setiap pertanyaan harus memiliki:
 1.  Teks pertanyaan.
-2.  Empat (4) pilihan jawaban, masing-masing diawali dengan huruf (A., B., C., D.).
-3.  Satu jawaban yang benar. PENTING: Nilai di kolom 'correctAnswer' HARUS SAMA PERSIS dengan teks salah satu pilihan di kolom 'options'.
+2.  Empat (4) pilihan jawaban, masing-masing diawali dengan huruf (A., B., C., D.). Pastikan setiap pilihan jawaban UNIK dan berbeda satu sama lain.
+3.  Satu jawaban yang benar. PENTING: Nilai di kolom 'correctAnswer' HARUS SAMA PERSIS dengan teks salah satu pilihan di kolom 'options'. Tidak boleh ada lebih dari satu jawaban yang benar.
 
 Semua konten harus dalam Bahasa Indonesia.
 
