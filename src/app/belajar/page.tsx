@@ -40,28 +40,28 @@ function BelajarDashboard() {
       <main className="flex-grow p-4 md:p-8">
         <div className="max-w-6xl mx-auto">
           <Button variant="ghost" onClick={() => router.push('/')} className="mb-4">
-             <ArrowLeft className="mr-2"/> Kembali ke pemilihan
+             <ArrowLeft className="mr-2 h-4 w-4"/> Kembali ke pemilihan
           </Button>
 
           <div className="text-center mb-8 md:mb-12">
-            <h1 className="text-4xl sm:text-5xl font-bold font-headline text-gray-800 dark:text-gray-200">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-headline text-gray-800 dark:text-gray-200">
               Dasbor Belajar
             </h1>
-            <p className="text-lg sm:text-xl text-muted-foreground mt-2 max-w-2xl mx-auto">
+            <p className="text-md sm:text-lg text-muted-foreground mt-2 max-w-2xl mx-auto">
               {schoolName} - Kelas {grade} - Semester {semester}
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
-            <Button asChild size="lg" className="w-full sm:w-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 max-w-md mx-auto">
+            <Button asChild size="lg" className="w-full">
               <Link href={prHelperLink}>
-                <Lightbulb className="mr-2" />
+                <Lightbulb className="mr-2 h-5 w-5" />
                 Bantuan PR Cerdas
               </Link>
             </Button>
-             <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
+             <Button asChild size="lg" variant="secondary" className="w-full">
               <Link href={examPracticeLink}>
-                <Edit className="mr-2" />
+                <Edit className="mr-2 h-5 w-5" />
                 Latihan Soal Ujian
               </Link>
             </Button>
