@@ -27,6 +27,7 @@ function DashboardContent() {
     }, [loading, user, router]);
 
     useEffect(() => {
+        // This effect runs on the client after hydration
         if (typeof window !== 'undefined') {
             const bonusStatus = localStorage.getItem('bonus_feature_status');
             setIsBonusFeatureActive(bonusStatus === 'active');
