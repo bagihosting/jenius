@@ -2,7 +2,7 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { Header } from '@/components/Header';
 import { SubjectCard } from '@/components/SubjectCard';
 import { getSubjects } from '@/lib/subjects';
@@ -23,6 +23,11 @@ function DashboardContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { user, loading, isAuthenticated } = useAuth();
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     const grade = (searchParams.get('grade') as Grade) || '1';
     const semester = (searchParams.get('semester') as Semester) || '1';
@@ -33,7 +38,7 @@ function DashboardContent() {
         }
     }, [loading, isAuthenticated, router]);
     
-    if (loading || !isAuthenticated) {
+    if (!isClient || loading || !isAuthenticated) {
         return (
             <main className="flex-grow flex items-center justify-center">
                 <Loader2 className="h-12 w-12 animate-spin text-primary"/>
