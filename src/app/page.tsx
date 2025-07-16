@@ -6,7 +6,6 @@ import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, BookCheck, BrainCircuit, Edit, ShieldCheck } from 'lucide-react';
-import Image from 'next/image';
 
 export default function Home() {
   const router = useRouter();
