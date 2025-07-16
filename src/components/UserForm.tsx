@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useEffect, useMemo } from 'react';
-import { useForm, FormProvider, useWatch, Controller } from 'react-hook-form';
+import { useState } from 'react';
+import { useForm, FormProvider, useWatch } from 'react-hook-form';
 import * as z from 'zod';
 import { Input } from '@/components/ui/input';
 import {
@@ -20,8 +20,11 @@ import {
     FormLabel,
     FormMessage,
 } from '@/components/ui/form';
+import { Button } from '@/components/ui/button';
+import { Loader2, Search } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import type { User, SchoolType } from '@/lib/types';
-import { getSchoolsByCityAndType, School } from '@/lib/schools';
+import { findSchoolsAction } from '@/app/actions';
 
 const schoolTypes: { id: SchoolType; name: string }[] = [
   { id: 'SDN', name: 'SD Negeri' },
@@ -34,7 +37,8 @@ export const userSchema = z.object({
   username: z.string().min(3, { message: 'Username harus memiliki setidaknya 3 karakter.' }).regex(/^[a-z0-9_]+$/, 'Username hanya boleh berisi huruf kecil, angka, dan garis bawah (_).'),
   email: z.string().email({ message: 'Email tidak valid.' }),
   role: z.enum(['user', 'admin'], { required_error: 'Peran harus dipilih.' }),
-  schoolType: z.enum(['SDN', 'SDIT', 'MI']),
+  city: z.string().optional(),
+  schoolType: z.enum(['SDN', 'SDIT', 'MI']).optional(),
   schoolName: z.string().optional(),
   password: z.string().optional(),
 });
@@ -49,38 +53,37 @@ interface UserFormProps {
 }
 
 function InnerUserForm({ form, onSubmit, editingUser, children }: UserFormProps) {
-    const role = useWatch({
-        control: form.control,
-        name: 'role',
-    });
-    const schoolType = useWatch({
-        control: form.control,
-        name: 'schoolType',
-    });
-
-    const availableSchools = useMemo(() => {
-        if (role === 'user' && schoolType) {
-            // Pass null to get all schools of that type
-            return getSchoolsByCityAndType(null, schoolType);
-        }
-        return [];
-    }, [role, schoolType]);
-
-    useEffect(() => {
-        if (role === 'admin') {
-            form.setValue('schoolType', 'SDN');
-            form.setValue('schoolName', '');
-        }
-    }, [role, form]);
+    const { toast } = useToast();
+    const [isSearchingSchools, setIsSearchingSchools] = useState(false);
+    const [availableSchools, setAvailableSchools] = useState<string[]>([]);
     
-    useEffect(() => {
-        // Reset schoolName if schoolType changes and the current schoolName is not in the new list
-        const currentSchoolName = form.getValues('schoolName');
-        if (schoolType && currentSchoolName && !availableSchools.find(s => s.name === currentSchoolName)) {
-            form.setValue('schoolName', '');
-        }
-    }, [schoolType, availableSchools, form]);
+    const role = useWatch({ control: form.control, name: 'role' });
+    const city = useWatch({ control: form.control, name: 'city' });
+    const schoolType = useWatch({ control: form.control, name: 'schoolType' });
 
+    useState(() => {
+      if (editingUser?.schoolName) {
+        setAvailableSchools([editingUser.schoolName]);
+      }
+    });
+
+    const handleFindSchools = async () => {
+      if (!city || !schoolType) {
+        toast({ title: 'Informasi Kurang', description: 'Isi kota dan jenis sekolah.', variant: 'destructive' });
+        return;
+      }
+      setIsSearchingSchools(true);
+      setAvailableSchools([]);
+      form.setValue('schoolName', '');
+      const result = await findSchoolsAction({ city, schoolType });
+      setIsSearchingSchools(false);
+
+      if (result.error || !result.data?.schools) {
+        toast({ title: 'Gagal Mencari Sekolah', description: result.error || 'Tidak ada sekolah ditemukan.', variant: 'destructive' });
+      } else {
+        setAvailableSchools(result.data.schools);
+      }
+    };
 
     return (
         <Form {...form}>
@@ -161,38 +164,57 @@ function InnerUserForm({ form, onSubmit, editingUser, children }: UserFormProps)
               />
               
               {role === 'user' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="schoolType"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Jenis Sekolah</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Pilih jenis sekolah" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {schoolTypes.map((s) => (
-                                <SelectItem key={s.id} value={s.id}>
-                                  {s.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="city"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Kota</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Contoh: Surabaya" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="schoolType"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Jenis Sekolah</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Pilih jenis" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {schoolTypes.map((s) => (
+                                  <SelectItem key={s.id} value={s.id}>
+                                    {s.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                  </div>
+                   <Button type="button" variant="secondary" className="w-full" onClick={handleFindSchools} disabled={isSearchingSchools || !city || !schoolType}>
+                      {isSearchingSchools ? <Loader2 className="animate-spin" /> : <Search />}
+                      Cari Sekolah
+                    </Button>
                     <FormField
                       control={form.control}
                       name="schoolName"
                       render={({ field }) => (
                         <FormItem>
                             <FormLabel>Nama Sekolah</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value} disabled={!schoolType}>
+                            <Select onValueChange={field.onChange} value={field.value} disabled={availableSchools.length === 0}>
                                 <FormControl>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Pilih nama sekolah" />
@@ -200,8 +222,8 @@ function InnerUserForm({ form, onSubmit, editingUser, children }: UserFormProps)
                                 </FormControl>
                                 <SelectContent>
                                 {availableSchools.map((s) => (
-                                    <SelectItem key={s.name} value={s.name}>
-                                      {s.name} ({s.city})
+                                    <SelectItem key={s} value={s}>
+                                      {s}
                                     </SelectItem>
                                 ))}
                                 </SelectContent>
@@ -210,7 +232,7 @@ function InnerUserForm({ form, onSubmit, editingUser, children }: UserFormProps)
                         </FormItem>
                       )}
                     />
-                </div>
+                </>
               )}
 
               {children}
@@ -218,7 +240,6 @@ function InnerUserForm({ form, onSubmit, editingUser, children }: UserFormProps)
           </Form>
     );
 }
-
 
 export function UserForm({ form, onSubmit, editingUser, children }: UserFormProps) {
     return (
