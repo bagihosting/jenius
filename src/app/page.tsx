@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 
 const schoolTypes = [
   { id: 'SDN', name: 'SD Negeri' },
@@ -106,6 +107,9 @@ export default function Home() {
                 Mulai Belajar
                 <ArrowRight className="ml-2" />
               </Button>
+               <div className="text-center text-sm text-muted-foreground">
+                Sudah punya akun? <Link href="/login" className="text-primary hover:underline">Masuk di sini</Link>
+              </div>
             </div>
           </CardContent>
         </Card>
