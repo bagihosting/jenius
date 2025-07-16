@@ -42,7 +42,13 @@ export default function RegisterPage() {
 
     // Placeholder for actual registration logic
     setTimeout(() => {
-        console.log('Registering user:', { name, email, password, schoolType });
+        const newUser = { name, email, schoolType, role: 'user' };
+        // In a real app, this would be an API call.
+        // Here, we simulate by storing in localStorage.
+        // We use a unique key for each user to simulate a user list for the admin.
+        localStorage.setItem(`user_${email}`, JSON.stringify(newUser));
+
+        console.log('Registering user:', newUser);
         toast({
             title: "Pendaftaran Berhasil (Simulasi)",
             description: "Akun Anda telah dibuat. Silakan masuk.",
@@ -98,7 +104,7 @@ export default function RegisterPage() {
               </div>
                <div className="space-y-2">
                 <Label htmlFor="school-type">Jenis Sekolah Anda</Label>
-                <Select value={schoolType} onValueChange={setSchoolType} required>
+                <Select value={schoolType} onValueChange={setSchoolType}>
                   <SelectTrigger id="school-type" className="w-full">
                     <SelectValue placeholder="Pilih jenis sekolah..." />
                   </SelectTrigger>

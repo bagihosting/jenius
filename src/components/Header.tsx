@@ -1,7 +1,7 @@
 
 'use client';
 
-import { BookHeart, LogIn, LogOut, UserCircle, LayoutDashboard } from 'lucide-react';
+import { BookHeart, LogIn, LayoutDashboard, UserCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -15,6 +15,8 @@ export function Header() {
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  const dashboardHref = user?.role === 'admin' ? '/admin/dashboard' : '/belajar';
 
   return (
     <header className="bg-card shadow-sm">
@@ -37,7 +39,7 @@ export function Header() {
                         {user?.name || 'Pengguna'}
                     </span>
                     <Button variant="outline" asChild>
-                        <Link href="/belajar">
+                        <Link href={dashboardHref}>
                             <LayoutDashboard />
                             Dasbor
                         </Link>

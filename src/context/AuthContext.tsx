@@ -9,6 +9,7 @@ interface User {
   name: string;
   email: string;
   schoolType: SchoolType;
+  role: 'user' | 'admin';
 }
 
 interface AuthContextType {
@@ -43,7 +44,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = (userData: User) => {
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
-    router.push('/belajar');
+    if (userData.role === 'admin') {
+      router.push('/admin/dashboard');
+    } else {
+      router.push('/belajar');
+    }
   };
 
   const logout = () => {

@@ -27,12 +27,22 @@ export default function LoginPage() {
 
     // Placeholder for actual login logic
     setTimeout(() => {
+        // Admin user simulation
+        if (email === 'admin@ayahjenius.com' && password === 'admin123') {
+            toast({
+                title: "Login Admin Berhasil",
+                description: "Anda akan diarahkan ke dasbor admin.",
+            });
+            login({ name: 'Admin Jenius', email, schoolType: 'SDN', role: 'admin' });
+            return;
+        }
+
         toast({
             title: "Login Berhasil (Simulasi)",
             description: "Anda akan diarahkan untuk memilih kelas.",
         });
         // For simulation, we'll use a mock user object with a school type
-        login({ name: 'Pengguna Jenius', email, schoolType: 'SDN' });
+        login({ name: 'Pengguna Jenius', email, schoolType: 'SDN', role: 'user' });
         setIsLoading(false);
     }, 1500);
   };
