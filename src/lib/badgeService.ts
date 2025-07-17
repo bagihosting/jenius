@@ -39,8 +39,12 @@ const getUserStats = (user: User | null): UserStats => {
   if (!user) {
     return { accountAgeInDays: 0, quizCompletions: 0 };
   }
-  // With no database, we return mock data.
-  const accountAgeInDays = 1;
+  
+  const registeredDate = user.registeredAt ? new Date(user.registeredAt) : new Date();
+  const now = new Date();
+  const diffTime = Math.abs(now.getTime() - registeredDate.getTime());
+  const accountAgeInDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
   const quizCompletions = user.quizCompletions || 0;
 
   return { accountAgeInDays, quizCompletions };
@@ -49,13 +53,21 @@ const getUserStats = (user: User | null): UserStats => {
 export const getBadgeInfo = (user: User | null): BadgeTier => {
   if (!user) return defaultBadge;
   if (user.role === 'admin') return adminBadge;
+  
+  const { accountAgeInDays, quizCompletions } = getUserStats(user);
 
-  // Mock implementation since there is no persistent user data
-  return badgeTiers[0];
+  for (let i = badgeTiers.length - 1; i >= 0; i--) {
+      const tier = badgeTiers[i];
+      if (accountAgeInDays >= tier.minDays && quizCompletions >= tier.minQuizzes) {
+          return tier;
+      }
+  }
+
+  return defaultBadge;
 };
 
-export const recordQuizCompletion = async (user: User | null) => {
+export const recordQuizCompletion = async (user: User, updateUser: (data: Partial<User>) => Promise<void>) => {
     if (!user) return;
-    // This is now a placeholder function since there's no database.
-    console.warn("Quiz completion recorded in local state, but not persisted (no database).");
+    const currentCompletions = user.quizCompletions || 0;
+    await updateUser({ quizCompletions: currentCompletions + 1 });
 }

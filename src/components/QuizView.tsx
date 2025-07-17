@@ -10,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, BrainCircuit, PartyPopper, RotateCw, CheckCircle2, XCircle } from 'lucide-react';
-import type { QuizData, SchoolInfo } from '@/lib/types';
+import type { QuizData, SchoolInfo, User } from '@/lib/types';
 import { Progress } from './ui/progress';
 import { useProgress } from '@/hooks/use-progress';
 import { Confetti } from './Confetti';
@@ -30,7 +30,7 @@ const normalizeAnswer = (answer: string): string => {
 };
 
 export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProps) {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [quizState, setQuizState] = useState<QuizState>('idle');
   const [quiz, setQuiz] = useState<QuizData | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -94,14 +94,17 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
     }
   };
 
-  const updateBonus = async (bonusPerQuiz: number) => {
+  const updateBonus = async (user: User, bonusPerQuiz: number): Promise<boolean> => {
     if (!user) return false;
-    // This is now a placeholder function since there's no database.
-    console.warn(`Bonus of ${bonusPerQuiz} would be applied, but not persisted (no database).`);
+    const currentPoints = user.bonusPoints || 0;
+    const newPoints = currentPoints + bonusPerQuiz;
+    await updateUser({ bonusPoints: newPoints });
     return true;
   };
 
   const handleSubmitQuiz = async () => {
+    if (!user) return;
+
     let finalScore = 0;
     quiz?.quiz.forEach((q, index) => {
       const userAnswer = userAnswers[index] || '';
@@ -114,13 +117,13 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
     setScore(percentageScore);
     await updateSubjectProgress(subjectId, percentageScore);
     
-    if (user) {
-        await recordQuizCompletion(user);
-    }
+    await recordQuizCompletion(user, updateUser);
     
-    if (percentageScore >= 60) {
+    const gradeNum = parseInt(user.grade || '99', 10);
+
+    if (percentageScore >= 60 && gradeNum <= 6) {
         const badgeInfo = getBadgeInfo(user);
-        const bonusGiven = await updateBonus(badgeInfo.bonusPerQuiz);
+        const bonusGiven = await updateBonus(user, badgeInfo.bonusPerQuiz);
         if(bonusGiven) {
             toast({
                 title: "Selamat, Kamu Dapat Bonus!",

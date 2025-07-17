@@ -14,6 +14,8 @@ import { Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { SchoolType, User } from '@/lib/types';
 import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { ref, set } from 'firebase/database';
+import { db } from '@/lib/firebase';
 
 const schoolTypes: { id: SchoolType; name: string }[] = [
   { id: 'SDN', name: 'SD Negeri' },
@@ -54,14 +56,21 @@ export default function RegisterPage() {
       
       await updateProfile(userCredential.user, { displayName: name });
       
-      const userData = {
+      const userData: Omit<User, 'uid'> = {
+        name,
         username,
+        email,
         schoolType,
         schoolName,
         role: 'user',
+        registeredAt: new Date().toISOString(),
+        quizCompletions: 0,
+        bonusPoints: 0,
+        progress: {},
       };
-      // Since there's no database, we store non-auth info in localStorage
-      localStorage.setItem(`user_${userCredential.user.uid}`, JSON.stringify(userData));
+      
+      const userRef = ref(db, `users/${userCredential.user.uid}`);
+      await set(userRef, userData);
 
       toast({
           title: "Pendaftaran Berhasil",

@@ -20,7 +20,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Separator } from './ui/separator';
 import { ScrollArea } from './ui/scroll-area';
 import { getBadgeInfo, BadgeTier } from '@/lib/badgeService';
-import { getStorage, ref, uploadString, getDownloadURL } from 'firebase/storage';
+import { getStorage, ref as storageRef, uploadString, getDownloadURL } from 'firebase/storage';
+import { updateProfile } from 'firebase/auth';
 
 async function compressAndConvertToWebP(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -88,9 +89,20 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
       toast({ title: 'Nama tidak boleh kosong', variant: 'destructive' });
       return;
     }
-    await updateUser({ name });
-    setIsEditingName(false);
-    toast({ title: 'Nama berhasil diperbarui!', variant: 'default' });
+    
+    try {
+        await updateUser({ name });
+
+        // Also update the displayName in Firebase Auth
+        if (getAuth().currentUser) {
+            await updateProfile(getAuth().currentUser!, { displayName: name });
+        }
+
+        setIsEditingName(false);
+        toast({ title: 'Nama berhasil diperbarui!', variant: 'default' });
+    } catch (e) {
+        toast({ title: 'Gagal memperbarui nama', variant: 'destructive' });
+    }
   };
 
   const handleAvatarClick = () => {
@@ -112,12 +124,17 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
         const compressedDataUrl = await compressAndConvertToWebP(file);
         
         const storage = getStorage();
-        const storageRef = ref(storage, `profilePictures/${user.uid}.webp`);
+        const sRef = storageRef(storage, `profilePictures/${user.uid}.webp`);
         
-        await uploadString(storageRef, compressedDataUrl, 'data_url');
-        const downloadURL = await getDownloadURL(storageRef);
+        await uploadString(sRef, compressedDataUrl, 'data_url');
+        const downloadURL = await getDownloadURL(sRef);
 
         await updateUser({ photoUrl: downloadURL });
+
+        if (getAuth().currentUser) {
+            await updateProfile(getAuth().currentUser!, { photoURL: downloadURL });
+        }
+
         toast({ title: 'Foto profil berhasil diperbarui!', variant: 'default' });
     } catch (error) {
         console.error("Image processing or upload failed:", error);

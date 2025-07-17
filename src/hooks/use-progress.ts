@@ -1,37 +1,36 @@
 
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { ref, set, get } from 'firebase/database';
+import { db } from '@/lib/firebase';
 
-type ProgressData = {
-  [subjectId: string]: number;
-};
-
-// NOTE: This hook now uses component state and is NOT persisted.
-// Progress will be lost on page refresh.
 export const useProgress = () => {
   const { user } = useAuth();
-  const [progress, setProgress] = useState<ProgressData>({});
 
   const updateSubjectProgress = useCallback(async (subjectId: string, score: number) => {
     if (!user) return;
 
-    const newProgress = {
-      ...progress,
-      [subjectId]: Math.max(progress[subjectId] || 0, score),
-    };
+    const progressRef = ref(db, `users/${user.uid}/progress/${subjectId}`);
     
-    setProgress(newProgress);
-    console.warn("Progress saved to local state, but not persisted (no database).");
-
-  }, [user, progress]);
+    try {
+        const snapshot = await get(progressRef);
+        const currentBest = snapshot.val() || 0;
+        if (score > currentBest) {
+            await set(progressRef, score);
+        }
+    } catch (error) {
+        console.error("Failed to update progress:", error);
+    }
+  }, [user]);
 
   const getSubjectProgress = useCallback(
-    (subjectId: string) => {
-      return progress[subjectId] || 0;
+    (subjectId: string): number => {
+      if (!user || !user.progress) return 0;
+      return user.progress[subjectId] || 0;
     },
-    [progress]
+    [user]
   );
 
   return { getSubjectProgress, updateSubjectProgress };

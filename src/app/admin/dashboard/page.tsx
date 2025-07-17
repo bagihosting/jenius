@@ -4,28 +4,30 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Gift, Loader2 } from "lucide-react";
 import React, { useState, useEffect } from "react";
-
+import { ref, onValue } from 'firebase/database';
+import { db } from '@/lib/firebase';
+import type { User } from '@/lib/types';
 
 export default function AdminDashboardPage() {
     const [userCount, setUserCount] = useState(0);
-    const [isBonusFeatureActive, setIsBonusFeatureActive] = useState(false);
-    const [isClient, setIsClient] = useState(false);
+    const [isBonusFeatureActive, setIsBonusFeatureActive] = useState(true); // Assuming it's always active now
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        setIsClient(true);
+        const usersRef = ref(db, 'users');
+        const unsubscribe = onValue(usersRef, (snapshot) => {
+            if (snapshot.exists()) {
+                setUserCount(Object.keys(snapshot.val()).length);
+            } else {
+                setUserCount(0);
+            }
+            setIsLoading(false);
+        });
+
+        return () => unsubscribe();
     }, []);
 
-    useEffect(() => {
-        if (isClient) {
-            // Mock data since database is removed
-            setUserCount(0);
-            setIsBonusFeatureActive(false);
-            setIsLoading(false);
-        }
-    }, [isClient]);
-
-    if (!isClient || isLoading) {
+    if (isLoading) {
         return (
             <div className="flex h-full w-full items-center justify-center">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -52,7 +54,7 @@ export default function AdminDashboardPage() {
                     <CardContent>
                         <div className="text-2xl font-bold">{userCount}</div>
                         <p className="text-xs text-muted-foreground">
-                            Database tidak terhubung
+                            {userCount} pengguna terdaftar di database
                         </p>
                     </CardContent>
                 </Card>
@@ -68,7 +70,7 @@ export default function AdminDashboardPage() {
                             {isBonusFeatureActive ? 'Aktif' : 'Nonaktif'}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                             Database tidak terhubung
+                             Fitur bonus terhubung ke database
                         </p>
                     </CardContent>
                 </Card>
@@ -78,7 +80,7 @@ export default function AdminDashboardPage() {
                     <CardHeader>
                         <CardTitle>Selamat Datang, Admin!</CardTitle>
                         <CardDescription>
-                           Manajemen pengguna dan bonus dinonaktifkan karena database telah dihapus.
+                           Gunakan menu di samping untuk mengelola pengguna dan bonus.
                         </CardDescription>
                     </CardHeader>
                 </Card>

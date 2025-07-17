@@ -1,37 +1,128 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DatabaseZap } from 'lucide-react';
+import { Gift, Loader2, Save } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { get, ref, set, onValue } from 'firebase/database';
+import { db } from '@/lib/firebase';
+import type { User } from '@/lib/types';
 
 
 export default function BonusManagementPage() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const usersRef = ref(db, 'users');
+    const unsubscribe = onValue(usersRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const usersData = snapshot.val();
+        const usersList: User[] = Object.keys(usersData).map(key => ({
+          ...usersData[key],
+          uid: key
+        }));
+        setUsers(usersList);
+      } else {
+        setUsers([]);
+      }
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handlePointsChange = (uid: string, value: string) => {
+    const newUsers = users.map(user => {
+      if (user.uid === uid) {
+        return { ...user, bonusPoints: Number(value) };
+      }
+      return user;
+    });
+    setUsers(newUsers);
+  };
+  
+  const handleSavePoints = async (uid: string) => {
+    const user = users.find(u => u.uid === uid);
+    if (!user) return;
+
+    try {
+      const userPointsRef = ref(db, `users/${uid}/bonusPoints`);
+      await set(userPointsRef, user.bonusPoints || 0);
+      toast({
+        title: 'Berhasil!',
+        description: `Poin bonus untuk ${user.name} telah diperbarui.`,
+      });
+    } catch (error) {
+      console.error("Error saving points:", error);
+      toast({
+        title: 'Gagal Menyimpan',
+        description: 'Terjadi kesalahan saat menyimpan poin bonus.',
+        variant: 'destructive',
+      });
+    }
+  };
+
 
   return (
     <>
       <div className="flex items-center justify-between mb-6">
         <div>
             <h1 className="text-3xl font-bold">Manajemen Bonus</h1>
-            <p className="text-muted-foreground">Fitur ini dinonaktifkan.</p>
+            <p className="text-muted-foreground">Ubah poin bonus pengguna secara manual.</p>
         </div>
       </div>
+       {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          </div>
+        ) : (
       <Card>
         <CardHeader>
             <CardTitle className="flex items-center gap-2">
-                <DatabaseZap className="text-destructive"/>
-                Database Dihapus
+                <Gift className="text-primary"/>
+                Manajemen Poin Bonus
             </CardTitle>
             <CardDescription>
-                Manajemen bonus tidak dapat berfungsi karena database Firestore telah dihapus dari aplikasi.
+                Lihat dan kelola poin bonus untuk semua pengguna yang terdaftar.
             </CardDescription>
         </CardHeader>
         <CardContent>
-            <p className="text-muted-foreground">
-                Untuk menggunakan fitur ini, koneksi ke database diperlukan untuk menyimpan dan mengelola poin bonus pengguna.
-            </p>
+           <div className="space-y-4">
+            {users.map(user => (
+              <div key={user.uid} className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
+                <div>
+                  <p className="font-semibold">{user.name}</p>
+                  <p className="text-sm text-muted-foreground">{user.email}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor={`points-${user.uid}`} className="sr-only">Poin Bonus</Label>
+                  <Input 
+                    id={`points-${user.uid}`}
+                    type="number"
+                    value={user.bonusPoints || 0}
+                    onChange={(e) => handlePointsChange(user.uid, e.target.value)}
+                    className="w-32"
+                  />
+                  <Button onClick={() => handleSavePoints(user.uid)} size="sm">
+                    <Save className="h-4 w-4 mr-2"/>
+                    Simpan
+                  </Button>
+                </div>
+              </div>
+            ))}
+            {users.length === 0 && (
+              <p className="text-muted-foreground text-center">Tidak ada pengguna yang ditemukan.</p>
+            )}
+           </div>
         </CardContent>
       </Card>
+      )}
     </>
   );
 }
