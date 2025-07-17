@@ -1,4 +1,3 @@
-
 # Cara Instalasi Aplikasi Ayah Jenius di AlmaLinux 8
 
 Tutorial ini akan memandu Anda melalui proses instalasi dan deployment aplikasi Next.js Ayah Jenius di server yang menjalankan AlmaLinux 8.
@@ -63,10 +62,10 @@ Aplikasi ini memerlukan variabel lingkungan (environment variables) untuk terhub
 
 ```bash
 # Salin dari example jika ada, atau buat file baru
-cp .env.example .env
+# cp .env.example .env
 
 # Jika tidak ada .env.example, buat file baru
-# touch .env
+touch .env
 ```
 
 Buka file `.env` dengan editor teks favorit Anda (misalnya, `nano`):
@@ -110,45 +109,43 @@ npm run build
 
 Perintah ini akan mengoptimalkan aplikasi untuk performa terbaik.
 
-## 7. Menjalankan Aplikasi
+## 7. Menjalankan Aplikasi di Latar Belakang (Produksi)
 
-Anda dapat menjalankan aplikasi dengan perintah `start`:
+Untuk lingkungan produksi, sangat disarankan menggunakan manajer proses seperti **PM2**. PM2 akan menjaga aplikasi Anda tetap berjalan, me-restartnya jika crash, dan mengelola log secara otomatis.
 
+### Langkah 1: Instal PM2
+Instal PM2 secara global menggunakan npm:
 ```bash
-npm start
+sudo npm install pm2 -g
 ```
 
-Secara default, aplikasi akan berjalan di port `3000`. Anda dapat mengaksesnya melalui `http://<IP_SERVER_ANDA>:3000`.
-
-Namun, untuk lingkungan produksi, sangat disarankan menggunakan manajer proses seperti **PM2**.
-
-### Menjalankan dengan PM2 (Sangat Direkomendasikan)
-
-PM2 akan menjaga aplikasi Anda tetap berjalan, me-restartnya jika crash, dan mengelola log.
-
+### Langkah 2: Jalankan Aplikasi dengan PM2
+Gunakan PM2 untuk menjalankan perintah `npm start` dari aplikasi Anda. Ini akan menjalankan aplikasi di latar belakang.
 ```bash
-# Instal PM2 secara global
-sudo npm install pm2 -g
-
-# Jalankan aplikasi menggunakan PM2
+# Jalankan aplikasi dan beri nama "ayah-jenius"
 pm2 start npm --name "ayah-jenius" -- start
+```
+Aplikasi Anda sekarang berjalan di port 3000.
 
-# Atur PM2 agar berjalan otomatis saat server booting
+### Langkah 3: Atur PM2 agar Berjalan saat Booting
+Agar aplikasi otomatis berjalan kembali setelah server di-restart, atur PM2 untuk berjalan saat startup.
+```bash
 pm2 startup
-# Salin dan jalankan perintah yang ditampilkan oleh pm2 startup
+```
+Salin dan jalankan perintah yang ditampilkan oleh output `pm2 startup`. Ini biasanya terlihat seperti: `sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u <username> --hp /home/<username>`
 
-# Simpan konfigurasi proses PM2
+### Langkah 4: Simpan Konfigurasi
+Simpan daftar proses PM2 Anda saat ini agar dapat dipulihkan saat booting.
+```bash
 pm2 save
 ```
 
-Sekarang aplikasi Anda berjalan di latar belakang. Anda dapat memonitornya dengan:
-
-```bash
-pm2 status
-# atau
-pm2 logs ayah-jenius
-```
+### Perintah PM2 yang Berguna
+- **Memonitor aplikasi**: `pm2 status` atau `pm2 monit`
+- **Melihat log aplikasi**: `pm2 logs ayah-jenius`
+- **Me-restart aplikasi**: `pm2 restart ayah-jenius`
+- **Menghentikan aplikasi**: `pm2 stop ayah-jenius`
 
 ## Selesai!
 
-Aplikasi Ayah Jenius Anda sekarang sudah berjalan di server AlmaLinux 8. Untuk membuatnya dapat diakses melalui domain (misalnya `https://app.ayahjenius.com`), Anda perlu mengkonfigurasi *reverse proxy* menggunakan Nginx atau Apache.
+Aplikasi Ayah Jenius Anda sekarang sudah berjalan secara andal di latar belakang pada server AlmaLinux 8. Untuk membuatnya dapat diakses melalui domain (misalnya `https://app.ayahjenius.com`), langkah selanjutnya adalah mengkonfigurasi *reverse proxy* menggunakan Nginx atau Apache.
