@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import './globals.css';
@@ -18,8 +19,9 @@ const lato = Lato({
 });
 
 export const metadata: Metadata = {
-  title: 'Ayah Jenius',
-  description: 'Aplikasi belajar untuk semua pelajaran kelas 1-6 SD/MI',
+  title: 'Ayah Jenius: Bantuan PR & Latihan Soal AI Kurikulum Merdeka',
+  description: 'Dapatkan bantuan PR instan, latihan soal HOTS harian, dan materi belajar lengkap (SD, SMP, SMA) dengan partner belajar AI, Ayah Jenius. Siap untuk ujian & UTBK 2025!',
+  keywords: ['aplikasi belajar', 'bantuan PR', 'latihan soal', 'kurikulum merdeka', 'AI untuk pendidikan', 'soal HOTS', 'tryout UTBK 2025', 'les privat online', 'belajar online sd smp sma'],
 };
 
 export default function RootLayout({
