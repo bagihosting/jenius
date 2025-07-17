@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { get, ref, set, onValue } from 'firebase/database';
+import { get, ref, update, onValue } from 'firebase/database';
 import { db } from '@/lib/firebase';
 import type { User } from '@/lib/types';
 
@@ -16,9 +16,11 @@ import type { User } from '@/lib/types';
 export default function BonusManagementPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isClient, setIsClient] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
+    setIsClient(true);
     const usersRef = ref(db, 'users');
     const unsubscribe = onValue(usersRef, (snapshot) => {
       if (snapshot.exists()) {
@@ -40,7 +42,8 @@ export default function BonusManagementPage() {
   const handlePointsChange = (uid: string, value: string) => {
     const newUsers = users.map(user => {
       if (user.uid === uid) {
-        return { ...user, bonusPoints: Number(value) };
+        // Allow empty string for clearing, default to 0 for calculations
+        return { ...user, bonusPoints: value === '' ? undefined : Number(value) };
       }
       return user;
     });
@@ -52,8 +55,8 @@ export default function BonusManagementPage() {
     if (!user) return;
 
     try {
-      const userPointsRef = ref(db, `users/${uid}/bonusPoints`);
-      await set(userPointsRef, user.bonusPoints || 0);
+      const userRef = ref(db, `users/${uid}`);
+      await update(userRef, { bonusPoints: user.bonusPoints || 0 });
       toast({
         title: 'Berhasil!',
         description: `Poin bonus untuk ${user.name} telah diperbarui.`,
@@ -77,7 +80,7 @@ export default function BonusManagementPage() {
             <p className="text-muted-foreground">Ubah poin bonus pengguna secara manual.</p>
         </div>
       </div>
-       {isLoading ? (
+       {!isClient || isLoading ? (
           <div className="flex justify-center items-center h-64">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
           </div>
@@ -105,7 +108,7 @@ export default function BonusManagementPage() {
                   <Input 
                     id={`points-${user.uid}`}
                     type="number"
-                    value={user.bonusPoints || 0}
+                    value={user.bonusPoints === undefined ? '' : user.bonusPoints}
                     onChange={(e) => handlePointsChange(user.uid, e.target.value)}
                     className="w-32"
                   />

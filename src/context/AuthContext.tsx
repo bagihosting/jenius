@@ -5,9 +5,9 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { useRouter } from 'next/navigation';
 import type { User } from '@/lib/types';
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth, onAuthStateChanged, signOut, updatePassword as updateAuthPassword, reauthenticateWithPopup, GoogleAuthProvider, EmailAuthProvider, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, signOut, updatePassword as updateAuthPassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { db } from '@/lib/firebase';
-import { ref, onValue, set } from 'firebase/database';
+import { ref, onValue, update } from 'firebase/database';
 
 
 const firebaseConfig = {
@@ -21,17 +21,17 @@ const firebaseConfig = {
   databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL
 };
 
+// Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const auth = getAuth(app);
 
 
 interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
-  login: (authAction: () => Promise<any>) => Promise<void>;
   logout: () => void;
   updateUser: (userData: Partial<User>) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
-  reauthenticate: () => Promise<void>;
   loading: boolean;
 }
 
@@ -41,29 +41,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const auth = getAuth(app);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         const userRef = ref(db, `users/${firebaseUser.uid}`);
         
-        // Set up a real-time listener for user data
         const unsubscribeDb = onValue(userRef, (snapshot) => {
           if (snapshot.exists()) {
             const dbUser = snapshot.val();
             setUser({
-              ...dbUser,
               uid: firebaseUser.uid,
               name: firebaseUser.displayName || dbUser.name,
               email: firebaseUser.email || dbUser.email,
-              photoUrl: firebaseUser.photoURL || dbUser.photoUrl,
+              photoUrl: firebaseUser.photoURL,
+              ...dbUser,
             });
           }
           setLoading(false);
+        }, (error) => {
+          console.error("Firebase read failed: " + error.message);
+          setLoading(false);
         });
         
-        // Return a function to clean up the database listener
         return () => unsubscribeDb();
       } else {
         setUser(null);
@@ -71,19 +71,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     });
 
-    // Return a function to clean up the auth listener
-    return () => unsubscribe();
-  }, [auth]);
+    return () => unsubscribeAuth();
+  }, []);
 
-  const login = async (authAction: () => Promise<any>) => {
-    setLoading(true);
-    try {
-        await authAction();
-    } catch (e) {
-        setLoading(false);
-        throw e;
-    }
-  };
 
   const logout = async () => {
     setLoading(true);
@@ -93,22 +83,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(false);
   };
 
-  const updateUser = async (userData: Partial<User>) => {
-    if (!user) return;
+  const updateUser = useCallback(async (userData: Partial<User>) => {
+    if (!user) throw new Error("User not authenticated");
     
     const userRef = ref(db, `users/${user.uid}`);
-    const updatedData = { ...user, ...userData };
-    await set(userRef, updatedData);
-    // The real-time listener will automatically update the local state
-  };
+    await update(userRef, userData);
+    // The real-time listener will automatically update the local user state
+  }, [user]);
 
-  const reauthenticate = async () => {
-      const authUser = auth.currentUser;
-      if (!authUser) throw new Error("Pengguna tidak ditemukan");
-      
-      const provider = new GoogleAuthProvider();
-      await reauthenticateWithPopup(authUser, provider);
-  }
 
   const updatePassword = async (password: string) => {
     const authUser = auth.currentUser;
@@ -120,7 +102,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const isAuthenticated = !!user;
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, updateUser, updatePassword, reauthenticate, loading }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, logout, updateUser, updatePassword, loading }}>
       {children}
     </AuthContext.Provider>
   );

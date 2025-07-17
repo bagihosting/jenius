@@ -11,12 +11,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useAuth();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,13 +26,17 @@ export default function LoginPage() {
 
     try {
       const auth = getAuth();
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      // The onAuthStateChanged listener in AuthContext will handle the redirect.
+      await signInWithEmailAndPassword(auth, email, password);
+      
       toast({
           title: "Login Berhasil",
           description: `Selamat datang kembali!`,
       });
-       // The onAuthStateChanged listener in AuthContext will redirect.
+      
+      // The onAuthStateChanged listener in AuthContext will handle the redirect.
+      // We push to /belajar as a fallback/default.
+      router.push('/belajar');
+
     } catch (error: any) {
       console.error("Login error:", error);
       let errorMessage = "Terjadi kesalahan saat login.";

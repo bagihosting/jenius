@@ -30,12 +30,13 @@ import {
   SheetClose
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { Loader2, PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { Loader2, Edit, Trash2 } from 'lucide-react';
 import type { User } from '@/lib/types';
 import { db } from '@/lib/firebase';
-import { ref, onValue, set, remove, push, child } from 'firebase/database';
+import { ref, onValue, update, remove } from 'firebase/database';
 import { useToast } from '@/hooks/use-toast';
 import { UserForm, userSchema } from '@/components/UserForm';
+import { useAuth } from '@/context/AuthContext';
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -43,6 +44,7 @@ export default function UsersPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { toast } = useToast();
+  const { updateUser: updateAuthUser } = useAuth();
 
   const form = useForm({
     resolver: zodResolver(userSchema),
@@ -53,8 +55,8 @@ export default function UsersPage() {
       role: 'user',
       schoolType: undefined,
       schoolName: '',
-      password: '',
       major: '',
+      robloxUsername: '',
     },
   });
 
@@ -81,56 +83,47 @@ export default function UsersPage() {
     setEditingUser(user);
     form.reset({
         ...user,
-        password: '', // Clear password on edit
-    });
-    setIsSheetOpen(true);
-  };
-
-  const handleAddNew = () => {
-    setEditingUser(null);
-    form.reset({
-      name: '',
-      username: '',
-      email: '',
-      role: 'user',
-      schoolType: undefined,
-      schoolName: '',
-      password: '',
-      major: '',
+        password: '', // Clear password field on edit
     });
     setIsSheetOpen(true);
   };
   
   const handleDelete = async (uid: string) => {
-    if (window.confirm("Apakah Anda yakin ingin menghapus pengguna ini? Tindakan ini tidak dapat diurungkan.")) {
+    if (window.confirm("Apakah Anda yakin ingin menghapus pengguna ini? Tindakan ini tidak dapat diurungkan dan akan menghapus data dari Realtime Database. Pengguna Firebase Auth tidak akan terhapus.")) {
       try {
         await remove(ref(db, `users/${uid}`));
-        toast({ title: 'Pengguna berhasil dihapus' });
+        toast({ title: 'Pengguna berhasil dihapus dari database' });
       } catch (error) {
         toast({ title: 'Gagal menghapus pengguna', variant: 'destructive' });
+        console.error(error);
       }
     }
   };
 
 
   const onSubmit = async (values: any) => {
+      if (!editingUser?.uid) {
+        toast({ title: "Error", description: "Tidak ada pengguna yang dipilih untuk diedit.", variant: "destructive" });
+        return;
+      }
+      
       try {
-        let uid = editingUser?.uid;
-        if (uid) { // Editing existing user
-          const userRef = ref(db, `users/${uid}`);
-          await set(userRef, {
-              ...editingUser,
-              ...values,
-              password: editingUser.password // Keep original password hash unless changed
-          });
-          toast({ title: "Pengguna berhasil diperbarui" });
-        } else { // Creating new user
-            // This is a simplified user creation. Does not create an Auth user.
-            const newUserRef = push(child(ref(db), 'users'));
-            await set(newUserRef, values);
-            toast({ title: "Pengguna baru berhasil ditambahkan (tanpa Auth)" });
+        const userRef = ref(db, `users/${editingUser.uid}`);
+        
+        // Prepare data for update, removing password if it's empty
+        const { password, ...updateData } = values;
+
+        await update(userRef, updateData);
+        
+        // Note: Password changes are handled separately via Auth context
+        // This form does not handle Firebase Auth password changes.
+        if (password) {
+            toast({ title: "Info", description: "Perubahan password harus dilakukan oleh pengguna melalui profil mereka."});
         }
+
+        toast({ title: "Pengguna berhasil diperbarui" });
         setIsSheetOpen(false);
+
       } catch (error: any) {
           toast({ title: "Operasi Gagal", description: error.message, variant: 'destructive' });
       }
@@ -141,12 +134,8 @@ export default function UsersPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold">Manajemen Pengguna</h1>
-          <p className="text-muted-foreground">Tambah, lihat, dan edit pengguna.</p>
+          <p className="text-muted-foreground">Lihat dan edit pengguna yang terdaftar.</p>
         </div>
-        <Button onClick={handleAddNew}>
-            <PlusCircle className="mr-2 h-4 w-4"/>
-            Tambah Pengguna
-        </Button>
       </div>
       <Card>
         <CardContent className="p-0">
@@ -194,9 +183,9 @@ export default function UsersPage() {
        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent className="w-full sm:max-w-lg flex flex-col">
             <SheetHeader>
-                <SheetTitle>{editingUser ? 'Edit Pengguna' : 'Tambah Pengguna Baru'}</SheetTitle>
+                <SheetTitle>Edit Pengguna</SheetTitle>
                 <SheetDescription>
-                   {editingUser ? 'Ubah detail pengguna di bawah ini.' : 'Isi formulir untuk membuat pengguna baru.'}
+                   Ubah detail pengguna di bawah ini. Perubahan akan disimpan di Realtime Database.
                 </SheetDescription>
             </SheetHeader>
             <UserForm form={form} onSubmit={onSubmit} editingUser={editingUser}>
