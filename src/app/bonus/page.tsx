@@ -152,5 +152,13 @@ export default function BonusPage() {
                     <Info className="h-4 w-4" />
                     <AlertTitle>Bagaimana Cara Kerjanya?</AlertTitle>
                     <AlertDescription>
-                        Kumpulkan poin dan tukarkan dengan Robux. Proses penukaran akan diinformasikan di sini jika poin sudah mencukupi. Pastikan username Roblox kamu sudah benar!
-                    </Aler
+                        <p>Kumpulkan poin dan tukarkan dengan Robux. Proses penukaran akan diinformasikan di sini jika poin sudah mencukupi. Pastikan username Roblox kamu sudah benar!</p>
+                    </AlertDescription>
+                 </Alert>
+            </CardFooter>
+          </Card>
+        </div>
+      </main>
+    </div>
+  );
+}
