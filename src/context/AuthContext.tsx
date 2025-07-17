@@ -57,6 +57,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               photoUrl: firebaseUser.photoURL,
               ...dbUser,
             });
+          } else {
+            // If user exists in Auth but not in DB (e.g., manual deletion), log them out
+            // to prevent inconsistent state.
+            signOut(auth);
           }
           setLoading(false);
         }, (error) => {
@@ -86,8 +90,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const updateUser = useCallback(async (userData: Partial<User>) => {
     if (!user) throw new Error("User not authenticated");
     
+    // Create a new object with only the fields to be updated, excluding sensitive/static fields.
+    const updateData: Partial<User> = { ...userData };
+    delete updateData.uid;
+    delete updateData.email;
+    delete updateData.registeredAt;
+
     const userRef = ref(db, `users/${user.uid}`);
-    await update(userRef, userData);
+    await update(userRef, updateData);
     // The real-time listener will automatically update the local user state
   }, [user]);
 

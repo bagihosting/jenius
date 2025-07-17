@@ -15,8 +15,9 @@ const firebaseConfig = {
   databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
 };
 
-// This file is now primarily for reference, as initialization is handled
-// directly within AuthContext.tsx to prevent race conditions.
+// Initialization is handled in AuthContext.tsx to ensure it runs client-side
+// and to prevent race conditions. This file exports the initialized services
+// for use in other parts of the application.
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const storage = getStorage(app);
