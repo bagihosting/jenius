@@ -14,7 +14,7 @@ import { Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { SchoolType, User } from '@/lib/types';
 import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { ref, set } from 'firebase/database';
+import { ref, set, get, query, orderByChild, equalTo, limitToFirst } from 'firebase/database';
 import { db } from '@/lib/firebase';
 
 const schoolTypes: { id: SchoolType; name: string }[] = [
@@ -51,32 +51,50 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const auth = getAuth();
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      
-      await updateProfile(userCredential.user, { displayName: name });
-      
-      const userData: Omit<User, 'uid'> = {
-        name,
-        username,
-        email,
-        schoolType,
-        schoolName,
-        role: 'user',
-        registeredAt: new Date().toISOString(),
-        quizCompletions: 0,
-        bonusPoints: 0,
-        progress: {},
-      };
-      
-      const userRef = ref(db, `users/${userCredential.user.uid}`);
-      await set(userRef, userData);
+        // 1. Check if username is unique
+        const usersRef = ref(db, 'users');
+        const usernameQuery = query(usersRef, orderByChild('username'), equalTo(username.toLowerCase()), limitToFirst(1));
+        const usernameSnapshot = await get(usernameQuery);
 
-      toast({
+        if (usernameSnapshot.exists()) {
+            toast({
+                title: "Pendaftaran Gagal",
+                description: "Username ini sudah digunakan. Silakan pilih username lain.",
+                variant: "destructive",
+            });
+            setIsLoading(false);
+            return;
+        }
+
+        // 2. Create Firebase Auth user
+        const auth = getAuth();
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+        await updateProfile(userCredential.user, { displayName: name });
+      
+        // 3. Save user data to Realtime Database
+        const userData: Omit<User, 'uid'> = {
+            name,
+            username: username.toLowerCase(),
+            email,
+            schoolType,
+            schoolName,
+            role: 'user',
+            registeredAt: new Date().toISOString(),
+            quizCompletions: 0,
+            bonusPoints: 0,
+            progress: {},
+        };
+      
+        const userDbRef = ref(db, `users/${userCredential.user.uid}`);
+        await set(userDbRef, userData);
+
+        toast({
           title: "Pendaftaran Berhasil",
           description: "Akun Anda telah dibuat. Silakan masuk.",
-      });
-      router.push('/login');
+        });
+        router.push('/login');
+
     } catch (error: any) {
         let errorMessage = "Tidak dapat memproses pendaftaran saat ini.";
         if (error.code === 'auth/email-already-in-use') {
