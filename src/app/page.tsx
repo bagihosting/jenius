@@ -14,17 +14,17 @@ export default function Home() {
     {
       icon: <BrainCircuit className="h-10 w-10 text-primary" />,
       title: 'Bantuan PR Cerdas',
-      description: 'Tak perlu pusing lagi! Ayah Jenius memberikan penjelasan langkah demi langkah yang mudah dipahami untuk setiap soal PR.',
+      description: 'Dapatkan jawaban dan penjelasan langkah-demi-langkah untuk PR tersulit sekalipun, kapan saja, di mana saja.',
     },
     {
       icon: <Edit className="h-10 w-10 text-primary" />,
-      title: 'Latihan Soal Harian',
-      description: 'Uji dan asah kemampuan anak dengan ribuan soal latihan baru setiap hari yang disesuaikan dengan kurikulum terkini.',
+      title: 'Latihan Soal HOTS Harian',
+      description: 'Asah kemampuan dengan soal-soal HOTS (High Order Thinking Skills) baru setiap hari, dibuat khusus untuk ujian.',
     },
     {
       icon: <BookCheck className="h-10 w-10 text-primary" />,
-      title: 'Materi Sesuai Kurikulum',
-      description: 'Semua materi pelajaran dari kelas 1-6 SD/MI (Kurikulum Merdeka) tersedia dalam format yang ringkas dan menarik.',
+      title: 'Kurikulum Merdeka Lengkap',
+      description: 'Materi belajar lengkap dari SD, SMP, hingga SMA, dirancang sesuai Kurikulum Merdeka untuk pemahaman maksimal.',
     },
   ];
 
@@ -40,7 +40,7 @@ export default function Home() {
               Buka Potensi <span className="text-primary">Jenius</span> Anak Anda
             </h1>
             <p className="mt-6 text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-              Ayah Jenius adalah partner belajar cerdas yang dirancang untuk membantu siswa SD/MI menaklukkan setiap mata pelajaran dengan percaya diri.
+              Partner belajar AI yang memahami kurikulum Indonesia, membuat PR jadi mudah, dan siap membantu anak Anda meraih nilai terbaik.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
               <Button size="lg" className="h-12 text-lg px-8 w-full sm:w-auto" onClick={() => router.push('/register')}>
@@ -54,12 +54,12 @@ export default function Home() {
         </section>
 
         {/* Features Section */}
-        <section id="features" className="bg-secondary py-16 sm:py-24">
+        <section id="features" className="bg-secondary/50 py-16 sm:py-24">
           <div className="container mx-auto px-4">
             <div className="text-center max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-bold font-headline">Semua yang Dibutuhkan Anak Anda untuk Berprestasi</h2>
+              <h2 className="text-3xl md:text-4xl font-bold font-headline">Semua yang Dibutuhkan untuk Berprestasi</h2>
               <p className="mt-4 text-muted-foreground text-base sm:text-lg">
-                Dari PR hingga persiapan ujian, kami menyediakan alat yang tepat untuk setiap tantangan akademis.
+                Dari PR hingga persiapan ujian, kami menyediakan alat yang tepat untuk setiap tantangan akademis di semua jenjang sekolah.
               </p>
             </div>
             <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -98,14 +98,14 @@ export default function Home() {
                            <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold">1</div>
                         </div>
                         <h3 className="mt-4 text-xl font-semibold font-headline">Daftar Akun</h3>
-                        <p className="mt-2 text-muted-foreground">Buat akun gratis dan pilih jenjang sekolah anak Anda.</p>
+                        <p className="mt-2 text-muted-foreground">Buat akun gratis dan lengkapi profil siswa Anda.</p>
                     </div>
                      <div className="flex flex-col items-center z-10">
                         <div className="bg-background p-2 border-2 border-dashed border-primary rounded-full">
                            <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold">2</div>
                         </div>
                         <h3 className="mt-4 text-xl font-semibold font-headline">Pilih Kelas</h3>
-                        <p className="mt-2 text-muted-foreground">Pilih kelas dan semester yang sedang dijalani saat ini.</p>
+                        <p className="mt-2 text-muted-foreground">Pilih jenjang, kelas, dan semester yang sedang dijalani.</p>
                     </div>
                      <div className="flex flex-col items-center z-10">
                         <div className="bg-background p-2 border-2 border-dashed border-primary rounded-full">
@@ -119,7 +119,7 @@ export default function Home() {
         </section>
 
         {/* Testimonial Section */}
-        <section className="bg-secondary py-16 sm:py-24">
+        <section className="bg-secondary/50 py-16 sm:py-24">
             <div className="container mx-auto px-4">
                 <div className="max-w-3xl mx-auto text-center">
                     <ShieldCheck className="w-16 h-16 text-accent mx-auto" />
