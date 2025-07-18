@@ -16,9 +16,7 @@ const firebaseConfig = {
 
 const databaseURL = "https://pintar-elementary-default-rtdb.asia-southeast1.firebasedatabase.app/";
 
-// Initialization is handled in AuthContext.tsx to ensure it runs client-side
-// and to prevent race conditions. This file exports the initialized services
-// for use in other parts of the application.
+// Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const storage = getStorage(app);
