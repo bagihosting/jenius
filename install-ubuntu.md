@@ -1,0 +1,252 @@
+# Cara Instalasi Aplikasi Ayah Jenius di Ubuntu 22.04
+
+Tutorial ini akan memandu Anda melalui proses instalasi dan deployment aplikasi Next.js Ayah Jenius di server yang menjalankan Ubuntu 22.04.
+
+## 1. Prasyarat
+
+- Server dengan Ubuntu 22.04 terinstal.
+- Akses root atau pengguna dengan hak `sudo`.
+- Domain atau subdomain yang sudah diarahkan ke IP server Anda (opsional, untuk produksi).
+
+## 2. Persiapan Server
+
+Pertama, pastikan sistem Anda terbarui. Buka terminal dan jalankan perintah berikut:
+
+```bash
+sudo apt update && sudo apt upgrade -y
+```
+
+Selanjutnya, instal `git` untuk mengambil kode sumber dari repositori.
+
+```bash
+sudo apt install git -y
+```
+
+## 3. Instalasi Node.js
+
+Aplikasi ini membutuhkan Node.js. Kami merekomendasikan menggunakan Node.js versi 20.x. Cara terbaik untuk mengelolanya di Ubuntu adalah menggunakan **nvm (Node Version Manager)**.
+
+```bash
+# Instal nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+
+# Aktifkan nvm tanpa perlu logout
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+# Instal Node.js versi 20
+nvm install 20
+
+# Gunakan Node.js versi 20
+nvm use 20
+```
+
+Verifikasi instalasi dengan memeriksa versi Node.js dan npm:
+
+```bash
+node -v
+# Seharusnya menampilkan v20.x.x
+
+npm -v
+# Seharusnya menampilkan versi npm yang sesuai
+```
+
+## 4. Mendapatkan Kode Aplikasi
+
+Kloning repositori proyek ke direktori yang Anda inginkan (misalnya, `/var/www/ayah-jenius`). **Langkah ini hanya dilakukan sekali saat instalasi awal.**
+
+```bash
+# Ganti <URL_REPOSITORI_ANDA> dengan URL Git proyek Anda yang sebenarnya
+sudo git clone <URL_REPOSITORI_ANDA> /var/www/ayah-jenius
+
+# Berikan izin ke pengguna Anda saat ini
+sudo chown -R $USER:$USER /var/www/ayah-jenius
+
+# Pindah ke direktori proyek
+cd /var/www/ayah-jenius
+```
+
+## 5. Konfigurasi Lingkungan
+
+Aplikasi ini memerlukan variabel lingkungan (environment variables) untuk terhubung ke layanan Firebase. Buat file `.env` dari file `.env.example` (jika ada) atau buat file baru.
+
+```bash
+# Salin dari example jika ada, atau buat file baru
+# cp .env.example .env
+
+# Jika tidak ada .env.example, buat file baru
+touch .env
+```
+
+Buka file `.env` dengan editor teks favorit Anda (misalnya, `nano`):
+
+```bash
+nano .env
+```
+
+Isi file tersebut dengan kredensial Firebase Anda. Ini adalah langkah **KRUSIAL**.
+
+```env
+# Kredensial Firebase dari konsol Firebase Anda
+NEXT_PUBLIC_FIREBASE_API_KEY="AIzaSy..."
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="proyek-anda.firebaseapp.com"
+NEXT_PUBLIC_FIREBASE_PROJECT_ID="proyek-anda"
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="proyek-anda.appspot.com"
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="..."
+NEXT_PUBLIC_FIREBASE_APP_ID="1:..."
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID="G-..."
+
+# URL Realtime Database
+# Anda bisa mendapatkan ini dari konsol Firebase di bagian Realtime Database
+NEXT_PUBLIC_FIREBASE_DATABASE_URL="https://pintar-elementary-default-rtdb.asia-southeast1.firebasedatabase.app/"
+```
+
+Simpan file dan keluar dari editor (di `nano`, tekan `Ctrl+X`, lalu `Y`, lalu `Enter`).
+
+## 6. Instalasi Dependensi & Build Aplikasi
+
+Sekarang instal semua paket yang dibutuhkan oleh aplikasi:
+
+```bash
+npm install
+```
+
+Setelah instalasi selesai, buat versi produksi dari aplikasi:
+
+```bash
+npm run build
+```
+
+Perintah ini akan mengoptimalkan aplikasi untuk performa terbaik.
+
+## 7. Menjalankan Aplikasi di Latar Belakang (Produksi)
+
+Untuk lingkungan produksi, sangat disarankan menggunakan manajer proses seperti **PM2**. PM2 akan menjaga aplikasi Anda tetap berjalan, me-restartnya jika crash, dan mengelola log secara otomatis.
+
+### Langkah 1: Instal PM2
+Instal PM2 secara global menggunakan npm:
+```bash
+sudo npm install pm2 -g
+```
+
+### Langkah 2: Jalankan Aplikasi dengan PM2
+Gunakan PM2 untuk menjalankan perintah `npm start` dari aplikasi Anda.
+```bash
+# Jalankan aplikasi dan beri nama "ayah-jenius"
+pm2 start npm --name "ayah-jenius" -- start
+```
+Aplikasi Anda sekarang berjalan di port 3000.
+
+### Langkah 3: Atur PM2 agar Berjalan saat Booting
+Agar aplikasi otomatis berjalan kembali setelah server di-restart, atur PM2 untuk berjalan saat startup.
+```bash
+pm2 startup
+```
+Salin dan jalankan perintah yang ditampilkan oleh output `pm2 startup`. Ini biasanya terlihat seperti: `sudo env PATH=$PATH:/home/ubuntu/.nvm/versions/node/v20.12.2/bin /home/ubuntu/.nvm/versions/node/v20.12.2/lib/node_modules/pm2/bin/pm2 startup systemd -u ubuntu --hp /home/ubuntu`
+
+### Langkah 4: Simpan Konfigurasi
+Simpan daftar proses PM2 Anda saat ini agar dapat dipulihkan saat booting.
+```bash
+pm2 save
+```
+
+### Perintah PM2 yang Berguna
+- **Memonitor aplikasi**: `pm2 status` atau `pm2 monit`
+- **Melihat log aplikasi**: `pm2 logs ayah-jenius`
+- **Me-restart aplikasi**: `pm2 restart ayah-jenius`
+- **Menghentikan aplikasi**: `pm2 stop ayah-jenius`
+
+## 8. Konfigurasi Nginx sebagai Reverse Proxy
+
+Langkah ini akan membuat aplikasi Anda dapat diakses melalui domain (misalnya, `https://app.ayahjenius.com`) tanpa perlu menyertakan nomor port `:3000`.
+
+### Langkah 1: Instal Nginx
+Instal Nginx dari repositori Ubuntu:
+```bash
+sudo apt install nginx -y
+```
+
+### Langkah 2: Konfigurasi Firewall
+Izinkan lalu lintas ke Nginx melalui firewall (UFW).
+```bash
+sudo ufw allow 'Nginx Full'
+sudo ufw enable
+```
+
+### Langkah 3: Buat File Konfigurasi Nginx untuk Aplikasi Anda
+Buat file konfigurasi baru untuk situs Anda. Ganti `domain-anda.com` dengan domain Anda.
+```bash
+sudo nano /etc/nginx/sites-available/ayah-jenius
+```
+
+Salin dan tempel konfigurasi berikut. **PENTING: Ganti `domain-anda.com` dengan domain atau subdomain Anda.**
+
+```nginx
+server {
+    listen 80;
+    server_name domain-anda.com www.domain-anda.com;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+Simpan file dan keluar (`Ctrl+X`, `Y`, `Enter`).
+
+### Langkah 4: Aktifkan Situs dan Restart Nginx
+Buat tautan simbolik untuk mengaktifkan konfigurasi yang baru saja Anda buat:
+```bash
+sudo ln -s /etc/nginx/sites-available/ayah-jenius /etc/nginx/sites-enabled/
+```
+
+Uji konfigurasi Nginx untuk memastikan tidak ada kesalahan:
+```bash
+sudo nginx -t
+```
+Jika output-nya adalah `syntax is ok` dan `test is successful`, restart Nginx untuk menerapkan perubahan:
+```bash
+sudo systemctl restart nginx
+```
+
+## 9. Cara Memperbarui Aplikasi (Update)
+
+Setiap kali Anda membuat perubahan pada kode dan mendorongnya ke repositori Git, cukup ikuti proses pembaruan berikut:
+
+### Langkah 1: Masuk ke Direktori Aplikasi
+```bash
+cd /var/www/ayah-jenius
+```
+
+### Langkah 2: Ambil Kode Terbaru dari Git
+```bash
+git pull origin main
+```
+
+### Langkah 3: Instal Ulang Dependensi (Jika Perlu)
+```bash
+npm install
+```
+
+### Langkah 4: Bangun Ulang Aplikasi
+```bash
+npm run build
+```
+
+### Langkah 5: Restart Aplikasi dengan PM2
+```bash
+pm2 restart ayah-jenius
+```
+
+Selesai! Aplikasi Anda kini berjalan dengan versi kode terbaru.
+
+---
+
+## Selesai!
+
+Aplikasi Ayah Jenius Anda sekarang sudah berjalan dan dapat diakses melalui domain Anda. Langkah selanjutnya yang sangat direkomendasikan adalah mengamankan situs Anda dengan **SSL/TLS menggunakan Certbot (Let's Encrypt)** agar dapat diakses melalui `https://`.
