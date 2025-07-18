@@ -22,6 +22,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { getBadgeInfo, BadgeTier } from '@/lib/badgeService';
 import { getStorage, ref as storageRef, uploadString, getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 async function compressAndConvertToWebP(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -94,8 +95,8 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
         await updateUser({ name });
 
         // Also update the displayName in Firebase Auth
-        if (getAuth().currentUser) {
-            await updateProfile(getAuth().currentUser!, { displayName: name });
+        if (auth.currentUser) {
+            await updateProfile(auth.currentUser, { displayName: name });
         }
 
         setIsEditingName(false);
@@ -131,8 +132,8 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
 
         await updateUser({ photoUrl: downloadURL });
 
-        if (getAuth().currentUser) {
-            await updateProfile(getAuth().currentUser!, { photoURL: downloadURL });
+        if (auth.currentUser) {
+            await updateProfile(auth.currentUser, { photoURL: downloadURL });
         }
 
         toast({ title: 'Foto profil berhasil diperbarui!', variant: 'default' });
