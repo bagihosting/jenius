@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import type { SchoolType, User } from '@/lib/types';
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { ref, set } from 'firebase/database';
-import { db, auth } from '@/lib/firebase'; // Menggunakan instance auth yang benar
+import { db, auth } from '@/lib/firebase'; // Menggunakan instance auth yang sudah dikonfigurasi
 
 const schoolTypes: { id: SchoolType; name: string }[] = [
   { id: 'SDN', name: 'SD Negeri' },
@@ -64,7 +64,7 @@ export default function RegisterPage() {
             schoolType,
             schoolName,
             role: 'user',
-            registeredAt: new Date().toISOString(), // Menambahkan kembali timestamp registrasi
+            registeredAt: new Date().toISOString(),
         };
       
         await set(ref(db, `users/${user.uid}`), userData);
@@ -81,6 +81,8 @@ export default function RegisterPage() {
           errorMessage = "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk.";
         } else if (error.code === 'auth/weak-password') {
           errorMessage = "Password terlalu lemah. Gunakan minimal 6 karakter.";
+        } else if (error.code === 'auth/api-key-not-valid') {
+            errorMessage = "Kunci API Firebase tidak valid. Pastikan file .env Anda sudah benar."
         }
         toast({
             title: "Pendaftaran Gagal",
