@@ -2,7 +2,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
@@ -13,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useAuth } from '@/context/AuthContext';
-import { isFirebaseConfigured } from '@/lib/firebase';
+import { isFirebaseConfigured, getFirebase } from '@/lib/firebase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { get, ref, child } from 'firebase/database';
 
@@ -34,7 +33,7 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    if (!firebase || !isFirebaseConfigured) {
+    if (!firebase) {
         toast({
             title: "Konfigurasi Tidak Lengkap",
             description: "Aplikasi belum terhubung ke server. Silakan periksa file .env Anda.",
@@ -150,12 +149,6 @@ export default function LoginPage() {
         <Button type="submit" className="w-full" disabled={isLoading || !isFirebaseConfigured}>
           {isLoading ? <Loader2 className="animate-spin" /> : 'Masuk'}
         </Button>
-        <div className="text-center text-sm text-muted-foreground">
-          Belum punya akun?{' '}
-          <Link href="/register" className="text-primary hover:underline">
-            Daftar di sini
-          </Link>
-        </div>
       </form>
     );
   };
