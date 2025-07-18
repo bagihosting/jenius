@@ -4,6 +4,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,9 +16,10 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { SchoolType, User } from '@/lib/types';
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { ref, set } from 'firebase/database';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import type { SchoolType } from '@/lib/types';
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { ref, set, get, child } from 'firebase/database';
 import { getFirebase, isFirebaseConfigured } from '@/lib/firebase';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
@@ -28,102 +33,107 @@ const schoolTypes: { id: SchoolType; name: string }[] = [
   { id: 'MA', name: 'MA (Madrasah Aliyah)' },
 ];
 
+const checkUsernameUniqueness = async (username: string): Promise<boolean> => {
+  if (!username) return true; // Don't check empty strings
+  const { db } = getFirebase();
+  const dbRef = ref(db);
+  const snapshot = await get(child(dbRef, `usernames/${username.toLowerCase()}`));
+  return !snapshot.exists();
+};
+
+const registerSchema = z.object({
+  name: z.string().min(2, "Nama harus diisi, minimal 2 karakter."),
+  username: z.string()
+    .min(3, "Username minimal 3 karakter.")
+    .regex(/^[a-z0-9_.]+$/, "Username hanya boleh berisi huruf kecil, angka, titik, dan garis bawah."),
+  email: z.string().email("Format email tidak valid."),
+  password: z.string().min(6, "Password minimal 6 karakter."),
+  schoolType: z.enum(['SDN', 'SDIT', 'MI', 'SMP', 'MTs', 'SMA', 'MA'], {
+    required_error: "Jenis sekolah harus dipilih."
+  }),
+  schoolName: z.string().min(3, "Nama sekolah harus diisi."),
+}).refine(async (data) => {
+    return await checkUsernameUniqueness(data.username);
+}, {
+    message: "Username ini sudah digunakan. Silakan pilih yang lain.",
+    path: ["username"],
+});
+
 export default function RegisterPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [name, setName] = useState('');
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [schoolType, setSchoolType] = useState<SchoolType | ''>('');
-  const [schoolName, setSchoolName] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  
+  const form = useForm<z.infer<typeof registerSchema>>({
+    resolver: zodResolver(registerSchema),
+    mode: 'onBlur', // Validate on blur to check username
+    defaultValues: {
+      name: '',
+      username: '',
+      email: '',
+      password: '',
+      schoolName: '',
+    },
+  });
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!schoolType || !schoolName) {
-        toast({
-            title: "Form Belum Lengkap",
-            description: "Silakan pilih jenis sekolah dan isi nama sekolah Anda.",
-            variant: "destructive",
-        });
-        return;
-    }
-    setIsLoading(true);
-
-    if (!isFirebaseConfigured) {
-        toast({
-            title: "Konfigurasi Tidak Lengkap",
-            description: "Kredensial Firebase belum diatur. Silakan periksa file .env Anda.",
-            variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-    }
+  const handleRegister = async (values: z.infer<typeof registerSchema>) => {
+    const { auth, db } = getFirebase();
+    if (!auth || !db) return;
 
     try {
-        const { auth, db } = getFirebase(); // Get initialized services
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
+      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+      const user = userCredential.user;
       
-        const userData: Omit<User, 'progress'> & Partial<Pick<User, 'progress'>> = {
-            uid: user.uid,
-            name,
-            username: username.toLowerCase(),
-            email,
-            schoolType,
-            schoolName,
-            role: 'user',
-            registeredAt: new Date().toISOString(),
-            quizCompletions: 0,
-            bonusPoints: 0,
-        };
-      
-        await set(ref(db, `users/${user.uid}`), userData);
+      await updateProfile(user, { displayName: values.name });
 
-        toast({
-          title: "Pendaftaran Berhasil",
-          description: "Akun Anda telah dibuat. Silakan masuk.",
-        });
-        router.push('/login');
+      const usernameKey = values.username.toLowerCase();
+      const userData = {
+        uid: user.uid,
+        name: values.name,
+        username: usernameKey,
+        email: values.email,
+        schoolType: values.schoolType,
+        schoolName: values.schoolName,
+        role: 'user' as const,
+        registeredAt: new Date().toISOString(),
+        quizCompletions: 0,
+        bonusPoints: 0,
+      };
+      
+      await set(ref(db, `users/${user.uid}`), userData);
+      await set(ref(db, `usernames/${usernameKey}`), { uid: user.uid });
+
+      toast({
+        title: "Pendaftaran Berhasil!",
+        description: "Akun Anda telah dibuat. Silakan masuk.",
+      });
+      router.push('/login');
 
     } catch (error: any) {
-        let errorMessage = "Tidak dapat memproses pendaftaran saat ini.";
-        switch (error.code) {
-            case 'auth/email-already-in-use':
-                errorMessage = "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk.";
-                break;
-            case 'auth/weak-password':
-                errorMessage = "Password terlalu lemah. Gunakan minimal 6 karakter.";
-                break;
-            case 'auth/invalid-email':
-                errorMessage = "Format email tidak valid.";
-                break;
-            case 'auth/operation-not-allowed':
-                errorMessage = "Pendaftaran dengan email dan password tidak diaktifkan.";
-                break;
-            case 'auth/api-key-not-valid':
-                errorMessage = "Kunci API Firebase tidak valid. Pastikan file .env Anda sudah benar dan terisi lengkap.";
-                break;
-            default:
-                 console.error("Registration error:", error);
-                 errorMessage = `Terjadi kesalahan tak terduga: ${error.message}`;
-        }
-        
-        toast({
-            title: "Pendaftaran Gagal",
-            description: errorMessage,
-            variant: "destructive",
-        });
-    } finally {
-      setIsLoading(false);
+      let errorMessage = "Tidak dapat memproses pendaftaran saat ini.";
+      switch (error.code) {
+        case 'auth/email-already-in-use':
+          errorMessage = "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk.";
+          break;
+        case 'auth/weak-password':
+          errorMessage = "Password terlalu lemah. Gunakan minimal 6 karakter.";
+          break;
+        case 'auth/invalid-email':
+          errorMessage = "Format email tidak valid.";
+          break;
+        default:
+          console.error("Registration error:", error);
+          errorMessage = `Terjadi kesalahan tak terduga: ${error.message}`;
+      }
+      form.setError("root", { message: errorMessage });
     }
   };
+
+  const { isSubmitting } = form.formState;
 
   const renderContent = () => {
     if (!isClient) {
@@ -136,97 +146,124 @@ export default function RegisterPage() {
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Konfigurasi Diperlukan</AlertTitle>
           <AlertDescription>
-              Kredensial Firebase belum diatur. Silakan isi file <strong>.env</strong> Anda untuk mengaktifkan pendaftaran.
+            Aplikasi belum terhubung ke server. Silakan lengkapi file <strong>.env</strong> untuk mengaktifkan pendaftaran.
           </AlertDescription>
         </Alert>
       );
     }
-
+    
     return (
-      <form onSubmit={handleRegister} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="name">Nama Lengkap</Label>
-          <Input
-            id="name"
-            type="text"
-            placeholder="Nama Anda"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </div>
-         <div className="space-y-2">
-          <Label htmlFor="username">Username</Label>
-          <Input
-            id="username"
-            type="text"
-            placeholder="Buat username unik"
-            value={username}
-            onChange={(e) => setUsername(e.target.value.toLowerCase())}
-            required
-            pattern="[a-z0-9_]+"
-            title="Username hanya boleh berisi huruf kecil, angka, dan garis bawah (_)."
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="email@contoh.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
-          <Input
-            id="password"
-            type="password"
-            placeholder="Buat password yang kuat (min. 6 karakter)"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="school-type">Jenis Sekolah</Label>
-          <Select value={schoolType} onValueChange={(value) => setSchoolType(value as SchoolType)} required>
-            <SelectTrigger id="school-type">
-              <SelectValue placeholder="Pilih jenis..." />
-            </SelectTrigger>
-            <SelectContent>
-              {schoolTypes.map((s) => (
-                <SelectItem key={s.id} value={s.id}>
-                  {s.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="school-name">Nama Sekolah</Label>
-          <Input
-            id="school-name"
-            type="text"
-            placeholder="Contoh: SMPN 1 Jakarta"
-            value={schoolName}
-            onChange={(e) => setSchoolName(e.target.value)}
-            required
-          />
-        </div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleRegister)} className="space-y-4">
+          {form.formState.errors.root && (
+             <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Pendaftaran Gagal</AlertTitle>
+                <AlertDescription>{form.formState.errors.root.message}</AlertDescription>
+            </Alert>
+          )}
 
-        <Button type="submit" className="w-full" disabled={isLoading || !isFirebaseConfigured}>
-           {isLoading ? <Loader2 className="animate-spin" /> : 'Daftar'}
-        </Button>
-        <div className="text-center text-sm text-muted-foreground">
-          Sudah punya akun?{' '}
-          <Link href="/login" className="text-primary hover:underline">
-            Masuk di sini
-          </Link>
-        </div>
-      </form>
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nama Lengkap</FormLabel>
+                <FormControl>
+                  <Input placeholder="Nama Anda" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="username"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Username</FormLabel>
+                <FormControl>
+                  <Input placeholder="Buat username unik" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="email@contoh.com" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <Input type="password" placeholder="Buat password yang kuat" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="schoolType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Jenis Sekolah</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih jenis..." />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {schoolTypes.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="schoolName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nama Sekolah</FormLabel>
+                <FormControl>
+                  <Input placeholder="Contoh: SMPN 1 Jakarta" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Button type="submit" className="w-full" disabled={isSubmitting || !isFirebaseConfigured}>
+             {isSubmitting ? <Loader2 className="animate-spin" /> : 'Daftar'}
+          </Button>
+          <div className="text-center text-sm text-muted-foreground">
+            Sudah punya akun?{' '}
+            <Link href="/login" className="text-primary hover:underline">
+              Masuk di sini
+            </Link>
+          </div>
+        </form>
+      </Form>
     );
   };
 
