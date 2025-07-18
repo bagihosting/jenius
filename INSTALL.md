@@ -146,6 +146,68 @@ pm2 save
 - **Me-restart aplikasi**: `pm2 restart ayah-jenius`
 - **Menghentikan aplikasi**: `pm2 stop ayah-jenius`
 
+## 8. Konfigurasi Nginx sebagai Reverse Proxy
+
+Langkah ini akan membuat aplikasi Anda dapat diakses melalui domain (misalnya, `https://app.ayahjenius.com`) tanpa perlu menyertakan nomor port `:3000`.
+
+### Langkah 1: Instal Nginx
+Instal Nginx dari repositori AlmaLinux:
+```bash
+sudo dnf install nginx -y
+```
+
+### Langkah 2: Jalankan dan Aktifkan Nginx
+Pastikan Nginx berjalan dan aktif saat server booting:
+```bash
+sudo systemctl start nginx
+sudo systemctl enable nginx
+```
+
+### Langkah 3: Konfigurasi Firewall
+Izinkan lalu lintas HTTP (port 80) dan HTTPS (port 443) melalui firewall:
+```bash
+sudo firewall-cmd --permanent --add-service=http
+sudo firewall-cmd --permanent --add-service=https
+sudo firewall-cmd --reload
+```
+
+### Langkah 4: Buat File Konfigurasi Nginx untuk Aplikasi Anda
+Buat file konfigurasi baru di dalam direktori `conf.d` Nginx. Ganti `domain-anda.com` dengan domain Anda yang sebenarnya.
+```bash
+sudo nano /etc/nginx/conf.d/ayah-jenius.conf
+```
+
+Salin dan tempel konfigurasi berikut ke dalam file tersebut. **PENTING: Ganti `domain-anda.com` dengan domain atau subdomain Anda.**
+
+```nginx
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name domain-anda.com www.domain-anda.com;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+Simpan file dan keluar (`Ctrl+X`, `Y`, `Enter`).
+
+### Langkah 5: Uji dan Restart Nginx
+Uji konfigurasi Nginx untuk memastikan tidak ada kesalahan sintaks:
+```bash
+sudo nginx -t
+```
+Jika output-nya adalah `syntax is ok` dan `test is successful`, restart Nginx untuk menerapkan perubahan:
+```bash
+sudo systemctl restart nginx
+```
+
 ## Selesai!
 
-Aplikasi Ayah Jenius Anda sekarang sudah berjalan secara andal di latar belakang pada server AlmaLinux 8. Untuk membuatnya dapat diakses melalui domain (misalnya `https://app.ayahjenius.com`), langkah selanjutnya adalah mengkonfigurasi *reverse proxy* menggunakan Nginx atau Apache.
+Aplikasi Ayah Jenius Anda sekarang sudah berjalan secara andal di latar belakang dan dapat diakses melalui domain Anda tanpa perlu menambahkan `:3000`. Langkah selanjutnya yang sangat direkomendasikan adalah mengamankan situs Anda dengan **SSL/TLS menggunakan Certbot (Let's Encrypt)** agar dapat diakses melalui `https://`.
