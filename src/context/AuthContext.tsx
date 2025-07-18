@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -41,6 +40,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               ...dbUser,
             });
           } else {
+            // This case might happen if user is deleted from DB but not from Auth
             signOut(auth);
           }
           setLoading(false);
@@ -72,13 +72,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!user) throw new Error("User not authenticated");
     
     const updateData: Partial<User> = { ...userData };
+    
+    // Ensure we don't try to update fields that are managed by Auth or are immutable
     delete updateData.uid;
     delete updateData.email;
     delete updateData.registeredAt;
 
     const userRef = ref(db, `users/${user.uid}`);
     await update(userRef, updateData);
-    // Real-time listener will update the local state.
+    // Real-time listener will update the local state, so no need to call setUser here.
   }, [user]);
 
 
