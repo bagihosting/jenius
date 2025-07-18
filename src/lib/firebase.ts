@@ -26,16 +26,6 @@ const firebaseConfig = {
 
 // Check if we are on the client-side before doing anything.
 if (typeof window !== "undefined") {
-  // Check if any of the essential config values are missing or are still placeholders.
-  if (!firebaseConfig.apiKey || firebaseConfig.apiKey.startsWith('GANTI_DENGAN')) {
-    console.error(
-      '************************************************************************\n' +
-      '*** FIREBASE CONFIG IS MISSING OR INCOMPLETE!                      ***\n' +
-      '*** Please fill in your Firebase project credentials in the .env file. ***\n' +
-      '************************************************************************'
-    );
-  }
-
   // If no Firebase app has been initialized yet, initialize one.
   if (!getApps().length) {
     app = initializeApp(firebaseConfig);
