@@ -13,9 +13,9 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { SchoolType, User } from '@/lib/types';
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { ref, set } from 'firebase/database';
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase'; // Menggunakan instance auth yang benar
 
 const schoolTypes: { id: SchoolType; name: string }[] = [
   { id: 'SDN', name: 'SD Negeri' },
@@ -51,13 +51,12 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-        // 1. Create Firebase Auth user
-        const auth = getAuth();
+        // 1. Create Firebase Auth user menggunakan instance auth yang sudah dikonfigurasi
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
       
         // 2. Save user data to Realtime Database
-        const userData: Omit<User, 'progress' | 'bonusPoints'> & Partial<Pick<User, 'progress' | 'bonusPoints'>> = {
+        const userData: Omit<User, 'progress' | 'bonusPoints' | 'quizCompletions'> & Partial<Pick<User, 'progress' | 'bonusPoints' | 'quizCompletions'>> = {
             uid: user.uid,
             name,
             username: username.toLowerCase(),
@@ -65,8 +64,7 @@ export default function RegisterPage() {
             schoolType,
             schoolName,
             role: 'user',
-            registeredAt: new Date().toISOString(),
-            quizCompletions: 0,
+            registeredAt: new Date().toISOString(), // Menambahkan kembali timestamp registrasi
         };
       
         await set(ref(db, `users/${user.uid}`), userData);
