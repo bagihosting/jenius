@@ -22,7 +22,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { getBadgeInfo, BadgeTier } from '@/lib/badgeService';
 import { getStorage, ref as storageRef, uploadString, getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
-import { getFirebaseAuth, getFirebaseStorage } from '@/lib/firebase';
+import { auth, storage } from '@/lib/firebase';
 
 async function compressAndConvertToWebP(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -93,7 +93,6 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
     
     try {
         await updateUser({ name });
-        const auth = getFirebaseAuth();
         if (auth.currentUser) {
             await updateProfile(auth.currentUser, { displayName: name });
         }
@@ -123,7 +122,6 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
     try {
         const compressedDataUrl = await compressAndConvertToWebP(file);
         
-        const storage = getFirebaseStorage();
         const sRef = storageRef(storage, `profilePictures/${user.uid}.webp`);
         
         await uploadString(sRef, compressedDataUrl, 'data_url');
@@ -131,7 +129,6 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
 
         await updateUser({ photoUrl: downloadURL });
 
-        const auth = getFirebaseAuth();
         if (auth.currentUser) {
             await updateProfile(auth.currentUser, { photoURL: downloadURL });
         }

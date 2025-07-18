@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { useRouter } from 'next/navigation';
 import type { User } from '@/lib/types';
 import { onAuthStateChanged, signOut, updatePassword as updateAuthPassword, updateProfile } from 'firebase/auth';
-import { getFirebaseDb, getFirebaseAuth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import { ref, onValue, update } from 'firebase/database';
 
 
@@ -26,9 +26,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
 
   useEffect(() => {
-    const auth = getFirebaseAuth();
-    const db = getFirebaseDb();
-    
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         const userRef = ref(db, `users/${firebaseUser.uid}`);
@@ -64,7 +61,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
   const logout = async () => {
-    const auth = getFirebaseAuth();
     setLoading(true);
     await signOut(auth);
     setUser(null);
@@ -75,7 +71,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const updateUser = useCallback(async (userData: Partial<User>) => {
     if (!user) throw new Error("User not authenticated");
     
-    const db = getFirebaseDb();
     const updateData: Partial<User> = { ...userData };
     delete updateData.uid;
     delete updateData.email;
@@ -88,7 +83,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
   const updatePassword = async (password: string) => {
-    const auth = getFirebaseAuth();
     const authUser = auth.currentUser;
     if (!authUser) throw new Error("Pengguna tidak ditemukan");
     

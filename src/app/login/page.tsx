@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { getFirebaseAuth } from '@/lib/firebase';
+import { auth } from '@/lib/firebase';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,7 +26,6 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const auth = getFirebaseAuth();
       await signInWithEmailAndPassword(auth, email, password);
       
       toast({

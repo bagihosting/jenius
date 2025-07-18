@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import type { SchoolType, User } from '@/lib/types';
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { ref, set } from 'firebase/database';
-import { getFirebaseDb, getFirebaseAuth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 
 const schoolTypes: { id: SchoolType; name: string }[] = [
   { id: 'SDN', name: 'SD Negeri' },
@@ -51,9 +51,6 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-        const auth = getFirebaseAuth();
-        const db = getFirebaseDb();
-        
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
       
