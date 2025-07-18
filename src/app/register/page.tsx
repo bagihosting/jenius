@@ -14,7 +14,7 @@ import { Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { SchoolType, User } from '@/lib/types';
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { ref, set, get, query, orderByChild, equalTo, limitToFirst } from 'firebase/database';
+import { ref, set } from 'firebase/database';
 import { db } from '@/lib/firebase';
 
 const schoolTypes: { id: SchoolType; name: string }[] = [
@@ -51,27 +51,12 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-        // 1. Check if username is unique
-        const usersRef = ref(db, 'users');
-        const usernameQuery = query(usersRef, orderByChild('username'), equalTo(username.toLowerCase()), limitToFirst(1));
-        const usernameSnapshot = await get(usernameQuery);
-
-        if (usernameSnapshot.exists()) {
-            toast({
-                title: "Pendaftaran Gagal",
-                description: "Username ini sudah digunakan. Silakan pilih username lain.",
-                variant: "destructive",
-            });
-            setIsLoading(false);
-            return;
-        }
-
-        // 2. Create Firebase Auth user
+        // 1. Create Firebase Auth user
         const auth = getAuth();
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
       
-        // 3. Save user data to Realtime Database
+        // 2. Save user data to Realtime Database
         const userData: Omit<User, 'progress' | 'bonusPoints'> & Partial<Pick<User, 'progress' | 'bonusPoints'>> = {
             uid: user.uid,
             name,
@@ -81,7 +66,7 @@ export default function RegisterPage() {
             schoolName,
             role: 'user',
             registeredAt: new Date().toISOString(),
-            quizCompletions: 0, // Start with 0 completions
+            quizCompletions: 0,
         };
       
         await set(ref(db, `users/${user.uid}`), userData);
