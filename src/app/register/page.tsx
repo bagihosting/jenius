@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -9,12 +10,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { SchoolType, User } from '@/lib/types';
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { ref, set } from 'firebase/database';
-import { auth, db } from '@/lib/firebase'; // Import the initialized instances
+import { auth, db, isFirebaseConfigured } from '@/lib/firebase';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const schoolTypes: { id: SchoolType; name: string }[] = [
   { id: 'SDN', name: 'SD Negeri' },
@@ -48,6 +50,16 @@ export default function RegisterPage() {
         return;
     }
     setIsLoading(true);
+
+    if (!isFirebaseConfigured || !auth || !db) {
+        toast({
+            title: "Konfigurasi Tidak Lengkap",
+            description: "Kredensial Firebase belum diatur. Silakan periksa file .env Anda.",
+            variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+    }
 
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -90,7 +102,8 @@ export default function RegisterPage() {
                 errorMessage = "Pendaftaran dengan email dan password tidak diaktifkan.";
                 break;
             case 'auth/configuration-not-found':
-                errorMessage = "Konfigurasi Firebase tidak ditemukan. Mohon hubungi administrator.";
+            case 'auth/api-key-not-valid':
+                errorMessage = "Konfigurasi Firebase tidak valid. Pastikan file .env Anda sudah benar dan terisi lengkap.";
                 break;
             default:
                  console.error("Registration error:", error);
@@ -117,6 +130,15 @@ export default function RegisterPage() {
             <CardDescription>Bergabunglah dengan Ayah Jenius untuk mulai belajar.</CardDescription>
           </CardHeader>
           <CardContent>
+             {!isFirebaseConfigured && (
+                 <Alert variant="destructive" className="mb-6">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Konfigurasi Diperlukan</AlertTitle>
+                    <AlertDescription>
+                        Kredensial Firebase belum diatur. Silakan isi file <strong>.env</strong> Anda untuk mengaktifkan pendaftaran.
+                    </AlertDescription>
+                </Alert>
+            )}
             <form onSubmit={handleRegister} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Nama Lengkap</Label>
@@ -191,7 +213,7 @@ export default function RegisterPage() {
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full" disabled={isLoading || !isFirebaseConfigured}>
                  {isLoading ? <Loader2 className="animate-spin" /> : 'Daftar'}
               </Button>
               <div className="text-center text-sm text-muted-foreground">

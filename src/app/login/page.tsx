@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -9,9 +10,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, isFirebaseConfigured } from '@/lib/firebase';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,6 +26,16 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
+    if (!isFirebaseConfigured || !auth) {
+        toast({
+            title: "Konfigurasi Tidak Lengkap",
+            description: "Kredensial Firebase belum diatur. Silakan periksa file .env Anda.",
+            variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+    }
+
     try {
       await signInWithEmailAndPassword(auth, email, password);
       
@@ -32,8 +44,6 @@ export default function LoginPage() {
           description: `Selamat datang kembali!`,
       });
       
-      // The onAuthStateChanged listener in AuthContext will handle the redirect.
-      // We push to /belajar as a fallback/default.
       router.push('/belajar');
 
     } catch (error: any) {
@@ -75,6 +85,15 @@ export default function LoginPage() {
             <CardDescription>Selamat datang kembali! Lanjutkan proses belajar Anda.</CardDescription>
           </CardHeader>
           <CardContent>
+            {!isFirebaseConfigured && (
+                 <Alert variant="destructive" className="mb-6">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Konfigurasi Diperlukan</AlertTitle>
+                    <AlertDescription>
+                        Kredensial Firebase belum diatur. Silakan isi file <strong>.env</strong> Anda untuk mengaktifkan login.
+                    </AlertDescription>
+                </Alert>
+            )}
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -98,7 +117,7 @@ export default function LoginPage() {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full" disabled={isLoading || !isFirebaseConfigured}>
                 {isLoading ? <Loader2 className="animate-spin" /> : 'Masuk'}
               </Button>
               <div className="text-center text-sm text-muted-foreground">
