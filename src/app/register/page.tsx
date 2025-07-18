@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import type { SchoolType, User } from '@/lib/types';
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { ref, set } from 'firebase/database';
-import { auth, db } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase'; // Import the initialized instances
 
 const schoolTypes: { id: SchoolType; name: string }[] = [
   { id: 'SDN', name: 'SD Negeri' },
@@ -76,19 +76,32 @@ export default function RegisterPage() {
 
     } catch (error: any) {
         let errorMessage = "Tidak dapat memproses pendaftaran saat ini.";
-        if (error.code === 'auth/email-already-in-use') {
-          errorMessage = "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk.";
-        } else if (error.code === 'auth/weak-password') {
-          errorMessage = "Password terlalu lemah. Gunakan minimal 6 karakter.";
-        } else if (error.code === 'auth/invalid-credential' || error.code === 'auth/configuration-not-found' || error.code === 'auth/api-key-not-valid') {
-            errorMessage = "Konfigurasi Firebase tidak valid. Pastikan file .env Anda sudah benar dan terisi lengkap."
+        switch (error.code) {
+            case 'auth/email-already-in-use':
+                errorMessage = "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk.";
+                break;
+            case 'auth/weak-password':
+                errorMessage = "Password terlalu lemah. Gunakan minimal 6 karakter.";
+                break;
+            case 'auth/invalid-email':
+                errorMessage = "Format email tidak valid.";
+                break;
+            case 'auth/operation-not-allowed':
+                errorMessage = "Pendaftaran dengan email dan password tidak diaktifkan.";
+                break;
+            case 'auth/configuration-not-found':
+                errorMessage = "Konfigurasi Firebase tidak ditemukan. Mohon hubungi administrator.";
+                break;
+            default:
+                 console.error("Registration error:", error);
+                 errorMessage = `Terjadi kesalahan tak terduga: ${error.message}`;
         }
+        
         toast({
             title: "Pendaftaran Gagal",
             description: errorMessage,
             variant: "destructive",
         });
-        console.error("Registration error:", error);
     } finally {
       setIsLoading(false);
     }

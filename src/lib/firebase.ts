@@ -2,35 +2,31 @@ import { initializeApp, getApp, getApps, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
 import { getDatabase, type Database } from "firebase/database";
 import { getStorage, type FirebaseStorage } from "firebase/storage";
+import { firebaseConfig } from "./firebaseConfig";
 
-let app: FirebaseApp;
-let auth: Auth;
-let db: Database;
-let storage: FirebaseStorage;
-
+// This function ensures that we initialize Firebase only once.
+// It uses a singleton pattern, which is a best practice in Next.js environments.
 function initializeFirebase() {
-  const firebaseConfig = {
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
-    databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
-  };
-
-  if (!getApps().length) {
-    app = initializeApp(firebaseConfig);
-  } else {
-    app = getApp();
+  if (getApps().length > 0) {
+    return getApp();
   }
-  auth = getAuth(app);
-  db = getDatabase(app);
-  storage = getStorage(app);
+
+  // Check for missing configuration keys to provide a clear error message.
+  for (const key in firebaseConfig) {
+    if (firebaseConfig[key as keyof typeof firebaseConfig] === undefined) {
+      throw new Error(`Firebase config is missing or incomplete. Missing key: ${key}. Check your .env file.`);
+    }
+  }
+
+  return initializeApp(firebaseConfig);
 }
 
-// Panggil fungsi inisialisasi sekali untuk memastikan semuanya siap.
-initializeFirebase();
+// Initialize the app once and export the initialized services.
+// All other parts of the application will import these instances,
+// ensuring they all use the same, correctly configured Firebase connection.
+const app: FirebaseApp = initializeFirebase();
+const auth: Auth = getAuth(app);
+const db: Database = getDatabase(app);
+const storage: FirebaseStorage = getStorage(app);
 
 export { app, auth, db, storage };
