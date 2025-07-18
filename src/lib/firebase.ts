@@ -1,8 +1,8 @@
 
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getStorage } from "firebase/storage";
-import { getDatabase } from "firebase/database";
+import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
+import { getAuth, type Auth } from "firebase/auth";
+import { getStorage, type FirebaseStorage } from "firebase/storage";
+import { getDatabase, type Database } from "firebase/database";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -15,10 +15,20 @@ const firebaseConfig = {
   databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
 };
 
-// Initialize Firebase
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const storage = getStorage(app);
-const db = getDatabase(app);
+// Singleton pattern to initialize Firebase safely
+let app: FirebaseApp;
+let auth: Auth;
+let storage: FirebaseStorage;
+let db: Database;
+
+if (getApps().length === 0) {
+    app = initializeApp(firebaseConfig);
+} else {
+    app = getApp();
+}
+
+auth = getAuth(app);
+storage = getStorage(app);
+db = getDatabase(app);
 
 export { app, auth, storage, db };
