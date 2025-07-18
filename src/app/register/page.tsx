@@ -83,6 +83,8 @@ export default function RegisterPage() {
           errorMessage = "Password terlalu lemah. Gunakan minimal 6 karakter.";
         } else if (error.code === 'auth/api-key-not-valid') {
             errorMessage = "Kunci API Firebase tidak valid. Pastikan file .env Anda sudah benar."
+        } else if (error.code === 'auth/configuration-not-found') {
+            errorMessage = "Konfigurasi Firebase tidak ditemukan. Pastikan file .env Anda sudah benar dan terisi."
         }
         toast({
             title: "Pendaftaran Gagal",
