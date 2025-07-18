@@ -46,7 +46,7 @@ npm -v
 
 ## 4. Mendapatkan Kode Aplikasi
 
-Kloning repositori proyek ke direktori yang Anda inginkan (misalnya, `/var/www/ayah-jenius`).
+Kloning repositori proyek ke direktori yang Anda inginkan (misalnya, `/var/www/ayah-jenius`). **Langkah ini hanya dilakukan sekali saat instalasi awal.**
 
 ```bash
 # Ganti <URL_REPOSITORI_ANDA> dengan URL Git proyek Anda yang sebenarnya
@@ -85,7 +85,10 @@ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="proyek-anda.appspot.com"
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="..."
 NEXT_PUBLIC_FIREBASE_APP_ID="1:..."
 NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID="G-..."
-NEXT_PUBLIC_FIREBASE_DATABASE_URL="https://proyek-anda-default-rtdb.firebaseio.com"
+
+# URL Realtime Database
+# Anda bisa mendapatkan ini dari konsol Firebase di bagian Realtime Database
+NEXT_PUBLIC_FIREBASE_DATABASE_URL="https://pintar-elementary-default-rtdb.asia-southeast1.firebasedatabase.app/"
 
 # Variabel lain (jika ada)
 # ...
@@ -207,6 +210,44 @@ Jika output-nya adalah `syntax is ok` dan `test is successful`, restart Nginx un
 ```bash
 sudo systemctl restart nginx
 ```
+
+## 9. Cara Memperbarui Aplikasi (Update)
+
+Setiap kali Anda membuat perubahan pada kode dan mendorongnya ke repositori Git, Anda tidak perlu mengulang semua langkah instalasi. Cukup ikuti proses pembaruan berikut:
+
+### Langkah 1: Masuk ke Direktori Aplikasi
+Pastikan Anda berada di direktori proyek yang benar.
+```bash
+cd /var/www/ayah-jenius
+```
+
+### Langkah 2: Ambil Kode Terbaru dari Git
+Tarik perubahan terbaru dari cabang utama (atau cabang lain yang Anda gunakan).
+```bash
+git pull origin main
+```
+
+### Langkah 3: Instal Ulang Dependensi (Jika Perlu)
+Langkah ini penting jika Anda menambahkan atau memperbarui paket di `package.json`. Menjalankannya setiap kali update adalah praktik yang aman.
+```bash
+npm install
+```
+
+### Langkah 4: Bangun Ulang Aplikasi
+Buat kembali file produksi dengan kode yang sudah diperbarui.
+```bash
+npm run build
+```
+
+### Langkah 5: Restart Aplikasi dengan PM2
+Gunakan PM2 untuk me-restart aplikasi Anda. PM2 akan melakukannya dengan *zero downtime* (tanpa mematikan aplikasi sepenuhnya).
+```bash
+pm2 restart ayah-jenius
+```
+
+Selesai! Aplikasi Anda kini berjalan dengan versi kode terbaru.
+
+---
 
 ## Selesai!
 
