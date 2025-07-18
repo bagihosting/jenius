@@ -15,11 +15,12 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useAuth } from '@/context/AuthContext';
 import { isFirebaseConfigured } from '@/lib/firebase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { get, ref, child } from 'firebase/database';
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isClient, setIsClient] = useState(false);
@@ -33,7 +34,7 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    if (!firebase) {
+    if (!firebase || !isFirebaseConfigured) {
         toast({
             title: "Konfigurasi Tidak Lengkap",
             description: "Aplikasi belum terhubung ke server. Silakan periksa file .env Anda.",
@@ -43,8 +44,25 @@ export default function LoginPage() {
         return;
     }
 
+    const { auth, db } = firebase;
+    const usernameKey = username.toLowerCase();
+
     try {
-      const { auth } = firebase;
+      // Step 1: Look up username to get UID
+      const usernameSnapshot = await get(child(ref(db), `usernames/${usernameKey}`));
+      if (!usernameSnapshot.exists()) {
+          throw new Error('Username tidak ditemukan.');
+      }
+      const { uid } = usernameSnapshot.val();
+
+      // Step 2: Look up user data to get email
+      const userSnapshot = await get(child(ref(db), `users/${uid}`));
+      if (!userSnapshot.exists()) {
+          throw new Error('Data pengguna tidak ditemukan.');
+      }
+      const { email } = userSnapshot.val();
+
+      // Step 3: Sign in with the retrieved email and provided password
       await signInWithEmailAndPassword(auth, email, password);
       
       toast({
@@ -57,23 +75,26 @@ export default function LoginPage() {
     } catch (error: any) {
       console.error("Login error:", error);
       let errorMessage = "Terjadi kesalahan saat login.";
-      switch (error.code) {
-        case 'auth/user-not-found':
-        case 'auth/invalid-email':
-          errorMessage = "Email tidak ditemukan atau tidak valid.";
-          break;
-        case 'auth/wrong-password':
-          errorMessage = "Password salah. Silakan coba lagi.";
-          break;
-        case 'auth/invalid-credential':
-           errorMessage = "Kombinasi email dan password salah.";
-          break;
-        case 'auth/api-key-not-valid':
-          errorMessage = "Kunci API Firebase tidak valid. Pastikan file .env Anda sudah benar dan terisi lengkap.";
-          break;
-        default:
-          errorMessage = "Terjadi kesalahan tidak terduga. Silakan coba lagi nanti.";
+
+      // Custom error messages
+      if (error.message === 'Username tidak ditemukan.' || error.message === 'Data pengguna tidak ditemukan.') {
+          errorMessage = 'Kombinasi username dan password salah.';
+      } else {
+        // Firebase Auth error messages
+        switch (error.code) {
+          case 'auth/user-not-found':
+          case 'auth/invalid-email':
+            errorMessage = "Email yang terkait dengan username ini tidak ditemukan.";
+            break;
+          case 'auth/wrong-password':
+          case 'auth/invalid-credential':
+            errorMessage = "Kombinasi username dan password salah.";
+            break;
+          default:
+            errorMessage = "Terjadi kesalahan tidak terduga. Silakan coba lagi nanti.";
+        }
       }
+      
       toast({
           title: "Login Gagal",
           description: errorMessage,
@@ -104,14 +125,15 @@ export default function LoginPage() {
     return (
       <form onSubmit={handleLogin} className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="username">Username</Label>
           <Input
-            id="email"
-            type="email"
-            placeholder="email@anda.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            id="username"
+            type="text"
+            placeholder="username_anda"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             required
+            autoCapitalize="none"
           />
         </div>
         <div className="space-y-2">
