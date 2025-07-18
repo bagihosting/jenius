@@ -26,36 +26,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
 
   useEffect(() => {
+    // If Firebase is not configured, don't do anything.
+    // The UI will show a warning based on isFirebaseConfigured.
+    if (!auth || !db) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         const userRef = ref(db, `users/${firebaseUser.uid}`);
         
-        // Listen for changes on the user's data in the database
         const unsubscribeDb = onValue(userRef, (snapshot) => {
-          setLoading(true); // Set loading while we process new data
+          setLoading(true); 
           if (snapshot.exists()) {
             const dbUser = snapshot.val();
-            // This is the corrected logic:
-            // We create a complete user object by combining data from two sources:
-            // 1. The most up-to-date data from the Realtime Database (dbUser).
-            // 2. The core auth info from Firebase Auth (firebaseUser).
-            // This ensures role, schoolName, bonusPoints etc. from the DB are always present.
             setUser({
-              ...dbUser, // Base data from Realtime Database (contains role, schoolName etc.)
-              uid: firebaseUser.uid, // Always use UID from auth
-              email: firebaseUser.email, // Always use email from auth
-              name: firebaseUser.displayName || dbUser.name, // Prefer auth display name if available
-              photoUrl: firebaseUser.photoURL || dbUser.photoUrl, // Prefer auth photo URL if available
+              ...dbUser, 
+              uid: firebaseUser.uid, 
+              email: firebaseUser.email, 
+              name: firebaseUser.displayName || dbUser.name,
+              photoUrl: firebaseUser.photoURL || dbUser.photoUrl, 
             });
           } else {
-            // This case might happen if user is deleted from DB but not from Auth.
-            // Log them out to prevent a broken state.
             signOut(auth);
           }
           setLoading(false);
         }, (error) => {
           console.error("Firebase read failed: " + error.message);
-          signOut(auth); // Log out on DB error to be safe
+          signOut(auth); 
           setLoading(false);
         });
         
@@ -71,6 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
   const logout = async () => {
+    if (!auth) return;
     setLoading(true);
     await signOut(auth);
     setUser(null);
@@ -79,7 +80,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateUser = useCallback(async (userData: Partial<User>) => {
-    if (!user) throw new Error("User not authenticated");
+    if (!user || !db) throw new Error("User not authenticated or DB not configured");
     
     const updateData: Partial<User> = { ...userData };
     
@@ -89,12 +90,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const userRef = ref(db, `users/${user.uid}`);
     await update(userRef, updateData);
-    // Real-time listener will update the local state, so no need to call setUser here.
   }, [user]);
 
 
   const updatePassword = async (password: string) => {
-    const authUser = auth.currentUser;
+    const authUser = auth?.currentUser;
     if (!authUser) throw new Error("Pengguna tidak ditemukan");
     
     await updateAuthPassword(authUser, password);
