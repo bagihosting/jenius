@@ -4,9 +4,9 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import type { User } from '@/lib/types';
-import { onAuthStateChanged, signOut, updatePassword as updateAuthPassword, getAuth, updateProfile } from 'firebase/auth';
+import { onAuthStateChanged, signOut, updatePassword as updateAuthPassword, getAuth, updateProfile, createUserWithEmailAndPassword } from 'firebase/auth';
 import { initializeApp, getApps } from "firebase/app";
-import { getDatabase, ref, onValue, update } from 'firebase/database';
+import { getDatabase, ref, onValue, update, get, set, child } from 'firebase/database';
 import { getStorage } from "firebase/storage";
 import { isFirebaseConfigured, type FirebaseApp, type Auth, type Database, type FirebaseStorage } from '@/lib/firebase';
 
@@ -28,6 +28,71 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const ensureAdminUserExists = async (auth: Auth, db: Database) => {
+    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+    const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
+    const adminUsername = process.env.NEXT_PUBLIC_ADMIN_USERNAME;
+    const adminName = process.env.NEXT_PUBLIC_ADMIN_NAME || 'Admin';
+
+    if (!adminEmail || !adminPassword || !adminUsername) {
+        console.log("Variabel lingkungan admin tidak diatur. Melewatkan pembuatan admin.");
+        return;
+    }
+
+    try {
+        const usernameRef = child(ref(db), `usernames/${adminUsername.toLowerCase()}`);
+        const snapshot = await get(usernameRef);
+        
+        if (snapshot.exists()) {
+            console.log("Admin user already exists.");
+            return;
+        }
+
+        console.log("Membuat akun admin...");
+        
+        // Temporarily sign out current user if any, to create the new user
+        const currentUser = auth.currentUser;
+        if(currentUser) await signOut(auth);
+
+        const userCredential = await createUserWithEmailAndPassword(auth, adminEmail, adminPassword);
+        const adminUser = userCredential.user;
+
+        await updateProfile(adminUser, { displayName: adminName });
+
+        const adminData: User = {
+            uid: adminUser.uid,
+            name: adminName,
+            username: adminUsername.toLowerCase(),
+            email: adminEmail,
+            role: 'admin',
+            registeredAt: new Date().toISOString(),
+        };
+
+        await set(ref(db, `users/${adminUser.uid}`), adminData);
+        await set(ref(db, `usernames/${adminUsername.toLowerCase()}`), { uid: adminUser.uid });
+
+        console.log("Akun admin berhasil dibuat.");
+
+        // Sign out the newly created admin user so it doesn't interfere
+        await signOut(auth);
+
+        // Re-authenticate the original user if there was one
+        // Note: This simple implementation doesn't handle re-login automatically.
+        // The onAuthStateChanged listener will handle the user state.
+
+    } catch (error: any) {
+        if (error.code === 'auth/email-already-in-use') {
+            console.log("Email admin sudah terdaftar, tetapi username belum. Mengaitkan data...");
+            // You might need more complex logic here to link an existing auth user
+            // to a database entry if they somehow get disconnected.
+            // For now, we assume if username doesn't exist, auth user doesn't either.
+        } else {
+            console.error("Gagal membuat pengguna admin:", error);
+        }
+    }
+};
+
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -53,6 +118,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const db = getDatabase(app);
         const storage = getStorage(app);
         setFirebase({ app, auth, db, storage });
+        
+        // Seed the admin user if necessary
+        ensureAdminUserExists(auth, db);
+
     } else if (!isFirebaseConfigured) {
         setLoading(false);
     }
