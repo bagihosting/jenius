@@ -1,18 +1,10 @@
-
 import { initializeApp, getApp, getApps, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
 import { getDatabase, type Database } from "firebase/database";
 import { getStorage, type FirebaseStorage } from "firebase/storage";
 
-let app: FirebaseApp | null = null;
-let auth: Auth | null = null;
-let db: Database | null = null;
-let storage: FirebaseStorage | null = null;
-let isFirebaseConfigured = false;
-
-// This code only runs on the client-side, ensuring `process.env` is available.
-if (typeof window !== "undefined") {
-  const firebaseConfig = {
+// Structure for the config, ensuring all keys are present.
+const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
     authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
     projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
@@ -21,21 +13,39 @@ if (typeof window !== "undefined") {
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
     measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
     databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
-  };
+};
 
-  // Check if any of the essential config values are missing.
-  // A simple check for apiKey is sufficient to determine if the config is provided.
-  if (firebaseConfig.apiKey) {
-    isFirebaseConfigured = true;
+// This flag indicates if the configuration values themselves are present.
+// It does NOT mean the connection is active.
+const isFirebaseConfigured = !!firebaseConfig.apiKey;
+
+let app: FirebaseApp;
+let auth: Auth;
+let db: Database;
+let storage: FirebaseStorage;
+
+// Singleton function to initialize and get Firebase services.
+// This "lazy" approach ensures Firebase is only initialized when needed,
+// and that it only happens once.
+function getFirebase() {
     if (!getApps().length) {
-      app = initializeApp(firebaseConfig);
-    } else {
-      app = getApp();
+        if (!isFirebaseConfigured) {
+            throw new Error("Firebase config is missing or incomplete. Please check your .env file.");
+        }
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getDatabase(app);
+        storage = getStorage(app);
     }
+    // For subsequent calls, return the existing instances.
+    // getApp() retrieves the default app instance.
+    app = getApp(); 
     auth = getAuth(app);
     db = getDatabase(app);
     storage = getStorage(app);
-  }
+
+    return { app, auth, db, storage };
 }
 
-export { app, auth, db, storage, isFirebaseConfigured };
+// Export the getter function and the configuration status flag.
+export { getFirebase, isFirebaseConfigured };

@@ -4,13 +4,16 @@
 import { useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { ref, set, get } from 'firebase/database';
-import { db } from '@/lib/firebase';
+import { getFirebase } from '@/lib/firebase';
 
 export const useProgress = () => {
   const { user } = useAuth();
 
   const updateSubjectProgress = useCallback(async (subjectId: string, score: number) => {
     if (!user) return;
+
+    const { db } = getFirebase();
+    if (!db) return;
 
     const progressRef = ref(db, `users/${user.uid}/progress/${subjectId}`);
     

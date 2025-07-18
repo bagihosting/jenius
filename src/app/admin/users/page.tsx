@@ -32,7 +32,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Loader2, Edit, Trash2 } from 'lucide-react';
 import type { User } from '@/lib/types';
-import { db } from '@/lib/firebase';
+import { getFirebase, isFirebaseConfigured } from '@/lib/firebase';
 import { ref, onValue, update, remove } from 'firebase/database';
 import { useToast } from '@/hooks/use-toast';
 import { UserForm, userSchema } from '@/components/UserForm';
@@ -60,6 +60,16 @@ export default function UsersPage() {
   });
 
   useEffect(() => {
+    if (!isFirebaseConfigured) {
+      setIsLoading(false);
+      return;
+    }
+    const { db } = getFirebase();
+    if (!db) {
+      setIsLoading(false);
+      return;
+    }
+
     const usersRef = ref(db, 'users');
     const unsubscribe = onValue(usersRef, (snapshot) => {
       const data = snapshot.val();
@@ -90,6 +100,11 @@ export default function UsersPage() {
   const handleDelete = async (uid: string) => {
     if (window.confirm("Apakah Anda yakin ingin menghapus pengguna ini? Tindakan ini tidak dapat diurungkan dan akan menghapus data dari Realtime Database. Pengguna Firebase Auth tidak akan terhapus.")) {
       try {
+        const { db } = getFirebase();
+        if (!db) {
+            toast({ title: 'Koneksi database gagal', variant: 'destructive' });
+            return;
+        }
         await remove(ref(db, `users/${uid}`));
         toast({ title: 'Pengguna berhasil dihapus dari database' });
       } catch (error) {
@@ -107,6 +122,11 @@ export default function UsersPage() {
       }
       
       try {
+        const { db } = getFirebase();
+        if (!db) {
+            toast({ title: 'Koneksi database gagal', variant: 'destructive' });
+            return;
+        }
         const userRef = ref(db, `users/${editingUser.uid}`);
         
         // Prepare data for update, removing password if it's empty

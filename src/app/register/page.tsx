@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import type { SchoolType, User } from '@/lib/types';
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { ref, set } from 'firebase/database';
-import { auth, db, isFirebaseConfigured } from '@/lib/firebase';
+import { getFirebase, isFirebaseConfigured } from '@/lib/firebase';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const schoolTypes: { id: SchoolType; name: string }[] = [
@@ -56,7 +56,7 @@ export default function RegisterPage() {
     }
     setIsLoading(true);
 
-    if (!isFirebaseConfigured || !auth || !db) {
+    if (!isFirebaseConfigured) {
         toast({
             title: "Konfigurasi Tidak Lengkap",
             description: "Kredensial Firebase belum diatur. Silakan periksa file .env Anda.",
@@ -67,6 +67,7 @@ export default function RegisterPage() {
     }
 
     try {
+        const { auth, db } = getFirebase(); // Get initialized services
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
       
@@ -106,9 +107,8 @@ export default function RegisterPage() {
             case 'auth/operation-not-allowed':
                 errorMessage = "Pendaftaran dengan email dan password tidak diaktifkan.";
                 break;
-            case 'auth/configuration-not-found':
             case 'auth/api-key-not-valid':
-                errorMessage = "Konfigurasi Firebase tidak valid. Pastikan file .env Anda sudah benar dan terisi lengkap.";
+                errorMessage = "Kunci API Firebase tidak valid. Pastikan file .env Anda sudah benar dan terisi lengkap.";
                 break;
             default:
                  console.error("Registration error:", error);
@@ -129,7 +129,7 @@ export default function RegisterPage() {
     if (!isClient) {
       return <div className="flex justify-center items-center h-24"><Loader2 className="animate-spin" /></div>;
     }
-
+    
     if (!isFirebaseConfigured) {
       return (
         <Alert variant="destructive" className="mb-6">

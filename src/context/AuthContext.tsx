@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { useRouter } from 'next/navigation';
 import type { User } from '@/lib/types';
 import { onAuthStateChanged, signOut, updatePassword as updateAuthPassword, updateProfile } from 'firebase/auth';
-import { auth, db } from '@/lib/firebase';
+import { getFirebase, isFirebaseConfigured } from '@/lib/firebase';
 import { ref, onValue, update } from 'firebase/database';
 
 
@@ -26,10 +26,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
 
   useEffect(() => {
-    // If Firebase is not configured, don't do anything.
-    // The UI will show a warning based on isFirebaseConfigured.
+    if (!isFirebaseConfigured) {
+      setLoading(false);
+      return;
+    }
+
+    const { auth, db } = getFirebase();
     if (!auth || !db) {
-      setUser(null);
       setLoading(false);
       return;
     }
@@ -50,7 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               photoUrl: firebaseUser.photoURL || dbUser.photoUrl, 
             });
           } else {
-            signOut(auth);
+             signOut(auth);
           }
           setLoading(false);
         }, (error) => {
@@ -71,7 +74,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
   const logout = async () => {
+    if (!isFirebaseConfigured) return;
+    const { auth } = getFirebase();
     if (!auth) return;
+
     setLoading(true);
     await signOut(auth);
     setUser(null);
@@ -80,7 +86,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateUser = useCallback(async (userData: Partial<User>) => {
-    if (!user || !db) throw new Error("User not authenticated or DB not configured");
+    if (!user || !isFirebaseConfigured) throw new Error("User not authenticated or DB not configured");
     
     const updateData: Partial<User> = { ...userData };
     
@@ -88,13 +94,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     delete updateData.email;
     delete updateData.registeredAt;
 
+    const { db } = getFirebase();
+    if (!db) throw new Error("Database not initialized");
+
     const userRef = ref(db, `users/${user.uid}`);
     await update(userRef, updateData);
   }, [user]);
 
 
   const updatePassword = async (password: string) => {
-    const authUser = auth?.currentUser;
+    if(!isFirebaseConfigured) throw new Error("Firebase not configured");
+    const { auth } = getFirebase();
+    if (!auth) throw new Error("Authentication not initialized");
+    const authUser = auth.currentUser;
     if (!authUser) throw new Error("Pengguna tidak ditemukan");
     
     await updateAuthPassword(authUser, password);

@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Trophy, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { db } from '@/lib/firebase';
+import { getFirebase, isFirebaseConfigured } from '@/lib/firebase';
 import { ref, onValue, query, orderByChild, limitToLast } from 'firebase/database';
 import type { User } from '@/lib/types';
 import { Crown } from 'lucide-react';
@@ -24,6 +24,16 @@ export function LeaderboardCard() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!isFirebaseConfigured) {
+        setIsLoading(false);
+        return;
+    }
+    const { db } = getFirebase();
+    if (!db) {
+        setIsLoading(false);
+        return;
+    }
+
     const usersRef = ref(db, 'users');
     const topUsersQuery = query(usersRef, orderByChild('bonusPoints'), limitToLast(5));
     
