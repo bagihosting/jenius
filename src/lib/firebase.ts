@@ -12,8 +12,9 @@ const firebaseConfig = {
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
-  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
 };
+
+const databaseURL = "https://pintar-elementary-default-rtdb.asia-southeast1.firebasedatabase.app/";
 
 // Initialization is handled in AuthContext.tsx to ensure it runs client-side
 // and to prevent race conditions. This file exports the initialized services
@@ -21,6 +22,6 @@ const firebaseConfig = {
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const storage = getStorage(app);
-const db = getDatabase(app);
+const db = getDatabase(app, databaseURL);
 
 export { app, auth, storage, db };
