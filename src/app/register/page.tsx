@@ -16,11 +16,11 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import type { SchoolType } from '@/lib/types';
+import type { SchoolType, User } from '@/lib/types';
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { ref, set, get, child } from 'firebase/database';
 import { useAuth } from '@/context/AuthContext';
-import { isFirebaseConfigured, type Database } from '@/lib/firebase';
+import { isFirebaseConfigured } from '@/lib/firebase';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const schoolTypes: { id: SchoolType; name: string }[] = [
@@ -33,14 +33,7 @@ const schoolTypes: { id: SchoolType; name: string }[] = [
   { id: 'MA', name: 'MA (Madrasah Aliyah)' },
 ];
 
-const checkUsernameUniqueness = async (username: string, db: Database | null): Promise<boolean> => {
-  if (!username || !db) return true; // Don't check empty strings or if db is not available
-  const dbRef = ref(db);
-  const snapshot = await get(child(dbRef, `usernames/${username.toLowerCase()}`));
-  return !snapshot.exists();
-};
-
-const registerSchema = (db: Database | null) => z.object({
+const registerSchema = z.object({
   name: z.string().min(2, "Nama harus diisi, minimal 2 karakter."),
   username: z.string()
     .min(3, "Username minimal 3 karakter.")
@@ -51,22 +44,16 @@ const registerSchema = (db: Database | null) => z.object({
     required_error: "Jenis sekolah harus dipilih."
   }),
   schoolName: z.string().min(3, "Nama sekolah harus diisi."),
-}).refine(async (data) => {
-    return await checkUsernameUniqueness(data.username, db);
-}, {
-    message: "Username ini sudah digunakan. Silakan pilih yang lain.",
-    path: ["username"],
 });
 
 export default function RegisterPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
-  const { firebase } = useAuth();
+  const { firebase, isFirebaseConfigured: isConfigured } = useAuth();
   
-  const form = useForm<z.infer<ReturnType<typeof registerSchema>>>({
-    resolver: zodResolver(registerSchema(firebase?.db ?? null)),
-    mode: 'onBlur', // Validate on blur to check username
+  const form = useForm<z.infer<typeof registerSchema>>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       name: '',
       username: '',
@@ -80,28 +67,48 @@ export default function RegisterPage() {
     setIsClient(true);
   }, []);
 
-  const handleRegister = async (values: z.infer<ReturnType<typeof registerSchema>>) => {
-    if (!firebase) return;
+  const handleRegister = async (values: z.infer<typeof registerSchema>) => {
+    if (!firebase) {
+        toast({ title: "Koneksi database gagal", variant: "destructive" });
+        return;
+    }
     const { auth, db } = firebase;
+    const usernameKey = values.username.toLowerCase();
 
+    // Step 1: Explicitly check for username uniqueness before anything else
+    try {
+        const usernameSnapshot = await get(child(ref(db), `usernames/${usernameKey}`));
+        if (usernameSnapshot.exists()) {
+            form.setError("username", {
+                type: "manual",
+                message: "Username ini sudah digunakan. Silakan pilih yang lain.",
+            });
+            return; // Stop the registration process
+        }
+    } catch (error) {
+        form.setError("root", { message: "Gagal memvalidasi username. Silakan coba lagi." });
+        return;
+    }
+
+    // Step 2: If username is unique, proceed with creating the user
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
       
       await updateProfile(user, { displayName: values.name });
 
-      const usernameKey = values.username.toLowerCase();
-      const userData = {
+      const userData: User = {
         uid: user.uid,
         name: values.name,
         username: usernameKey,
         email: values.email,
-        schoolType: values.schoolType,
+        schoolType: values.schoolType as SchoolType,
         schoolName: values.schoolName,
-        role: 'user' as const,
+        role: 'user',
         registeredAt: new Date().toISOString(),
         quizCompletions: 0,
         bonusPoints: 0,
+        progress: {},
       };
       
       await set(ref(db, `users/${user.uid}`), userData);
@@ -140,7 +147,7 @@ export default function RegisterPage() {
       return <div className="flex justify-center items-center h-24"><Loader2 className="animate-spin" /></div>;
     }
     
-    if (!isFirebaseConfigured) {
+    if (!isConfigured) {
       return (
         <Alert variant="destructive" className="mb-6">
           <AlertCircle className="h-4 w-4" />
@@ -253,7 +260,7 @@ export default function RegisterPage() {
             )}
           />
 
-          <Button type="submit" className="w-full" disabled={isSubmitting || !isFirebaseConfigured}>
+          <Button type="submit" className="w-full" disabled={isSubmitting || !isConfigured}>
              {isSubmitting ? <Loader2 className="animate-spin" /> : 'Daftar'}
           </Button>
           <div className="text-center text-sm text-muted-foreground">
