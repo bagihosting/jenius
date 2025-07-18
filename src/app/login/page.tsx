@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
@@ -21,6 +21,11 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,6 +80,60 @@ export default function LoginPage() {
     }
   };
 
+  const renderContent = () => {
+    if (!isClient) {
+      return <div className="flex justify-center items-center h-24"><Loader2 className="animate-spin" /></div>;
+    }
+    
+    if (!isFirebaseConfigured) {
+      return (
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Konfigurasi Diperlukan</AlertTitle>
+          <AlertDescription>
+              Kredensial Firebase belum diatur. Silakan isi file <strong>.env</strong> Anda untuk mengaktifkan login.
+          </AlertDescription>
+        </Alert>
+      );
+    }
+    
+    return (
+      <form onSubmit={handleLogin} className="space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="email@anda.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        <Button type="submit" className="w-full" disabled={isLoading || !isFirebaseConfigured}>
+          {isLoading ? <Loader2 className="animate-spin" /> : 'Masuk'}
+        </Button>
+        <div className="text-center text-sm text-muted-foreground">
+          Belum punya akun?{' '}
+          <Link href="/register" className="text-primary hover:underline">
+            Daftar di sini
+          </Link>
+        </div>
+      </form>
+    );
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
@@ -85,48 +144,7 @@ export default function LoginPage() {
             <CardDescription>Selamat datang kembali! Lanjutkan proses belajar Anda.</CardDescription>
           </CardHeader>
           <CardContent>
-            {!isFirebaseConfigured && (
-                 <Alert variant="destructive" className="mb-6">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Konfigurasi Diperlukan</AlertTitle>
-                    <AlertDescription>
-                        Kredensial Firebase belum diatur. Silakan isi file <strong>.env</strong> Anda untuk mengaktifkan login.
-                    </AlertDescription>
-                </Alert>
-            )}
-            <form onSubmit={handleLogin} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="email@anda.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={isLoading || !isFirebaseConfigured}>
-                {isLoading ? <Loader2 className="animate-spin" /> : 'Masuk'}
-              </Button>
-              <div className="text-center text-sm text-muted-foreground">
-                Belum punya akun?{' '}
-                <Link href="/register" className="text-primary hover:underline">
-                  Daftar di sini
-                </Link>
-              </div>
-            </form>
+            {renderContent()}
           </CardContent>
         </Card>
       </main>

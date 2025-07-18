@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
@@ -38,6 +38,11 @@ export default function RegisterPage() {
   const [schoolType, setSchoolType] = useState<SchoolType | ''>('');
   const [schoolName, setSchoolName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,6 +125,111 @@ export default function RegisterPage() {
     }
   };
 
+  const renderContent = () => {
+    if (!isClient) {
+      return <div className="flex justify-center items-center h-24"><Loader2 className="animate-spin" /></div>;
+    }
+
+    if (!isFirebaseConfigured) {
+      return (
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Konfigurasi Diperlukan</AlertTitle>
+          <AlertDescription>
+              Kredensial Firebase belum diatur. Silakan isi file <strong>.env</strong> Anda untuk mengaktifkan pendaftaran.
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
+    return (
+      <form onSubmit={handleRegister} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="name">Nama Lengkap</Label>
+          <Input
+            id="name"
+            type="text"
+            placeholder="Nama Anda"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </div>
+         <div className="space-y-2">
+          <Label htmlFor="username">Username</Label>
+          <Input
+            id="username"
+            type="text"
+            placeholder="Buat username unik"
+            value={username}
+            onChange={(e) => setUsername(e.target.value.toLowerCase())}
+            required
+            pattern="[a-z0-9_]+"
+            title="Username hanya boleh berisi huruf kecil, angka, dan garis bawah (_)."
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="email@contoh.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            placeholder="Buat password yang kuat (min. 6 karakter)"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="school-type">Jenis Sekolah</Label>
+          <Select value={schoolType} onValueChange={(value) => setSchoolType(value as SchoolType)} required>
+            <SelectTrigger id="school-type">
+              <SelectValue placeholder="Pilih jenis..." />
+            </SelectTrigger>
+            <SelectContent>
+              {schoolTypes.map((s) => (
+                <SelectItem key={s.id} value={s.id}>
+                  {s.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="school-name">Nama Sekolah</Label>
+          <Input
+            id="school-name"
+            type="text"
+            placeholder="Contoh: SMPN 1 Jakarta"
+            value={schoolName}
+            onChange={(e) => setSchoolName(e.target.value)}
+            required
+          />
+        </div>
+
+        <Button type="submit" className="w-full" disabled={isLoading || !isFirebaseConfigured}>
+           {isLoading ? <Loader2 className="animate-spin" /> : 'Daftar'}
+        </Button>
+        <div className="text-center text-sm text-muted-foreground">
+          Sudah punya akun?{' '}
+          <Link href="/login" className="text-primary hover:underline">
+            Masuk di sini
+          </Link>
+        </div>
+      </form>
+    );
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
@@ -130,99 +240,7 @@ export default function RegisterPage() {
             <CardDescription>Bergabunglah dengan Ayah Jenius untuk mulai belajar.</CardDescription>
           </CardHeader>
           <CardContent>
-             {!isFirebaseConfigured && (
-                 <Alert variant="destructive" className="mb-6">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Konfigurasi Diperlukan</AlertTitle>
-                    <AlertDescription>
-                        Kredensial Firebase belum diatur. Silakan isi file <strong>.env</strong> Anda untuk mengaktifkan pendaftaran.
-                    </AlertDescription>
-                </Alert>
-            )}
-            <form onSubmit={handleRegister} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Nama Lengkap</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Nama Anda"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-              </div>
-               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
-                <Input
-                  id="username"
-                  type="text"
-                  placeholder="Buat username unik"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value.toLowerCase())}
-                  required
-                  pattern="[a-z0-9_]+"
-                  title="Username hanya boleh berisi huruf kecil, angka, dan garis bawah (_)."
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="email@contoh.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Buat password yang kuat (min. 6 karakter)"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="school-type">Jenis Sekolah</Label>
-                <Select value={schoolType} onValueChange={(value) => setSchoolType(value as SchoolType)} required>
-                  <SelectTrigger id="school-type">
-                    <SelectValue placeholder="Pilih jenis..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {schoolTypes.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="school-name">Nama Sekolah</Label>
-                <Input
-                  id="school-name"
-                  type="text"
-                  placeholder="Contoh: SMPN 1 Jakarta"
-                  value={schoolName}
-                  onChange={(e) => setSchoolName(e.target.value)}
-                  required
-                />
-              </div>
-
-              <Button type="submit" className="w-full" disabled={isLoading || !isFirebaseConfigured}>
-                 {isLoading ? <Loader2 className="animate-spin" /> : 'Daftar'}
-              </Button>
-              <div className="text-center text-sm text-muted-foreground">
-                Sudah punya akun?{' '}
-                <Link href="/login" className="text-primary hover:underline">
-                  Masuk di sini
-                </Link>
-              </div>
-            </form>
+            {renderContent()}
           </CardContent>
         </Card>
       </main>
