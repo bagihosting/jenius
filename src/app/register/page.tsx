@@ -72,7 +72,7 @@ export default function RegisterPage() {
         const user = userCredential.user;
       
         // 3. Save user data to Realtime Database
-        const userData: User = {
+        const userData: Omit<User, 'progress' | 'bonusPoints'> & Partial<Pick<User, 'progress' | 'bonusPoints'>> = {
             uid: user.uid,
             name,
             username: username.toLowerCase(),
@@ -81,9 +81,7 @@ export default function RegisterPage() {
             schoolName,
             role: 'user',
             registeredAt: new Date().toISOString(),
-            quizCompletions: 0,
-            bonusPoints: 0,
-            progress: {},
+            quizCompletions: 0, // Start with 0 completions
         };
       
         await set(ref(db, `users/${user.uid}`), userData);
