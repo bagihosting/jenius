@@ -15,10 +15,20 @@ const firebaseConfig = {
   databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
 };
 
-// Lazy-initialize Firebase app
+// Lazy-initialize Firebase app to ensure config is loaded
 const getFirebaseApp = (): FirebaseApp => {
     if (!getApps().length) {
-        return initializeApp(firebaseConfig);
+        // Ensure all required config values are present before initializing
+        if (
+            firebaseConfig.apiKey &&
+            firebaseConfig.authDomain &&
+            firebaseConfig.projectId &&
+            firebaseConfig.databaseURL 
+        ) {
+             return initializeApp(firebaseConfig);
+        } else {
+            throw new Error("Firebase config is missing or incomplete. Check your .env file.");
+        }
     }
     return getApp();
 };
