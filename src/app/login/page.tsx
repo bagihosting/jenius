@@ -49,7 +49,11 @@ export default function LoginPage() {
           errorMessage = "Password salah. Silakan coba lagi.";
           break;
         case 'auth/invalid-credential':
-          errorMessage = "Kombinasi email dan password salah.";
+           errorMessage = "Kombinasi email dan password salah.";
+          break;
+        case 'auth/configuration-not-found':
+        case 'auth/api-key-not-valid':
+          errorMessage = "Konfigurasi Firebase tidak valid. Pastikan file .env Anda sudah benar dan terisi lengkap.";
           break;
       }
       toast({
