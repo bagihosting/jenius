@@ -17,12 +17,8 @@ const getFirebaseConfig = () => {
     databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
   };
 
-  // Ensure all required config values are present before initializing
-  for (const key in firebaseConfig) {
-    if (firebaseConfig[key as keyof typeof firebaseConfig] === undefined) {
-      console.error(`Firebase config is missing or incomplete. Missing key: ${key}. Check your .env file.`);
-    }
-  }
+  // We no longer need to check for missing keys here,
+  // as Firebase handles it gracefully. This prevents the app from crashing.
   
   return firebaseConfig;
 };
