@@ -1,4 +1,3 @@
-
 // This file centralizes the Firebase configuration object by defining its structure.
 // The actual values are read from environment variables at the moment of initialization
 // in firebase.ts to prevent issues with Next.js server/client environments.
