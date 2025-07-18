@@ -3,20 +3,11 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Trophy, Loader2 } from 'lucide-react';
+import { Trophy, Loader2, Crown } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { getFirebase, isFirebaseConfigured } from '@/lib/firebase';
 import { ref, onValue, query, orderByChild, limitToLast } from 'firebase/database';
 import type { User } from '@/lib/types';
-import { Crown } from 'lucide-react';
-
-
-const getAverageScore = (progress: { [subjectId: string]: number } | undefined) => {
-    if (!progress || Object.keys(progress).length === 0) return 0;
-    const scores = Object.values(progress);
-    const total = scores.reduce((acc, score) => acc + score, 0);
-    return Math.round(total / scores.length);
-};
 
 
 export function LeaderboardCard() {
@@ -35,13 +26,19 @@ export function LeaderboardCard() {
     }
 
     const usersRef = ref(db, 'users');
+    // Query to get top 5 users ordered by bonusPoints
     const topUsersQuery = query(usersRef, orderByChild('bonusPoints'), limitToLast(5));
     
     const unsubscribe = onValue(topUsersQuery, (snapshot) => {
       const usersData: User[] = [];
       snapshot.forEach((childSnapshot) => {
-        usersData.push({ uid: childSnapshot.key, ...childSnapshot.val() });
+        const user = childSnapshot.val();
+        // Ensure only users with bonus points are included, and they are not admins
+        if ((user.bonusPoints || 0) > 0 && user.role !== 'admin') {
+            usersData.push({ uid: childSnapshot.key, ...user });
+        }
       });
+      // Sort descending since Firebase returns ascending order
       setLeaderboard(usersData.sort((a, b) => (b.bonusPoints || 0) - (a.bonusPoints || 0)));
       setIsLoading(false);
     });
@@ -67,10 +64,10 @@ export function LeaderboardCard() {
             <div className="space-y-4">
                 {leaderboard.map((user, index) => (
                     <div key={user.uid} className="flex items-center gap-4">
-                        <span className="font-bold text-lg w-5">{index + 1}</span>
+                        <span className="font-bold text-lg w-5 text-center">{index + 1}</span>
                         <Avatar>
                             <AvatarImage src={user.photoUrl} alt={user.name} />
-                            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                            <AvatarFallback>{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <div className="flex-grow">
                             <p className="font-semibold truncate flex items-center gap-1.5">
@@ -79,12 +76,12 @@ export function LeaderboardCard() {
                             </p>
                             <p className="text-sm text-muted-foreground">@{user.username}</p>
                         </div>
-                        <div className="font-bold text-primary">{(user.bonusPoints || 0).toFixed(2)}</div>
+                        <div className="font-bold text-primary">{(user.bonusPoints || 0).toFixed(4)}</div>
                     </div>
                 ))}
                 {leaderboard.length === 0 && (
                     <p className="text-center text-muted-foreground h-40 flex items-center justify-center">
-                        Belum ada data peringkat.
+                        Belum ada data peringkat. Ayo selesaikan kuis untuk jadi yang pertama!
                     </p>
                 )}
             </div>

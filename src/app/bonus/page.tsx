@@ -88,7 +88,7 @@ export default function BonusPage() {
   }
 
   const badgeInfo = getBadgeInfo(user);
-  const nextBadge = badgeInfo.level < 5 ? getBadgeInfo({ ...user, quizCompletions: badgeInfo.minQuizzes }) : null;
+  const nextBadge = badgeInfo.level < 5 ? badgeTiers.find(t => t.level === badgeInfo.level + 1) : null;
   const progressToNextBadge = nextBadge ? ((user.quizCompletions || 0) / nextBadge.minQuizzes) * 100 : 100;
 
   return (
@@ -125,7 +125,7 @@ export default function BonusPage() {
                     {nextBadge && (
                          <div className="space-y-2">
                             <p className="text-center text-sm text-muted-foreground">
-                                Selesaikan {nextBadge.minQuizzes - (user.quizCompletions || 0)} kuis lagi untuk mencapai lencana <span className="font-bold">{nextBadge.name}</span>!
+                                Selesaikan {Math.max(0, nextBadge.minQuizzes - (user.quizCompletions || 0))} kuis lagi untuk mencapai lencana <span className="font-bold">{nextBadge.name}</span>!
                             </p>
                             <Progress value={progressToNextBadge} />
                         </div>

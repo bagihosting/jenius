@@ -15,11 +15,11 @@ export interface BadgeTier {
 }
 
 export const badgeTiers: BadgeTier[] = [
-  { level: 1, name: 'Murid Baru', icon: Rocket, color: 'text-gray-500', minDays: 3, minQuizzes: 0, bonusPerQuiz: 0.001 },
-  { level: 2, name: 'Pembelajar Rajin', icon: Award, color: 'text-blue-500', minDays: 7, minQuizzes: 50, bonusPerQuiz: 0.01 },
-  { level: 3, name: 'Jenius Cilik', icon: Brain, color: 'text-purple-500', minDays: 30, minQuizzes: 100, bonusPerQuiz: 0.1 },
-  { level: 4, name: 'Bintang Kelas', icon: Star, color: 'text-yellow-500', minDays: 90, minQuizzes: 300, bonusPerQuiz: 0.5 },
-  { level: 5, name: 'Legenda Sekolah', icon: Gem, color: 'text-red-500', minDays: 365, minQuizzes: 1000, bonusPerQuiz: 1.0 },
+  { level: 1, name: 'Murid Baru', icon: Rocket, color: 'text-gray-500', minDays: 0, minQuizzes: 0, bonusPerQuiz: 0.001 },
+  { level: 2, name: 'Pembelajar Rajin', icon: Award, color: 'text-blue-500', minDays: 7, minQuizzes: 10, bonusPerQuiz: 0.01 },
+  { level: 3, name: 'Jenius Cilik', icon: Brain, color: 'text-purple-500', minDays: 30, minQuizzes: 50, bonusPerQuiz: 0.1 },
+  { level: 4, name: 'Bintang Kelas', icon: Star, color: 'text-yellow-500', minDays: 90, minQuizzes: 150, bonusPerQuiz: 0.5 },
+  { level: 5, name: 'Legenda Sekolah', icon: Gem, color: 'text-red-500', minDays: 365, minQuizzes: 500, bonusPerQuiz: 1.0 },
 ];
 
 const adminBadge: BadgeTier = {
@@ -27,7 +27,7 @@ const adminBadge: BadgeTier = {
 };
 
 const defaultBadge: BadgeTier = {
-  level: 0, name: 'Pemula', icon: Rocket, color: 'text-gray-400', minDays: 0, minQuizzes: 0, bonusPerQuiz: 0
+  level: 0, name: 'Pemula', icon: Rocket, color: 'text-gray-400', minDays: 0, minQuizzes: 0, bonusPerQuiz: 0.001
 };
 
 interface UserStats {
