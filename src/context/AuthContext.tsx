@@ -4,8 +4,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import type { User } from '@/lib/types';
-import { getAuth, onAuthStateChanged, signOut, updatePassword as updateAuthPassword, reauthenticateWithCredential, EmailAuthProvider, updateProfile } from 'firebase/auth';
-import { db, auth } from '@/lib/firebase';
+import { onAuthStateChanged, signOut, updatePassword as updateAuthPassword, updateProfile } from 'firebase/auth';
+import { getFirebaseDb, getFirebaseAuth } from '@/lib/firebase';
 import { ref, onValue, update } from 'firebase/database';
 
 
@@ -26,6 +26,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
 
   useEffect(() => {
+    const auth = getFirebaseAuth();
+    const db = getFirebaseDb();
+    
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         const userRef = ref(db, `users/${firebaseUser.uid}`);
@@ -37,12 +40,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               uid: firebaseUser.uid,
               name: firebaseUser.displayName || dbUser.name,
               email: firebaseUser.email || dbUser.email,
-              photoUrl: firebaseUser.photoURL,
+              photoUrl: firebaseUser.photoURL || dbUser.photoUrl,
               ...dbUser,
             });
           } else {
-            // If user exists in Auth but not in DB (e.g., manual deletion), log them out
-            // to prevent inconsistent state.
             signOut(auth);
           }
           setLoading(false);
@@ -63,6 +64,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
   const logout = async () => {
+    const auth = getFirebaseAuth();
     setLoading(true);
     await signOut(auth);
     setUser(null);
@@ -73,7 +75,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const updateUser = useCallback(async (userData: Partial<User>) => {
     if (!user) throw new Error("User not authenticated");
     
-    // Create a new object with only the fields to be updated, excluding sensitive/static fields.
+    const db = getFirebaseDb();
     const updateData: Partial<User> = { ...userData };
     delete updateData.uid;
     delete updateData.email;
@@ -81,11 +83,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const userRef = ref(db, `users/${user.uid}`);
     await update(userRef, updateData);
-    // The real-time listener will automatically update the local user state
+    // Real-time listener will update the local state.
   }, [user]);
 
 
   const updatePassword = async (password: string) => {
+    const auth = getFirebaseAuth();
     const authUser = auth.currentUser;
     if (!authUser) throw new Error("Pengguna tidak ditemukan");
     

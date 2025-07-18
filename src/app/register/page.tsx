@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import type { SchoolType, User } from '@/lib/types';
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { ref, set } from 'firebase/database';
-import { db, auth } from '@/lib/firebase';
+import { getFirebaseDb, getFirebaseAuth } from '@/lib/firebase';
 
 const schoolTypes: { id: SchoolType; name: string }[] = [
   { id: 'SDN', name: 'SD Negeri' },
@@ -51,12 +51,13 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-        // 1. Create Firebase Auth user menggunakan instance auth yang sudah dikonfigurasi
+        const auth = getFirebaseAuth();
+        const db = getFirebaseDb();
+        
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
       
-        // 2. Save user data to Realtime Database
-        const userData: Omit<User, 'progress' | 'bonusPoints' | 'quizCompletions'> & Partial<Pick<User, 'progress' | 'bonusPoints' | 'quizCompletions'>> = {
+        const userData: Omit<User, 'progress'> & Partial<Pick<User, 'progress'>> = {
             uid: user.uid,
             name,
             username: username.toLowerCase(),
@@ -65,6 +66,8 @@ export default function RegisterPage() {
             schoolName,
             role: 'user',
             registeredAt: new Date().toISOString(),
+            quizCompletions: 0,
+            bonusPoints: 0,
         };
       
         await set(ref(db, `users/${user.uid}`), userData);

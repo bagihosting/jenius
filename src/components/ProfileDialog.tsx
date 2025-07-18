@@ -15,14 +15,14 @@ import { Label } from './ui/label';
 import { useAuth } from '@/context/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Badge } from './ui/badge';
-import { Camera, KeyRound, LogOut, User as UserIcon, Save, Loader2, Crown } from 'lucide-react';
+import { Camera, KeyRound, LogOut, User as UserIcon, Save, Loader2, Gem } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from './ui/separator';
 import { ScrollArea } from './ui/scroll-area';
 import { getBadgeInfo, BadgeTier } from '@/lib/badgeService';
 import { getStorage, ref as storageRef, uploadString, getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { getFirebaseAuth, getFirebaseStorage } from '@/lib/firebase';
 
 async function compressAndConvertToWebP(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -93,8 +93,7 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
     
     try {
         await updateUser({ name });
-
-        // Also update the displayName in Firebase Auth
+        const auth = getFirebaseAuth();
         if (auth.currentUser) {
             await updateProfile(auth.currentUser, { displayName: name });
         }
@@ -124,7 +123,7 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
     try {
         const compressedDataUrl = await compressAndConvertToWebP(file);
         
-        const storage = getStorage();
+        const storage = getFirebaseStorage();
         const sRef = storageRef(storage, `profilePictures/${user.uid}.webp`);
         
         await uploadString(sRef, compressedDataUrl, 'data_url');
@@ -132,6 +131,7 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
 
         await updateUser({ photoUrl: downloadURL });
 
+        const auth = getFirebaseAuth();
         if (auth.currentUser) {
             await updateProfile(auth.currentUser, { photoURL: downloadURL });
         }
@@ -222,10 +222,12 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
 
                 <p className="text-muted-foreground">{user.email}</p>
                 <div className="flex items-center gap-2 mt-2">
-                    {(user.role === 'user' || user.role === 'mahasiswa') && (
+                    {user.role === 'admin' ? (
+                        <Badge variant="destructive" className="flex items-center gap-1.5"><Gem className="h-3 w-3" /> Admin</Badge>
+                    ) : (
                         <Badge variant="secondary">{user.schoolName || user.major || user.schoolType}</Badge>
                     )}
-                    {badgeInfo && UserBadge && (
+                    {badgeInfo && UserBadge && user.role !== 'admin' && (
                        <div className="flex items-center gap-1.5 p-1 px-2 bg-secondary rounded-full">
                           <UserBadge className={`h-4 w-4 ${badgeInfo.color}`} />
                           <span className="font-semibold text-secondary-foreground text-xs">{badgeInfo.name}</span>
