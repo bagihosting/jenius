@@ -12,10 +12,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
-import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import type { Grade } from '@/lib/types';
-import { getBadgeInfo } from '@/lib/badgeService';
 
 export default function BonusPage() {
   const router = useRouter();
@@ -87,10 +85,6 @@ export default function BonusPage() {
     );
   }
 
-  const badgeInfo = getBadgeInfo(user);
-  const nextBadge = badgeInfo.level < 5 ? badgeTiers.find(t => t.level === badgeInfo.level + 1) : null;
-  const progressToNextBadge = nextBadge ? ((user.quizCompletions || 0) / nextBadge.minQuizzes) * 100 : 100;
-
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -112,28 +106,11 @@ export default function BonusPage() {
                 <div className="text-center">
                     <Label>Total Poin Bonus Kamu</Label>
                     <p className="text-5xl font-bold text-primary">{user.bonusPoints?.toFixed(4) || '0.0000'}</p>
+                    <p className="text-sm text-muted-foreground mt-2">Dapatkan 0.0010 poin untuk setiap kuis dengan nilai di atas 60!</p>
                 </div>
                 
                 <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-center">Lencana & Bonus Kamu</h3>
-                     <div className="text-center p-4 bg-secondary rounded-lg">
-                        <p className="text-sm text-muted-foreground">Lencanamu saat ini:</p>
-                        <p className="text-2xl font-bold text-accent-foreground">{badgeInfo.name}</p>
-                         <p className="text-sm text-muted-foreground mt-2">Bonus per kuis (nilai > 60): <span className="font-bold">{badgeInfo.bonusPerQuiz.toFixed(4)} Poin</span></p>
-                    </div>
-
-                    {nextBadge && (
-                         <div className="space-y-2">
-                            <p className="text-center text-sm text-muted-foreground">
-                                Selesaikan {Math.max(0, nextBadge.minQuizzes - (user.quizCompletions || 0))} kuis lagi untuk mencapai lencana <span className="font-bold">{nextBadge.name}</span>!
-                            </p>
-                            <Progress value={progressToNextBadge} />
-                        </div>
-                    )}
-                </div>
-
-                <div className="space-y-4">
-                    <Label htmlFor="roblox-username">Username Roblox</Label>
+                    <Label htmlFor="roblox-username">Username Roblox Anda</Label>
                     <div className="flex gap-2">
                         <Input 
                             id="roblox-username" 

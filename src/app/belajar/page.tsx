@@ -120,9 +120,9 @@ function BelajarSelection() {
               </div>
                <div className="space-y-2">
                 <Label htmlFor="semester" className="text-base">Pilih Semester</Label>
-                <Select value={semester} onValueChange={setSemester}>
+                <Select value={semester} onValueChange={setSemester} disabled={!grade}>
                   <SelectTrigger id="semester" className="w-full text-base h-12">
-                    <SelectValue placeholder="Pilih semester..." />
+                    <SelectValue placeholder={grade ? "Pilih semester..." : "Pilih kelas dulu"} />
                   </SelectTrigger>
                   <SelectContent>
                     {semesters.map((s) => (

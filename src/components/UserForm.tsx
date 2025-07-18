@@ -43,13 +43,24 @@ export const userSchema = z.object({
   schoolName: z.string().optional(),
   password: z.string().optional(),
   photoUrl: z.string().optional(),
-  badge: z.string().optional(),
   robloxUsername: z.string().optional(),
   major: z.string().optional(),
   bonusPoints: z.number().optional(),
-}).refine(data => data.role !== 'user' || (data.schoolType && data.schoolName), {
-    message: "Jenis dan nama sekolah wajib diisi untuk peran 'user'.",
-    path: ["schoolName"],
+}).superRefine((data, ctx) => {
+    if (data.role === 'user' && (!data.schoolType || !data.schoolName)) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Jenis dan nama sekolah wajib diisi untuk peran 'user'.",
+            path: ['schoolName'],
+        });
+    }
+    if (data.role === 'mahasiswa' && !data.major) {
+         ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Jurusan wajib diisi untuk peran 'mahasiswa'.",
+            path: ['major'],
+        });
+    }
 });
 
 
@@ -233,19 +244,6 @@ function InnerUserForm({ form, onSubmit, editingUser, children }: UserFormProps)
                         <FormLabel>Username Roblox (Opsional)</FormLabel>
                         <FormControl>
                             <Input placeholder="Username Roblox" {...field} value={field.value || ''} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                   <FormField
-                    control={form.control}
-                    name="badge"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Lencana (Opsional)</FormLabel>
-                        <FormControl>
-                            <Input placeholder="contoh: star_student" {...field} value={field.value || ''} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

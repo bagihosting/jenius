@@ -19,7 +19,6 @@ import { Camera, KeyRound, LogOut, User as UserIcon, Save, Loader2, Gem } from '
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from './ui/separator';
 import { ScrollArea } from './ui/scroll-area';
-import { getBadgeInfo, type BadgeTier } from '@/lib/badgeService';
 import { ref as storageRef, uploadString, getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
 
@@ -66,7 +65,7 @@ async function compressAndConvertToWebP(file: File): Promise<string> {
 
 
 export function ProfileDialog({ children }: { children: React.ReactNode }) {
-  const { user, updateUser, updatePassword: updateAuthPassword, logout, firebase } = useAuth();
+  const { user, updateUser, updatePassword: updateAuthPassword, logout } = useAuth();
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -74,15 +73,14 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const [badgeInfo, setBadgeInfo] = useState<BadgeTier | null>(null);
 
   useEffect(() => {
     if (user) {
-      setBadgeInfo(getBadgeInfo(user));
       setName(user.name);
     }
   }, [user]);
 
+  const firebase = useAuth().firebase;
   if (!user || !firebase) return null;
 
   const handleSaveName = async () => {
@@ -133,10 +131,8 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
         await uploadString(sRef, compressedDataUrl, 'data_url');
         const downloadURL = await getDownloadURL(sRef);
 
-        // Update di Realtime Database
         await updateUser({ photoUrl: downloadURL });
 
-        // Update juga di Firebase Auth
         if (auth.currentUser) {
             await updateProfile(auth.currentUser, { photoURL: downloadURL });
         }
@@ -175,7 +171,6 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const UserBadge = badgeInfo ? badgeInfo.icon : null;
 
   return (
     <Dialog onOpenChange={(open) => {
@@ -183,7 +178,6 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
             setName(user.name);
             setPassword('');
             setConfirmPassword('');
-            setBadgeInfo(getBadgeInfo(user));
         }
         setIsEditingName(false);
     }}>
@@ -229,14 +223,10 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
                 <div className="flex items-center gap-2 mt-2">
                     {user.role === 'admin' ? (
                         <Badge variant="destructive" className="flex items-center gap-1.5"><Gem className="h-3 w-3" /> Admin</Badge>
+                    ) : user.role === 'mahasiswa' ? (
+                       <Badge variant="secondary">{user.major || 'Mahasiswa'}</Badge>
                     ) : (
-                        <Badge variant="secondary">{user.schoolName || user.major || user.schoolType}</Badge>
-                    )}
-                    {badgeInfo && UserBadge && user.role !== 'admin' && (
-                       <div className="flex items-center gap-1.5 p-1 px-2 bg-secondary rounded-full">
-                          <UserBadge className={`h-4 w-4 ${badgeInfo.color}`} />
-                          <span className="font-semibold text-secondary-foreground text-xs">{badgeInfo.name}</span>
-                       </div>
+                        <Badge variant="secondary">{user.schoolName || 'Siswa'}</Badge>
                     )}
                 </div>
             </div>

@@ -15,7 +15,6 @@ import { Progress } from './ui/progress';
 import { useProgress } from '@/hooks/use-progress';
 import { Confetti } from './Confetti';
 import { useAuth } from '@/context/AuthContext';
-import { getBadgeInfo, recordQuizCompletion } from '@/lib/badgeService';
 
 type QuizState = 'idle' | 'loading' | 'active' | 'finished';
 
@@ -94,10 +93,10 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
     }
   };
 
-  const updateBonus = async (user: User, bonusPerQuiz: number): Promise<boolean> => {
+  const updateBonus = async (user: User, bonusAmount: number): Promise<boolean> => {
     if (!user) return false;
     const currentPoints = user.bonusPoints || 0;
-    const newPoints = currentPoints + bonusPerQuiz;
+    const newPoints = currentPoints + bonusAmount;
     await updateUser({ bonusPoints: newPoints });
     return true;
   };
@@ -117,17 +116,18 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
     setScore(percentageScore);
     await updateSubjectProgress(subjectId, percentageScore);
     
-    await recordQuizCompletion(user, updateUser);
+    const currentCompletions = user.quizCompletions || 0;
+    await updateUser({ quizCompletions: currentCompletions + 1 });
     
     const gradeNum = parseInt(user.grade || '99', 10);
+    const BONUS_PER_QUIZ = 0.0010;
 
     if (percentageScore >= 60 && gradeNum <= 6) {
-        const badgeInfo = getBadgeInfo(user);
-        const bonusGiven = await updateBonus(user, badgeInfo.bonusPerQuiz);
+        const bonusGiven = await updateBonus(user, BONUS_PER_QUIZ);
         if(bonusGiven) {
             toast({
                 title: "Selamat, Kamu Dapat Bonus!",
-                description: `Kamu mendapatkan ${badgeInfo.bonusPerQuiz.toFixed(4)} Poin Bonus karena nilaimu hebat! Terus tingkatkan!`,
+                description: `Kamu mendapatkan ${BONUS_PER_QUIZ.toFixed(4)} Poin Bonus karena nilaimu hebat! Terus tingkatkan!`,
             });
         }
     }
