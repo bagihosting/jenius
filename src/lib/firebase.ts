@@ -1,4 +1,3 @@
-
 import { initializeApp, getApp, getApps, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
 import { getDatabase, type Database } from "firebase/database";
@@ -15,7 +14,7 @@ const firebaseConfig = {
     databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
 };
 
-// Initialize Firebase
+// Initialize Firebase for SSR and SSG
 const app: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 const auth: Auth = getAuth(app);
