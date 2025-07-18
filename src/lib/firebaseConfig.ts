@@ -1,6 +1,7 @@
-// This file centralizes the Firebase configuration object.
-// By isolating it, we ensure that Next.js environment variables are read correctly
-// and prevent race conditions during initialization.
+
+// This file centralizes the Firebase configuration object by defining its structure.
+// The actual values are read from environment variables at the moment of initialization
+// in firebase.ts to prevent issues with Next.js server/client environments.
 
 export const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,

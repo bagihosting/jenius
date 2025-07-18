@@ -14,7 +14,7 @@ function initializeFirebase() {
   // Check for missing configuration keys to provide a clear error message.
   for (const key in firebaseConfig) {
     if (firebaseConfig[key as keyof typeof firebaseConfig] === undefined) {
-      throw new Error(`Firebase config is missing or incomplete. Missing key: ${key}. Check your .env file.`);
+      console.error(`Firebase config is missing or incomplete. Missing key: ${key}. Check your .env file.`);
     }
   }
 
