@@ -46,6 +46,7 @@ export const userSchema = z.object({
   badge: z.string().optional(),
   robloxUsername: z.string().optional(),
   major: z.string().optional(),
+  bonusPoints: z.number().optional(),
 }).refine(data => data.role !== 'user' || (data.schoolType && data.schoolName), {
     message: "Jenis dan nama sekolah wajib diisi untuk peran 'user'.",
     path: ["schoolName"],
@@ -115,7 +116,7 @@ function InnerUserForm({ form, onSubmit, editingUser, children }: UserFormProps)
                       <FormItem>
                         <FormLabel>Password</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder={editingUser ? 'Isi untuk mengubah' : 'Password baru'} {...field} />
+                          <Input type="password" placeholder="Isi untuk mengubah (admin tidak bisa mengubah)" disabled />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -160,7 +161,7 @@ function InnerUserForm({ form, onSubmit, editingUser, children }: UserFormProps)
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {schoolTypes.map((s) => (
+                                {schoolTypes.filter(s => !['AKADEMI', 'UNIVERSITAS'].includes(s.id)).map((s) => (
                                   <SelectItem key={s.id} value={s.id}>
                                     {s.name}
                                   </SelectItem>
@@ -202,6 +203,27 @@ function InnerUserForm({ form, onSubmit, editingUser, children }: UserFormProps)
                         )}
                       />
                   )}
+
+                  <FormField
+                    control={form.control}
+                    name="bonusPoints"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Poin Bonus</FormLabel>
+                        <FormControl>
+                            <Input 
+                              type="number" 
+                              placeholder="0"
+                              {...field}
+                              onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
+                              value={field.value || 0}
+                              step="0.001"
+                            />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   <FormField
                     control={form.control}

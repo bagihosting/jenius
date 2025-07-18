@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -29,23 +30,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (firebaseUser) {
         const userRef = ref(db, `users/${firebaseUser.uid}`);
         
+        // Listen for changes on the user's data in the database
         const unsubscribeDb = onValue(userRef, (snapshot) => {
+          setLoading(true); // Set loading while we process new data
           if (snapshot.exists()) {
             const dbUser = snapshot.val();
+            // This is the corrected logic:
+            // We create a complete user object by combining data from two sources:
+            // 1. The most up-to-date data from the Realtime Database (dbUser).
+            // 2. The core auth info from Firebase Auth (firebaseUser).
+            // This ensures role, schoolName, bonusPoints etc. from the DB are always present.
             setUser({
-              uid: firebaseUser.uid,
-              name: firebaseUser.displayName || dbUser.name,
-              email: firebaseUser.email || dbUser.email,
-              photoUrl: firebaseUser.photoURL || dbUser.photoUrl,
-              ...dbUser,
+              ...dbUser, // Base data from Realtime Database (contains role, schoolName etc.)
+              uid: firebaseUser.uid, // Always use UID from auth
+              email: firebaseUser.email, // Always use email from auth
+              name: firebaseUser.displayName || dbUser.name, // Prefer auth display name if available
+              photoUrl: firebaseUser.photoURL || dbUser.photoUrl, // Prefer auth photo URL if available
             });
           } else {
-            // This case might happen if user is deleted from DB but not from Auth
+            // This case might happen if user is deleted from DB but not from Auth.
+            // Log them out to prevent a broken state.
             signOut(auth);
           }
           setLoading(false);
         }, (error) => {
           console.error("Firebase read failed: " + error.message);
+          signOut(auth); // Log out on DB error to be safe
           setLoading(false);
         });
         
@@ -73,7 +83,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     const updateData: Partial<User> = { ...userData };
     
-    // Ensure we don't try to update fields that are managed by Auth or are immutable
     delete updateData.uid;
     delete updateData.email;
     delete updateData.registeredAt;

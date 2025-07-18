@@ -36,7 +36,6 @@ import { db } from '@/lib/firebase';
 import { ref, onValue, update, remove } from 'firebase/database';
 import { useToast } from '@/hooks/use-toast';
 import { UserForm, userSchema } from '@/components/UserForm';
-import { useAuth } from '@/context/AuthContext';
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -44,7 +43,6 @@ export default function UsersPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { toast } = useToast();
-  const { updateUser: updateAuthUser } = useAuth();
 
   const form = useForm({
     resolver: zodResolver(userSchema),
@@ -57,6 +55,7 @@ export default function UsersPage() {
       schoolName: '',
       major: '',
       robloxUsername: '',
+      bonusPoints: 0,
     },
   });
 
@@ -113,16 +112,21 @@ export default function UsersPage() {
         // Prepare data for update, removing password if it's empty
         const { password, ...updateData } = values;
 
+        // Ensure bonusPoints is a number
+        updateData.bonusPoints = Number(updateData.bonusPoints) || 0;
+
         await update(userRef, updateData);
         
-        // Note: Password changes are handled separately via Auth context
-        // This form does not handle Firebase Auth password changes.
+        // Note: Password changes are not handled by this form because it's an admin operation.
         if (password) {
-            toast({ title: "Info", description: "Perubahan password harus dilakukan oleh pengguna melalui profil mereka."});
+            toast({ title: "Info", description: "Perubahan data pengguna berhasil. Perubahan password tidak dapat dilakukan dari panel admin."});
+        } else {
+            toast({ title: "Pengguna berhasil diperbarui" });
         }
 
-        toast({ title: "Pengguna berhasil diperbarui" });
         setIsSheetOpen(false);
+        setEditingUser(null);
+
 
       } catch (error: any) {
           toast({ title: "Operasi Gagal", description: error.message, variant: 'destructive' });
@@ -151,6 +155,7 @@ export default function UsersPage() {
                   <TableHead>Email</TableHead>
                   <TableHead>Peran</TableHead>
                   <TableHead>Sekolah/Jurusan</TableHead>
+                  <TableHead>Poin Bonus</TableHead>
                   <TableHead className="text-right">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
@@ -162,10 +167,20 @@ export default function UsersPage() {
                         <div className="text-sm text-muted-foreground">@{user.username}</div>
                     </TableCell>
                     <TableCell>{user.email}</TableCell>
-                    <TableCell>{user.role}</TableCell>
+                    <TableCell>
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${user.role === 'admin' ? 'bg-destructive/20 text-destructive' : 'bg-secondary text-secondary-foreground'}`}>
+                        {user.role}
+                      </span>
+                    </TableCell>
                     <TableCell>{user.schoolName || user.major || 'N/A'}</TableCell>
+                    <TableCell>{(user.bonusPoints || 0).toFixed(4)}</TableCell>
                     <TableCell className="text-right">
-                      <Sheet>
+                      <Sheet open={isSheetOpen && editingUser?.uid === user.uid} onOpenChange={(open) => {
+                          if (!open) {
+                              setIsSheetOpen(false);
+                              setEditingUser(null);
+                          }
+                      }}>
                         <SheetTrigger asChild>
                            <Button variant="ghost" size="icon" onClick={() => handleEdit(user)}>
                               <Edit className="h-4 w-4" />

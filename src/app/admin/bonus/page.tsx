@@ -56,7 +56,9 @@ export default function BonusManagementPage() {
 
     try {
       const userRef = ref(db, `users/${uid}`);
-      await update(userRef, { bonusPoints: user.bonusPoints || 0 });
+      // Ensure that we save a number, defaulting to 0 if it's undefined or NaN
+      const pointsToSave = Number.isNaN(Number(user.bonusPoints)) ? 0 : Number(user.bonusPoints) || 0;
+      await update(userRef, { bonusPoints: pointsToSave });
       toast({
         title: 'Berhasil!',
         description: `Poin bonus untuk ${user.name} telah diperbarui.`,
@@ -111,6 +113,7 @@ export default function BonusManagementPage() {
                     value={user.bonusPoints === undefined ? '' : user.bonusPoints}
                     onChange={(e) => handlePointsChange(user.uid, e.target.value)}
                     className="w-32"
+                    step="0.001"
                   />
                   <Button onClick={() => handleSavePoints(user.uid)} size="sm">
                     <Save className="h-4 w-4 mr-2"/>
