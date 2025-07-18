@@ -5,24 +5,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Users, Gift, Loader2 } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { ref, onValue } from 'firebase/database';
-import { getFirebase, isFirebaseConfigured } from '@/lib/firebase';
+import { useAuth } from '@/context/AuthContext';
 import type { User } from '@/lib/types';
 
 export default function AdminDashboardPage() {
     const [userCount, setUserCount] = useState(0);
     const [isBonusFeatureActive, setIsBonusFeatureActive] = useState(true); // Assuming it's always active now
     const [isLoading, setIsLoading] = useState(true);
+    const { firebase } = useAuth();
 
     useEffect(() => {
-        if (!isFirebaseConfigured) {
+        if (!firebase) {
             setIsLoading(false);
             return;
         }
-        const { db } = getFirebase();
-        if (!db) {
-            setIsLoading(false);
-            return;
-        }
+        const { db } = firebase;
 
         const usersRef = ref(db, 'users');
         const unsubscribe = onValue(usersRef, (snapshot) => {
@@ -35,7 +32,7 @@ export default function AdminDashboardPage() {
         });
 
         return () => unsubscribe();
-    }, []);
+    }, [firebase]);
 
     if (isLoading) {
         return (

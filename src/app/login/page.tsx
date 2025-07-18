@@ -12,7 +12,8 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { getFirebase, isFirebaseConfigured } from '@/lib/firebase';
+import { useAuth } from '@/context/AuthContext';
+import { isFirebaseConfigured } from '@/lib/firebase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function LoginPage() {
@@ -22,6 +23,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const { firebase } = useAuth();
 
   useEffect(() => {
     setIsClient(true);
@@ -31,10 +33,10 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    if (!isFirebaseConfigured) {
+    if (!firebase) {
         toast({
             title: "Konfigurasi Tidak Lengkap",
-            description: "Kredensial Firebase belum diatur. Silakan periksa file .env Anda.",
+            description: "Aplikasi belum terhubung ke server. Silakan periksa file .env Anda.",
             variant: "destructive",
         });
         setIsLoading(false);
@@ -42,7 +44,7 @@ export default function LoginPage() {
     }
 
     try {
-      const { auth } = getFirebase(); // Get initialized auth service
+      const { auth } = firebase;
       await signInWithEmailAndPassword(auth, email, password);
       
       toast({

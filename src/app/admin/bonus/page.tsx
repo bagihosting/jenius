@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { get, ref, update, onValue } from 'firebase/database';
-import { getFirebase, isFirebaseConfigured } from '@/lib/firebase';
+import { useAuth } from '@/context/AuthContext';
 import type { User } from '@/lib/types';
 
 
@@ -18,19 +18,16 @@ export default function BonusManagementPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
   const { toast } = useToast();
+  const { firebase } = useAuth();
 
   useEffect(() => {
     setIsClient(true);
-    if (!isFirebaseConfigured) {
+    if (!firebase) {
         setIsLoading(false);
         return;
     }
-    const { db } = getFirebase();
-    if (!db) {
-        setIsLoading(false);
-        return;
-    }
-
+    const { db } = firebase;
+    
     const usersRef = ref(db, 'users');
     const unsubscribe = onValue(usersRef, (snapshot) => {
       if (snapshot.exists()) {
@@ -47,7 +44,7 @@ export default function BonusManagementPage() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [firebase]);
 
   const handlePointsChange = (uid: string, value: string) => {
     const newUsers = users.map(user => {
@@ -62,14 +59,10 @@ export default function BonusManagementPage() {
   
   const handleSavePoints = async (uid: string) => {
     const user = users.find(u => u.uid === uid);
-    if (!user) return;
+    if (!user || !firebase) return;
 
     try {
-      const { db } = getFirebase();
-      if (!db) {
-        toast({ title: 'Koneksi database gagal', variant: 'destructive' });
-        return;
-      }
+      const { db } = firebase;
       const userRef = ref(db, `users/${uid}`);
       // Ensure that we save a number, defaulting to 0 if it's undefined or NaN
       const pointsToSave = Number.isNaN(Number(user.bonusPoints)) ? 0 : Number(user.bonusPoints) || 0;

@@ -1,7 +1,7 @@
-import { initializeApp, getApp, getApps, type FirebaseApp } from "firebase/app";
-import { getAuth, type Auth } from "firebase/auth";
-import { getDatabase, type Database } from "firebase/database";
-import { getStorage, type FirebaseStorage } from "firebase/storage";
+import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
+import type { Auth } from "firebase/auth";
+import type { Database } from "firebase/database";
+import type { FirebaseStorage } from "firebase/storage";
 
 // Structure for the config, ensuring all keys are present.
 const firebaseConfig = {
@@ -16,36 +16,11 @@ const firebaseConfig = {
 };
 
 // This flag indicates if the configuration values themselves are present.
-// It does NOT mean the connection is active.
-const isFirebaseConfigured = !!firebaseConfig.apiKey;
+// It does NOT mean the connection is active. It's safe to be read on server or client.
+const isFirebaseConfigured = !!firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith('GANTI_DENGAN');
 
-let app: FirebaseApp;
-let auth: Auth;
-let db: Database;
-let storage: FirebaseStorage;
+// Note: The initialization logic is now centralized in AuthContext.
+// This file only exports the configuration check flag and types.
 
-// Singleton function to initialize and get Firebase services.
-// This "lazy" approach ensures Firebase is only initialized when needed,
-// and that it only happens once.
-function getFirebase() {
-    if (!getApps().length) {
-        if (!isFirebaseConfigured) {
-            throw new Error("Firebase config is missing or incomplete. Please check your .env file.");
-        }
-        app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
-        db = getDatabase(app);
-        storage = getStorage(app);
-    }
-    // For subsequent calls, return the existing instances.
-    // getApp() retrieves the default app instance.
-    app = getApp(); 
-    auth = getAuth(app);
-    db = getDatabase(app);
-    storage = getStorage(app);
-
-    return { app, auth, db, storage };
-}
-
-// Export the getter function and the configuration status flag.
-export { getFirebase, isFirebaseConfigured };
+export { isFirebaseConfigured };
+export type { FirebaseApp, Auth, Database, FirebaseStorage };

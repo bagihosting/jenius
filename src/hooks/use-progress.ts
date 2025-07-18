@@ -4,17 +4,14 @@
 import { useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { ref, set, get } from 'firebase/database';
-import { getFirebase } from '@/lib/firebase';
 
 export const useProgress = () => {
-  const { user } = useAuth();
+  const { user, firebase } = useAuth();
 
   const updateSubjectProgress = useCallback(async (subjectId: string, score: number) => {
-    if (!user) return;
+    if (!user || !firebase) return;
 
-    const { db } = getFirebase();
-    if (!db) return;
-
+    const { db } = firebase;
     const progressRef = ref(db, `users/${user.uid}/progress/${subjectId}`);
     
     try {
@@ -26,7 +23,7 @@ export const useProgress = () => {
     } catch (error) {
         console.error("Failed to update progress:", error);
     }
-  }, [user]);
+  }, [user, firebase]);
 
   const getSubjectProgress = useCallback(
     (subjectId: string): number => {

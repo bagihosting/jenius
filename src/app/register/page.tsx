@@ -12,7 +12,6 @@ import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -20,7 +19,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import type { SchoolType } from '@/lib/types';
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { ref, set, get, child } from 'firebase/database';
-import { getFirebase, isFirebaseConfigured } from '@/lib/firebase';
+import { useAuth } from '@/context/AuthContext';
+import { isFirebaseConfigured, type Database } from '@/lib/firebase';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const schoolTypes: { id: SchoolType; name: string }[] = [
@@ -33,15 +33,14 @@ const schoolTypes: { id: SchoolType; name: string }[] = [
   { id: 'MA', name: 'MA (Madrasah Aliyah)' },
 ];
 
-const checkUsernameUniqueness = async (username: string): Promise<boolean> => {
-  if (!username) return true; // Don't check empty strings
-  const { db } = getFirebase();
+const checkUsernameUniqueness = async (username: string, db: Database | null): Promise<boolean> => {
+  if (!username || !db) return true; // Don't check empty strings or if db is not available
   const dbRef = ref(db);
   const snapshot = await get(child(dbRef, `usernames/${username.toLowerCase()}`));
   return !snapshot.exists();
 };
 
-const registerSchema = z.object({
+const registerSchema = (db: Database | null) => z.object({
   name: z.string().min(2, "Nama harus diisi, minimal 2 karakter."),
   username: z.string()
     .min(3, "Username minimal 3 karakter.")
@@ -53,7 +52,7 @@ const registerSchema = z.object({
   }),
   schoolName: z.string().min(3, "Nama sekolah harus diisi."),
 }).refine(async (data) => {
-    return await checkUsernameUniqueness(data.username);
+    return await checkUsernameUniqueness(data.username, db);
 }, {
     message: "Username ini sudah digunakan. Silakan pilih yang lain.",
     path: ["username"],
@@ -63,9 +62,10 @@ export default function RegisterPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
+  const { firebase } = useAuth();
   
-  const form = useForm<z.infer<typeof registerSchema>>({
-    resolver: zodResolver(registerSchema),
+  const form = useForm<z.infer<ReturnType<typeof registerSchema>>>({
+    resolver: zodResolver(registerSchema(firebase?.db ?? null)),
     mode: 'onBlur', // Validate on blur to check username
     defaultValues: {
       name: '',
@@ -80,9 +80,9 @@ export default function RegisterPage() {
     setIsClient(true);
   }, []);
 
-  const handleRegister = async (values: z.infer<typeof registerSchema>) => {
-    const { auth, db } = getFirebase();
-    if (!auth || !db) return;
+  const handleRegister = async (values: z.infer<ReturnType<typeof registerSchema>>) => {
+    if (!firebase) return;
+    const { auth, db } = firebase;
 
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);

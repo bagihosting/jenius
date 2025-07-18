@@ -19,10 +19,10 @@ import { Camera, KeyRound, LogOut, User as UserIcon, Save, Loader2, Gem } from '
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from './ui/separator';
 import { ScrollArea } from './ui/scroll-area';
-import { getBadgeInfo, BadgeTier } from '@/lib/badgeService';
+import { getBadgeInfo, type BadgeTier } from '@/lib/badgeService';
 import { ref as storageRef, uploadString, getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
-import { getFirebase } from '@/lib/firebase';
+
 
 async function compressAndConvertToWebP(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -66,7 +66,7 @@ async function compressAndConvertToWebP(file: File): Promise<string> {
 
 
 export function ProfileDialog({ children }: { children: React.ReactNode }) {
-  const { user, updateUser, updatePassword: updateAuthPassword, logout } = useAuth();
+  const { user, updateUser, updatePassword: updateAuthPassword, logout, firebase } = useAuth();
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -83,7 +83,7 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
-  if (!user) return null;
+  if (!user || !firebase) return null;
 
   const handleSaveName = async () => {
     if (name.trim() === '') {
@@ -93,9 +93,8 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
     
     try {
         await updateUser({ name });
-        const { auth } = getFirebase();
-        if (auth?.currentUser) {
-            await updateProfile(auth.currentUser, { displayName: name });
+        if (firebase.auth?.currentUser) {
+            await updateProfile(firebase.auth.currentUser, { displayName: name });
         }
 
         setIsEditingName(false);
@@ -123,7 +122,7 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
     try {
         const compressedDataUrl = await compressAndConvertToWebP(file);
         
-        const { storage, auth } = getFirebase();
+        const { storage, auth } = firebase;
         if (!storage || !auth) {
             toast({ title: 'Koneksi penyimpanan gagal', variant: 'destructive' });
             setIsUploading(false);
