@@ -165,9 +165,32 @@ export default function UsersPage() {
                     <TableCell>{user.role}</TableCell>
                     <TableCell>{user.schoolName || user.major || 'N/A'}</TableCell>
                     <TableCell className="text-right">
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(user)}>
-                            <Edit className="h-4 w-4" />
-                        </Button>
+                      <Sheet>
+                        <SheetTrigger asChild>
+                           <Button variant="ghost" size="icon" onClick={() => handleEdit(user)}>
+                              <Edit className="h-4 w-4" />
+                          </Button>
+                        </SheetTrigger>
+                         <SheetContent className="w-full sm:max-w-lg flex flex-col">
+                            <SheetHeader>
+                                <SheetTitle>Edit Pengguna</SheetTitle>
+                                <SheetDescription>
+                                  Ubah detail pengguna di bawah ini. Perubahan akan disimpan di Realtime Database.
+                                </SheetDescription>
+                            </SheetHeader>
+                            <UserForm form={form} onSubmit={onSubmit} editingUser={editingUser}>
+                                <SheetFooter className="mt-auto pt-4">
+                                    <SheetClose asChild>
+                                        <Button type="button" variant="outline">Batal</Button>
+                                    </SheetClose>
+                                    <Button type="submit" disabled={form.formState.isSubmitting}>
+                                        {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                        Simpan Perubahan
+                                    </Button>
+                                </SheetFooter>
+                            </UserForm>
+                        </SheetContent>
+                      </Sheet>
                         <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(user.uid)}>
                             <Trash2 className="h-4 w-4" />
                         </Button>
@@ -179,28 +202,6 @@ export default function UsersPage() {
           )}
         </CardContent>
       </Card>
-      
-       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="w-full sm:max-w-lg flex flex-col">
-            <SheetHeader>
-                <SheetTitle>Edit Pengguna</SheetTitle>
-                <SheetDescription>
-                   Ubah detail pengguna di bawah ini. Perubahan akan disimpan di Realtime Database.
-                </SheetDescription>
-            </SheetHeader>
-            <UserForm form={form} onSubmit={onSubmit} editingUser={editingUser}>
-                <SheetFooter className="mt-auto pt-4">
-                    <SheetClose asChild>
-                        <Button type="button" variant="outline">Batal</Button>
-                    </SheetClose>
-                    <Button type="submit" disabled={form.formState.isSubmitting}>
-                        {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Simpan Perubahan
-                    </Button>
-                </SheetFooter>
-            </UserForm>
-        </SheetContent>
-    </Sheet>
     </>
   );
 }

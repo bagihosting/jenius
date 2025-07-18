@@ -205,6 +205,11 @@ Buat tautan simbolik untuk mengaktifkan konfigurasi yang baru saja Anda buat:
 sudo ln -s /etc/nginx/sites-available/ayah-jenius /etc/nginx/sites-enabled/
 ```
 
+**PENTING: Nonaktifkan situs Nginx default untuk menghindari konflik.**
+```bash
+sudo rm /etc/nginx/sites-enabled/default
+```
+
 Uji konfigurasi Nginx untuk memastikan tidak ada kesalahan:
 ```bash
 sudo nginx -t
