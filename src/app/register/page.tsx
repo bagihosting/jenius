@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { SchoolType, User } from '@/lib/types';
-import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { ref, set, get, query, orderByChild, equalTo, limitToFirst } from 'firebase/database';
 import { db } from '@/lib/firebase';
 
@@ -69,11 +69,11 @@ export default function RegisterPage() {
         // 2. Create Firebase Auth user
         const auth = getAuth();
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      
-        await updateProfile(userCredential.user, { displayName: name });
+        const user = userCredential.user;
       
         // 3. Save user data to Realtime Database
-        const userData: Omit<User, 'uid'> = {
+        const userData: User = {
+            uid: user.uid,
             name,
             username: username.toLowerCase(),
             email,
@@ -86,8 +86,7 @@ export default function RegisterPage() {
             progress: {},
         };
       
-        const userDbRef = ref(db, `users/${userCredential.user.uid}`);
-        await set(userDbRef, userData);
+        await set(ref(db, `users/${user.uid}`), userData);
 
         toast({
           title: "Pendaftaran Berhasil",
