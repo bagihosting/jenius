@@ -23,8 +23,9 @@ if (typeof window !== "undefined") {
     databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
   };
 
-  // Check if any of the essential config values are missing or are still placeholders.
-  if (firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith('GANTI_DENGAN')) {
+  // Check if any of the essential config values are missing.
+  // A simple check for apiKey is sufficient to determine if the config is provided.
+  if (firebaseConfig.apiKey) {
     isFirebaseConfigured = true;
     if (!getApps().length) {
       app = initializeApp(firebaseConfig);
