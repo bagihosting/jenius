@@ -20,7 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Separator } from './ui/separator';
 import { ScrollArea } from './ui/scroll-area';
 import { getBadgeInfo, BadgeTier } from '@/lib/badgeService';
-import { getStorage, ref as storageRef, uploadString, getDownloadURL } from 'firebase/storage';
+import { ref as storageRef, uploadString, getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
 import { auth, storage } from '@/lib/firebase';
 
@@ -127,8 +127,10 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
         await uploadString(sRef, compressedDataUrl, 'data_url');
         const downloadURL = await getDownloadURL(sRef);
 
+        // Update di Realtime Database
         await updateUser({ photoUrl: downloadURL });
 
+        // Update juga di Firebase Auth
         if (auth.currentUser) {
             await updateProfile(auth.currentUser, { photoURL: downloadURL });
         }
