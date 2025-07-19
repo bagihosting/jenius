@@ -58,9 +58,11 @@ const academicAssistantFlow = ai.defineFlow(
             const {media} = await ai.generate({
                 model: 'googleai/gemini-2.0-flash-preview-image-generation',
                 prompt: `Sebuah diagram atau ilustrasi teknis dan mendidik untuk tingkat mahasiswa: ${output.imagePrompt}`,
-                config: { responseModalities: ['IMAGE'] },
+                config: { responseModalities: ['TEXT', 'IMAGE'] },
             });
-            output.imageUrl = media.url;
+            if (media) {
+                output.imageUrl = media.url;
+            }
         } catch (e) {
             console.error("Image generation failed for prompt:", output.imagePrompt, e);
             // Don't block the answer if image fails

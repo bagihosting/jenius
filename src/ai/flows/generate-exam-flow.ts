@@ -105,7 +105,9 @@ const generateExamFlow = ai.defineFlow(
               prompt: `sebuah gambar ilustrasi datar yang mendidik dan sederhana untuk anak-anak: ${q.imagePrompt}`,
               config: { responseModalities: ['TEXT', 'IMAGE'] },
             });
-            q.imageUrl = media.url;
+            if (media) {
+                q.imageUrl = media.url;
+            }
           } catch (e) {
             console.error("Image generation failed for prompt:", q.imagePrompt, e);
             // Don't block the question if image fails, just skip it.

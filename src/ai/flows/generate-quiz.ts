@@ -97,9 +97,11 @@ const generateQuizFlow = ai.defineFlow(
           const {media} = await ai.generate({
             model: 'googleai/gemini-2.0-flash-preview-image-generation',
             prompt: `sebuah gambar ilustrasi datar yang mendidik dan sederhana untuk anak-anak: ${q.imagePrompt}`,
-            config: { responseModalities: ['IMAGE'] },
+            config: { responseModalities: ['TEXT', 'IMAGE'] },
           });
-          q.imageUrl = media.url;
+          if (media) {
+            q.imageUrl = media.url;
+          }
         } catch (e) {
           console.error("Image generation failed for prompt:", q.imagePrompt, e);
           // Don't block the question if image fails
