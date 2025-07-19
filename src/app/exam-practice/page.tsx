@@ -16,7 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { getSubjects } from '@/lib/subjects';
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import type { ExamData, Subject, SchoolType, Grade, Semester } from '@/lib/types';
+import type { ExamData, Subject, SchoolType, Grade, Semester, MultipleChoiceQuestion, EssayQuestion } from '@/lib/types';
 import { generateExamAction } from '../actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -51,10 +51,10 @@ export default function ExamPracticePage() {
   }, []);
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    if (isClient && !loading && !isAuthenticated) {
       router.push('/login');
     }
-  }, [loading, isAuthenticated, router]);
+  }, [isClient, loading, isAuthenticated, router]);
 
   const grade = (searchParams.get('grade') as Grade) || '5';
   const semester = (searchParams.get('semester') as Semester) || '1';
@@ -184,16 +184,15 @@ export default function ExamPracticePage() {
                                 {examData[subject.id]?.data?.multipleChoice.map((q, index) => (
                                   <li key={index} className="pl-2 border-l-2 border-primary/50">
                                     <p className="font-semibold mb-2 inline">
-                                      {q.question}
+                                      <ReactMarkdown rehypePlugins={[rehypeRaw]}>{q.question}</ReactMarkdown>
                                     </p>
                                     {q.imageUrl && (
                                        <div className="my-3 relative w-full aspect-video max-w-sm mx-auto">
                                             <Image
                                                 src={q.imageUrl}
                                                 alt={`Ilustrasi untuk soal ${index + 1}`}
-                                                layout="fill"
-                                                objectFit="contain"
-                                                className="rounded-lg"
+                                                fill
+                                                className="rounded-lg object-contain"
                                             />
                                         </div>
                                     )}
@@ -222,16 +221,15 @@ export default function ExamPracticePage() {
                                 {examData[subject.id]?.data?.essay.map((q, index) => (
                                   <li key={index} className="pl-2 border-l-2 border-primary/50">
                                     <p className="font-semibold mb-2 inline">
-                                      {q.question}
+                                       <ReactMarkdown rehypePlugins={[rehypeRaw]}>{q.question}</ReactMarkdown>
                                     </p>
                                     {q.imageUrl && (
                                        <div className="my-3 relative w-full aspect-video max-w-sm mx-auto">
                                             <Image
                                                 src={q.imageUrl}
                                                 alt={`Ilustrasi untuk soal esai ${index + 1}`}
-                                                layout="fill"
-                                                objectFit="contain"
-                                                className="rounded-lg"
+                                                fill
+                                                className="rounded-lg object-contain"
                                             />
                                         </div>
                                     )}
@@ -255,21 +253,4 @@ export default function ExamPracticePage() {
       </main>
     </div>
   );
-}
-
-// Helper CSS in case prose doesn't have it
-const listAlpha = `
-.list-alpha { 
-  list-style-type: lower-alpha;
-}
-`;
-
-if (typeof window !== 'undefined') {
-  let styleSheet = document.querySelector('#list-alpha-style');
-  if (!styleSheet) {
-    styleSheet = document.createElement("style");
-    styleSheet.id = "list-alpha-style";
-    styleSheet.innerText = listAlpha;
-    document.head.appendChild(styleSheet);
-  }
 }

@@ -85,6 +85,9 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+  .list-alpha { 
+    list-style-type: lower-alpha;
+  }
 }
 
 .confetti {
