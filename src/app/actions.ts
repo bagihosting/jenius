@@ -8,14 +8,17 @@ import { academicAssistant as academicAssistantFlow } from '@/ai/flows/academic-
 
 import { type QuizData, type ExamData, type GenerateQuizInput, type HomeworkHelpInput, type HomeworkHelpOutput, type GenerateExamInput, type AcademicAssistantInput, type AcademicAssistantOutput, type Question, type MultipleChoiceQuestion } from '@/lib/types';
 
+// Helper function to remove prefixes (A., B., etc.) and normalize string for comparison
+const normalize = (str: string): string => {
+    return str.replace(/^[A-D]\.\s*/, '').trim().toLowerCase();
+};
 
-// Helper function to normalize and find the correct answer in options
+// Helper function to find the correct answer in options
 function findAndNormalizeCorrectAnswer(question: Question | MultipleChoiceQuestion): string {
     if (!question || !question.correctAnswer || !Array.isArray(question.options)) {
         console.warn("Invalid question object passed to findAndNormalizeCorrectAnswer");
         return '';
     }
-    const normalize = (str: string) => str.replace(/^[A-D]\.\s*/, '').trim().toLowerCase();
 
     const normalizedCorrectAnswer = normalize(question.correctAnswer);
 
