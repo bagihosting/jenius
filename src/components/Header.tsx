@@ -1,7 +1,8 @@
 
+
 'use client';
 
-import { BookHeart, LogIn, LayoutDashboard, User, Loader2 } from 'lucide-react';
+import { BookHeart, LogIn, LayoutDashboard, User, Loader2, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -63,6 +64,12 @@ export function Header() {
                    </>
                 ) : (
                   <>
+                    <Button asChild variant="ghost">
+                      <Link href="/register">
+                        <UserPlus className="mr-2"/>
+                        Daftar
+                      </Link>
+                    </Button>
                     <Button asChild>
                       <Link href="/login">
                         <LogIn className="mr-2"/>

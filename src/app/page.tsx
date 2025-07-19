@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, BookCheck, BrainCircuit, Edit, ShieldCheck } from 'lucide-react';
+import { ArrowRight, BookCheck, BrainCircuit, Edit, ShieldCheck, UserPlus } from 'lucide-react';
 
 export default function Home() {
   const router = useRouter();
@@ -43,9 +43,13 @@ export default function Home() {
             <p className="mt-6 text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
               Partner belajar AI yang memahami kurikulum Indonesia, membuat PR jadi mudah, dan siap membantu anak Anda meraih nilai terbaik.
             </p>
-            <div className="mt-8 flex justify-center">
-              <Button size="lg" className="h-12 text-lg px-8" onClick={() => router.push('/login')}>
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button size="lg" className="h-12 text-lg px-8 w-full sm:w-auto" onClick={() => router.push('/login')}>
                 Masuk Untuk Mulai Belajar <ArrowRight className="ml-2" />
+              </Button>
+               <Button size="lg" variant="outline" className="h-12 text-lg px-8 w-full sm:w-auto" onClick={() => router.push('/register')}>
+                <UserPlus className="mr-2"/>
+                Daftar Gratis
               </Button>
             </div>
           </div>
@@ -95,8 +99,8 @@ export default function Home() {
                         <div className="bg-background p-2 border-2 border-dashed border-primary rounded-full">
                            <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold">1</div>
                         </div>
-                        <h3 className="mt-4 text-xl font-semibold font-headline">Masuk Akun</h3>
-                        <p className="mt-2 text-muted-foreground">Masuk dengan akun yang telah disediakan.</p>
+                        <h3 className="mt-4 text-xl font-semibold font-headline">Daftar Akun</h3>
+                        <p className="mt-2 text-muted-foreground">Buat akun baru hanya dalam beberapa detik.</p>
                     </div>
                      <div className="flex flex-col items-center z-10">
                         <div className="bg-background p-2 border-2 border-dashed border-primary rounded-full">
@@ -134,11 +138,11 @@ export default function Home() {
              <div className="max-w-3xl mx-auto">
                 <h2 className="text-3xl md:text-4xl font-bold font-headline">Siap Mengubah Cara Belajar Anak Anda?</h2>
                 <p className="mt-4 text-muted-foreground text-base sm:text-lg">
-                    Masuk sekarang untuk mengakses semua fitur cerdas kami.
+                    Daftar gratis sekarang dan akses semua fitur cerdas kami.
                 </p>
                 <div className="mt-8">
-                     <Button size="lg" className="h-12 text-lg px-8" onClick={() => router.push('/login')}>
-                        Masuk Sekarang
+                     <Button size="lg" className="h-12 text-lg px-8" onClick={() => router.push('/register')}>
+                        Daftar Gratis Sekarang
                      </Button>
                 </div>
             </div>
