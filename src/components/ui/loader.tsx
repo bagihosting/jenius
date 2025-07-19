@@ -1,9 +1,9 @@
 import { cn } from "@/lib/utils"
-import { Loader2 } from "lucide-react"
+import { Loader2, type LucideProps } from "lucide-react"
 
 export function Loader({
   className,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+}: LucideProps) {
   return <Loader2 className={cn("animate-spin", className)} {...props} />
 }
