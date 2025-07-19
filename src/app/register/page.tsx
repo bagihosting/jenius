@@ -31,6 +31,8 @@ const schoolTypes: { id: SchoolType; name: string }[] = [
   { id: 'MTs', name: 'MTs (Madrasah Tsanawiyah)' },
   { id: 'SMA', name: 'SMA (Sekolah Menengah Atas)' },
   { id: 'MA', name: 'MA (Madrasah Aliyah)' },
+  { id: 'AKADEMI', name: 'Akademi' },
+  { id: 'UNIVERSITAS', name: 'Universitas' },
 ];
 
 const registerSchema = z.object({
@@ -149,6 +151,10 @@ export default function RegisterPage() {
       );
     }
 
+    const validSchoolTypesForRegistration = schoolTypes.filter(
+      (st) => !['AKADEMI', 'UNIVERSITAS'].includes(st.id)
+    );
+
     return (
       <form onSubmit={form.handleSubmit(handleRegister)} className="space-y-4">
         <div className="space-y-2">
@@ -173,12 +179,12 @@ export default function RegisterPage() {
         </div>
          <div className="space-y-2">
           <Label htmlFor="schoolType">Jenis Sekolah</Label>
-          <Select onValueChange={(value) => form.setValue('schoolType', value as SchoolType)}>
+          <Select onValueChange={(value) => form.setValue('schoolType', value as any)}>
               <SelectTrigger id="schoolType">
                 <SelectValue placeholder="Pilih jenis sekolah..." />
               </SelectTrigger>
             <SelectContent>
-              {schoolTypes.map(st => <SelectItem key={st.id} value={st.id}>{st.name}</SelectItem>)}
+              {validSchoolTypesForRegistration.map(st => <SelectItem key={st.id} value={st.id}>{st.name}</SelectItem>)}
             </SelectContent>
           </Select>
           {form.formState.errors.schoolType && <p className="text-sm text-destructive">{form.formState.errors.schoolType.message}</p>}
