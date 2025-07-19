@@ -22,6 +22,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
+import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 
 type ExamState = 'idle' | 'loading' | 'success' | 'error';
 
@@ -37,9 +39,6 @@ const schoolTypeMap: { [key: string]: string } = {
   MI: 'Madrasah Ibtidaiyah'
 };
 
-function renderMarkdownBold(text: string) {
-    return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-}
 
 export default function ExamPracticePage() {
   const router = useRouter();
@@ -207,7 +206,9 @@ export default function ExamPracticePage() {
                                       <Badge variant="secondary">Jawaban Benar: {q.correctAnswer}</Badge>
                                        <div className="p-3 bg-primary/10 rounded-md border border-primary/20 text-sm">
                                           <p className="font-bold flex items-center gap-1.5 text-primary/80"><Sparkles size={14}/> Penjelasan Jenius</p>
-                                          <p className="text-muted-foreground mt-1" dangerouslySetInnerHTML={{ __html: renderMarkdownBold(q.explanation) }}></p>
+                                          <div className="prose prose-sm max-w-none text-muted-foreground dark:prose-invert mt-1">
+                                             <ReactMarkdown rehypePlugins={[rehypeRaw]}>{q.explanation}</ReactMarkdown>
+                                          </div>
                                       </div>
                                     </div>
                                   </li>
@@ -234,9 +235,8 @@ export default function ExamPracticePage() {
                                             />
                                         </div>
                                     )}
-                                    <div className="prose prose-sm max-w-none text-muted-foreground dark:prose-invert mt-2"
-                                      dangerouslySetInnerHTML={{ __html: q.answer.replace(/\n/g, '<br />') }}
-                                    >
+                                    <div className="prose prose-sm max-w-none text-muted-foreground dark:prose-invert mt-2">
+                                      <ReactMarkdown rehypePlugins={[rehypeRaw]}>{q.answer}</ReactMarkdown>
                                     </div>
                                   </li>
                                 ))}

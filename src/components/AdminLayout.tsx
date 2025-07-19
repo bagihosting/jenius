@@ -101,6 +101,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const { user, loading } = useAuth();
     const router = useRouter();
     const [isClient, setIsClient] = useState(false);
+    const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
     useEffect(() => {
         setIsClient(true);
@@ -108,18 +109,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     useEffect(() => {
         if (isClient && !loading) {
-            if (!user || user.role !== 'admin') {
+            const authorized = user?.role === 'admin';
+            if (!authorized) {
                 router.push('/login');
             }
+            setIsAuthorized(authorized);
         }
     }, [loading, user, router, isClient]);
 
-    if (!isClient || loading || !user) {
+    if (!isClient || loading || isAuthorized === null) {
         return (
             <div className="flex h-screen w-full items-center justify-center">
                 <Loader2 className="h-16 w-16 animate-spin text-primary" />
             </div>
         );
+    }
+    
+    if (!isAuthorized) {
+        // This prevents rendering children for non-admins, even for a flash.
+        return null;
     }
     
     return (

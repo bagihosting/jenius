@@ -18,6 +18,8 @@ import { homeworkHelperAction } from '@/app/actions';
 import type { HomeworkHelpInput, HomeworkHelpOutput } from '@/ai/flows/homework-helper-flow';
 import type { SchoolType, Grade, Semester } from '@/lib/types';
 import { useAuth } from '@/context/AuthContext';
+import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 
 type PrHelperState = 'idle' | 'loading' | 'answered';
 
@@ -178,9 +180,9 @@ export default function PrHelperPage() {
                                 />
                             </div>
                         )}
-                        <div className="p-4 bg-primary/10 rounded-md border border-primary/20 prose prose-sm max-w-none dark:prose-invert"
-                          dangerouslySetInnerHTML={{ __html: result?.answer.replace(/\n/g, '<br />') || '' }}
-                        />
+                        <div className="p-4 bg-primary/10 rounded-md border border-primary/20 prose prose-sm max-w-none dark:prose-invert">
+                           <ReactMarkdown rehypePlugins={[rehypeRaw]}>{result?.answer || ''}</ReactMarkdown>
+                        </div>
                     </div>
                   <div className="text-right">
                     <Button onClick={handleReset}>Tanya Lagi</Button>

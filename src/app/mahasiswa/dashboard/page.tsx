@@ -15,6 +15,8 @@ import { useToast } from '@/hooks/use-toast';
 import { academicAssistantAction } from '@/app/actions';
 import type { AcademicAssistantOutput } from '@/ai/flows/academic-assistant-flow';
 import Image from 'next/image';
+import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 
 type AssistantState = 'idle' | 'loading' | 'answered';
 
@@ -204,9 +206,9 @@ export default function MahasiswaDashboardPage() {
                                                 />
                                             </div>
                                         )}
-                                        <div className="p-4 bg-primary/5 rounded-md border border-primary/20 prose prose-sm max-w-none dark:prose-invert"
-                                            dangerouslySetInnerHTML={{ __html: result?.explanation.replace(/\n/g, '<br />') || '' }}
-                                        />
+                                        <div className="p-4 bg-primary/5 rounded-md border border-primary/20 prose prose-sm max-w-none dark:prose-invert">
+                                            <ReactMarkdown rehypePlugins={[rehypeRaw]}>{result?.explanation || ''}</ReactMarkdown>
+                                        </div>
                                     </div>
                                     <div className="text-right">
                                         <Button onClick={handleReset}>Buat Pertanyaan Baru</Button>
