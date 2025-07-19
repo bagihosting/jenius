@@ -2,7 +2,7 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, useMemo } from 'react';
 import { Header } from '@/components/Header';
 import { SubjectCard } from '@/components/SubjectCard';
 import { getSubjects } from '@/lib/subjects';
@@ -27,15 +27,15 @@ function DashboardContent() {
     }, [loading, user, router]);
 
     useEffect(() => {
+        // This effect is client-side only.
         if (typeof window !== 'undefined') {
-            const bonusStatus = localStorage.getItem('bonus_feature_status');
-            setIsBonusFeatureActive(bonusStatus === 'active');
+            const gradeNum = parseInt(searchParams.get('grade') || '99', 10);
+            setIsBonusFeatureActive(gradeNum <= 6);
         }
-    }, []);
+    }, [searchParams]);
 
     const grade = (searchParams.get('grade') as Grade) || '1';
     const semester = (searchParams.get('semester') as Semester) || '1';
-    const gradeNum = parseInt(grade, 10);
     
     if (loading || !user) {
         return (
@@ -45,7 +45,7 @@ function DashboardContent() {
         )
     }
 
-    const schoolType = user?.schoolType;
+    const schoolType = user.schoolType;
 
     if (!grade || !semester || !schoolType) {
         return (
@@ -68,7 +68,7 @@ function DashboardContent() {
         );
     }
 
-    const schoolName = user?.schoolName || 'Sekolah Anda';
+    const schoolName = user.schoolName || 'Sekolah Anda';
     const subjects = getSubjects(schoolType, grade, semester);
     const schoolInfo = { schoolType, grade, semester };
     
@@ -123,7 +123,7 @@ function DashboardContent() {
                             </Button>
                         </CardContent>
                     </Card>
-                    {isBonusFeatureActive && gradeNum <= 6 && (
+                    {isBonusFeatureActive && (
                         <Card className="bg-accent/20 border-accent/50">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-accent-foreground">
