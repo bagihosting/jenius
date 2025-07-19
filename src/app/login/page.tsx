@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -14,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useAuth } from '@/context/AuthContext';
-import { isFirebaseConfigured, getFirebase } from '@/lib/firebase';
+import { isFirebaseConfigured } from '@/lib/firebase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { get, ref, child } from 'firebase/database';
 
@@ -46,6 +45,7 @@ export default function LoginPage() {
     }
 
     const { auth, db } = firebase;
+    // Handal: Selalu gunakan huruf kecil untuk mencari username, sesuai dengan cara penyimpanan.
     const usernameKey = username.toLowerCase();
 
     try {

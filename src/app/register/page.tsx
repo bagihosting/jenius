@@ -71,6 +71,7 @@ export default function RegisterPage() {
 
     const { auth, db } = firebase;
     const { name, username, email, password, schoolType, schoolName } = data;
+    // Handal: Selalu gunakan huruf kecil untuk konsistensi
     const usernameKey = username.toLowerCase();
 
     try {
@@ -94,7 +95,7 @@ export default function RegisterPage() {
       const userData: Omit<User, 'progress'> & Partial<Pick<User, 'progress'>> = {
         uid: user.uid,
         name,
-        username: usernameKey,
+        username: usernameKey, // Handal: Simpan username huruf kecil
         email,
         schoolType,
         schoolName,
