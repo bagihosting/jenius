@@ -32,7 +32,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Loader2, Edit, Trash2 } from 'lucide-react';
 import type { User } from '@/lib/types';
-import { useAuth } from '@/context/AuthContext';
+import { db } from '@/lib/firebase';
 import { ref, onValue, update, remove } from 'firebase/database';
 import { useToast } from '@/hooks/use-toast';
 import { UserForm, userSchema } from '@/components/UserForm';
@@ -43,7 +43,6 @@ export default function UsersPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { toast } = useToast();
-  const { firebase } = useAuth();
 
   const form = useForm({
     resolver: zodResolver(userSchema),
@@ -61,11 +60,10 @@ export default function UsersPage() {
   });
 
   useEffect(() => {
-    if (!firebase) {
+    if (!db) {
       setIsLoading(false);
       return;
     }
-    const { db } = firebase;
 
     const usersRef = ref(db, 'users');
     const unsubscribe = onValue(usersRef, (snapshot) => {
@@ -83,7 +81,7 @@ export default function UsersPage() {
     });
 
     return () => unsubscribe();
-  }, [firebase]);
+  }, []);
 
   const handleEdit = (user: User) => {
     setEditingUser(user);
@@ -96,12 +94,11 @@ export default function UsersPage() {
   
   const handleDelete = async (uid: string) => {
     if (window.confirm("Apakah Anda yakin ingin menghapus pengguna ini? Tindakan ini tidak dapat diurungkan dan akan menghapus data dari Realtime Database. Pengguna Firebase Auth tidak akan terhapus.")) {
-      if (!firebase) {
+      if (!db) {
         toast({ title: 'Koneksi database gagal', variant: 'destructive' });
         return;
       }
       try {
-        const { db } = firebase;
         await remove(ref(db, `users/${uid}`));
         toast({ title: 'Pengguna berhasil dihapus dari database' });
       } catch (error) {
@@ -113,13 +110,12 @@ export default function UsersPage() {
 
 
   const onSubmit = async (values: any) => {
-      if (!editingUser?.uid || !firebase) {
+      if (!editingUser?.uid || !db) {
         toast({ title: "Error", description: "Tidak ada pengguna yang dipilih untuk diedit.", variant: "destructive" });
         return;
       }
       
       try {
-        const { db } = firebase;
         const userRef = ref(db, `users/${editingUser.uid}`);
         
         // Prepare data for update, removing password if it's empty

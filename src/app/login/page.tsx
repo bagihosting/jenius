@@ -12,8 +12,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { useAuth } from '@/context/AuthContext';
-import { isFirebaseConfigured } from '@/lib/firebase';
+import { auth, isFirebaseConfigured } from '@/lib/firebase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function LoginPage() {
@@ -23,7 +22,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isClient, setIsClient] = useState(false);
-  const { firebase } = useAuth();
 
   useEffect(() => {
     setIsClient(true);
@@ -33,7 +31,7 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    if (!firebase) {
+    if (!auth) {
         toast({
             title: "Konfigurasi Tidak Lengkap",
             description: "Aplikasi belum terhubung ke server. Silakan periksa file .env Anda.",
@@ -42,8 +40,6 @@ export default function LoginPage() {
         setIsLoading(false);
         return;
     }
-
-    const { auth } = firebase;
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
@@ -59,7 +55,6 @@ export default function LoginPage() {
       console.error("Login error:", error);
       let errorMessage = "Terjadi kesalahan saat login.";
 
-      // Firebase Auth error messages
       switch (error.code) {
         case 'auth/user-not-found':
         case 'auth/invalid-email':

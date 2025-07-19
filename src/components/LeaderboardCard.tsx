@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Trophy, Loader2, Crown } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { useAuth } from '@/context/AuthContext';
+import { db } from '@/lib/firebase';
 import { ref, onValue, query, orderByChild, limitToLast } from 'firebase/database';
 import type { User } from '@/lib/types';
 
@@ -13,14 +13,12 @@ import type { User } from '@/lib/types';
 export function LeaderboardCard() {
   const [leaderboard, setLeaderboard] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { firebase } = useAuth();
 
   useEffect(() => {
-    if (!firebase) {
+    if (!db) {
         setIsLoading(false);
         return;
     }
-    const { db } = firebase;
     
     const usersRef = ref(db, 'users');
     // Query to get top 5 users ordered by bonusPoints
@@ -41,7 +39,7 @@ export function LeaderboardCard() {
     });
 
     return () => unsubscribe();
-  }, [firebase]);
+  }, []);
   
   return (
     <Card>

@@ -19,9 +19,8 @@ import { Camera, KeyRound, LogOut, User as UserIcon, Save, Loader2, Gem } from '
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from './ui/separator';
 import { ScrollArea } from './ui/scroll-area';
+import { storage, auth } from '@/lib/firebase';
 import { ref as storageRef, uploadString, getDownloadURL } from 'firebase/storage';
-import { updateProfile } from 'firebase/auth';
-
 
 async function compressAndConvertToWebP(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -65,7 +64,7 @@ async function compressAndConvertToWebP(file: File): Promise<string> {
 
 
 export function ProfileDialog({ children }: { children: React.ReactNode }) {
-  const { user, updateUser, updatePassword: updateAuthPassword, logout } = useAuth();
+  const { user, updateUser, updatePassword, logout } = useAuth();
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -80,8 +79,7 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
-  const firebase = useAuth().firebase;
-  if (!user || !firebase) return null;
+  if (!user || !auth) return null;
 
   const handleSaveName = async () => {
     if (name.trim() === '') {
@@ -91,10 +89,6 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
     
     try {
         await updateUser({ name });
-        if (firebase.auth?.currentUser) {
-            await updateProfile(firebase.auth.currentUser, { displayName: name });
-        }
-
         setIsEditingName(false);
         toast({ title: 'Nama berhasil diperbarui!', variant: 'default' });
     } catch (e) {
@@ -120,8 +114,7 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
     try {
         const compressedDataUrl = await compressAndConvertToWebP(file);
         
-        const { storage, auth } = firebase;
-        if (!storage || !auth) {
+        if (!storage) {
             toast({ title: 'Koneksi penyimpanan gagal', variant: 'destructive' });
             setIsUploading(false);
             return;
@@ -132,10 +125,6 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
         const downloadURL = await getDownloadURL(sRef);
 
         await updateUser({ photoUrl: downloadURL });
-
-        if (auth.currentUser) {
-            await updateProfile(auth.currentUser, { photoURL: downloadURL });
-        }
 
         toast({ title: 'Foto profil berhasil diperbarui!', variant: 'default' });
     } catch (error) {
@@ -161,7 +150,7 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
     }
     
     try {
-        await updateAuthPassword(password);
+        await updatePassword(password);
         toast({ title: 'Password berhasil diperbarui!', description: 'Anda mungkin perlu login ulang.', variant: 'default' });
         setPassword('');
         setConfirmPassword('');

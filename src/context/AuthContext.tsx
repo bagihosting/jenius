@@ -4,18 +4,10 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import type { User } from '@/lib/types';
-import { onAuthStateChanged, signOut, updatePassword as updateAuthPassword, getAuth, updateProfile } from 'firebase/auth';
-import { initializeApp, getApps } from "firebase/app";
-import { getDatabase, ref, onValue, update } from 'firebase/database';
-import { getStorage } from "firebase/storage";
-import { isFirebaseConfigured, type FirebaseApp, type Auth, type Database, type FirebaseStorage } from '@/lib/firebase';
-
-interface FirebaseServices {
-  app: FirebaseApp;
-  auth: Auth;
-  db: Database;
-  storage: FirebaseStorage;
-}
+import { onAuthStateChanged, signOut, updatePassword as updateAuthPassword, updateProfile } from 'firebase/auth';
+import { ref, onValue, update } from 'firebase/database';
+import { ref as storageRef, uploadString, getDownloadURL } from 'firebase/storage';
+import { auth, db, storage, isFirebaseConfigured } from '@/lib/firebase';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -24,7 +16,7 @@ interface AuthContextType {
   updateUser: (userData: Partial<User>) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
   loading: boolean;
-  firebase: FirebaseServices | null;
+  // We no longer need to expose firebase services as they are directly imported.
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,44 +25,20 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [firebase, setFirebase] = useState<FirebaseServices | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    if (isFirebaseConfigured && !firebase) {
-        const firebaseConfig = {
-            apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-            authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-            projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-            storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-            messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-            appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-            measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
-            databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
-        };
-
-        const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
-        const auth = getAuth(app);
-        const db = getDatabase(app);
-        const storage = getStorage(app);
-        setFirebase({ app, auth, db, storage });
-
-    } else if (!isFirebaseConfigured) {
-        setLoading(false);
-    }
-  }, [firebase]);
-
-
-  useEffect(() => {
-    if (!firebase) {
-      if (!isFirebaseConfigured) setLoading(false);
+    if (!isFirebaseConfigured || !auth) {
+      setLoading(false);
       return;
     }
 
-    const { auth, db } = firebase;
-
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
+        if (!db) {
+            setLoading(false);
+            return;
+        }
         const userRef = ref(db, `users/${firebaseUser.uid}`);
         
         const unsubscribeDb = onValue(userRef, (snapshot) => {
@@ -85,8 +53,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               photoUrl: firebaseUser.photoURL || dbUser.photoUrl, 
             });
           } else {
-             // This can happen if a user exists in Auth but not in DB (e.g., deleted from DB manually)
-             // Signing them out is a safe way to handle this inconsistency.
              signOut(auth);
           }
           setLoading(false);
@@ -104,13 +70,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => unsubscribeAuth();
-  }, [firebase]);
+  }, []);
 
 
   const logout = async () => {
-    if (!firebase) return;
-    const { auth } = firebase;
-
+    if (!auth) return;
     setLoading(true);
     await signOut(auth);
     setUser(null);
@@ -119,23 +83,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateUser = useCallback(async (userData: Partial<User>) => {
-    if (!user || !firebase) throw new Error("User not authenticated or DB not configured");
+    if (!user || !db) throw new Error("User not authenticated or DB not configured");
     
     const updateData: Partial<User> = { ...userData };
     
+    // These fields should not be updated directly from the client profile update
     delete updateData.uid;
     delete updateData.email;
     delete updateData.registeredAt;
+    delete updateData.role; // Prevent role escalation
 
-    const { db } = firebase;
     const userRef = ref(db, `users/${user.uid}`);
     await update(userRef, updateData);
-  }, [user, firebase]);
+
+     // Also update the auth profile if name or photoUrl changed
+    if (auth?.currentUser && (userData.name || userData.photoUrl)) {
+        await updateProfile(auth.currentUser, {
+            displayName: userData.name,
+            photoURL: userData.photoUrl,
+        });
+    }
+
+  }, [user]);
 
 
   const updatePassword = async (password: string) => {
-    if(!firebase) throw new Error("Firebase not configured");
-    const { auth } = firebase;
+    if(!auth) throw new Error("Firebase not configured");
     const authUser = auth.currentUser;
     if (!authUser) throw new Error("Pengguna tidak ditemukan");
     
@@ -145,7 +118,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const isAuthenticated = !!user;
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, logout, updateUser, updatePassword, loading, firebase }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, logout, updateUser, updatePassword, loading }}>
       {children}
     </AuthContext.Provider>
   );

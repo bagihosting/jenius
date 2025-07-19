@@ -16,8 +16,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, AlertCircle } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
-import { isFirebaseConfigured } from '@/lib/firebase';
+import { auth, db, isFirebaseConfigured } from '@/lib/firebase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import type { User, SchoolType } from '@/lib/types';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
@@ -50,7 +49,6 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 export default function RegisterPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { firebase } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
@@ -65,19 +63,16 @@ export default function RegisterPage() {
   const handleRegister = async (data: RegisterFormValues) => {
     setIsLoading(true);
 
-    if (!firebase) {
+    if (!auth || !db) {
       toast({ title: "Konfigurasi Firebase tidak ditemukan", variant: "destructive" });
       setIsLoading(false);
       return;
     }
 
-    const { auth, db } = firebase;
     const { name, username, email, password, schoolType, schoolName } = data;
-    // Handal: Selalu gunakan huruf kecil untuk konsistensi
     const usernameKey = username.toLowerCase();
 
     try {
-      // 1. Check for username uniqueness
       const usernameRef = child(ref(db), `usernames/${usernameKey}`);
       const usernameSnapshot = await get(usernameRef);
       if (usernameSnapshot.exists()) {
@@ -86,18 +81,15 @@ export default function RegisterPage() {
         return;
       }
 
-      // 2. Create user with email and password
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       
-      // 3. Update user profile (name, etc.)
       await updateProfile(user, { displayName: name });
 
-      // 4. Save user data to Realtime Database
       const userData: Omit<User, 'progress'> & Partial<Pick<User, 'progress'>> = {
         uid: user.uid,
         name,
-        username: usernameKey, // Handal: Simpan username huruf kecil
+        username: usernameKey,
         email,
         schoolType,
         schoolName,
