@@ -6,7 +6,7 @@ import { answerHomework as answerHomeworkFlow } from '@/ai/flows/homework-helper
 import { generateDailyExam as generateDailyExamFlow } from '@/ai/flows/generate-exam-flow';
 import { academicAssistant as academicAssistantFlow } from '@/ai/flows/academic-assistant-flow';
 
-import type { QuizData, ExamData, GenerateQuizInput, HomeworkHelpInput, HomeworkHelpOutput, GenerateExamInput, AcademicAssistantInput, AcademicAssistantOutput, Question, MultipleChoiceQuestion } from '@/lib/types';
+import { type QuizData, type ExamData, type GenerateQuizInput, type HomeworkHelpInput, type HomeworkHelpOutput, type GenerateExamInput, type AcademicAssistantInput, type AcademicAssistantOutput, type Question, type MultipleChoiceQuestion } from '@/lib/types';
 
 
 // Helper function to normalize and find the correct answer in options
@@ -46,7 +46,7 @@ export async function generateQuizAction(
         if (!q.options || !Array.isArray(q.options) || q.options.length < 4) {
             throw new Error('Beberapa soal kuis tidak memiliki 4 pilihan jawaban.');
         }
-        if (!q.correctAnswer || !q.options.includes(q.correctAnswer)) {
+        if (!q.correctAnswer || !q.options.some(opt => normalize(opt) === normalize(q.correctAnswer))) {
             q.correctAnswer = findAndNormalizeCorrectAnswer(q);
         }
     });
@@ -95,7 +95,7 @@ export async function generateExamAction(
         if (!q.options || !Array.isArray(q.options) || q.options.length < 4) {
             throw new Error('Beberapa soal pilihan ganda tidak memiliki 4 pilihan jawaban.');
         }
-        if (!q.correctAnswer || !q.options.includes(q.correctAnswer)) {
+        if (!q.correctAnswer || !q.options.some(opt => normalize(opt) === normalize(q.correctAnswer))) {
             q.correctAnswer = findAndNormalizeCorrectAnswer(q);
         }
     });
