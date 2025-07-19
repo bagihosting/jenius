@@ -96,7 +96,17 @@ NEXT_PUBLIC_FIREBASE_DATABASE_URL="https://pintar-elementary-default-rtdb.asia-s
 
 Simpan file dan keluar dari editor (di `nano`, tekan `Ctrl+X`, lalu `Y`, lalu `Enter`).
 
-## 6. Instalasi Dependensi & Build Aplikasi
+## 6. Konfigurasi Firebase Authentication
+
+Agar pendaftaran dan login berfungsi, Anda HARUS mengaktifkan metode "Email/Password" di Firebase.
+
+1.  Buka **Firebase Console** dan pilih proyek Anda.
+2.  Di menu navigasi, buka **Build > Authentication**.
+3.  Klik tab **Sign-in method**.
+4.  Klik **Email/Password** dari daftar penyedia (provider).
+5.  **Aktifkan** (enable) sakelarnya, lalu klik **Save**.
+
+## 7. Instalasi Dependensi & Build Aplikasi
 
 Sekarang instal semua paket yang dibutuhkan oleh aplikasi:
 
@@ -112,7 +122,7 @@ npm run build
 
 Perintah ini akan mengoptimalkan aplikasi untuk performa terbaik.
 
-## 7. Menjalankan Aplikasi di Latar Belakang (Produksi)
+## 8. Menjalankan Aplikasi di Latar Belakang (Produksi)
 
 Untuk lingkungan produksi, sangat disarankan menggunakan manajer proses seperti **PM2**. PM2 akan menjaga aplikasi Anda tetap berjalan, me-restartnya jika crash, dan mengelola log secara otomatis.
 
@@ -149,7 +159,7 @@ pm2 save
 - **Me-restart aplikasi**: `pm2 restart ayah-jenius`
 - **Menghentikan aplikasi**: `pm2 stop ayah-jenius`
 
-## 8. Konfigurasi Nginx sebagai Reverse Proxy
+## 9. Konfigurasi Nginx sebagai Reverse Proxy
 
 Langkah ini akan membuat aplikasi Anda dapat diakses melalui domain (misalnya, `https://app.ayahjenius.com`) tanpa perlu menyertakan nomor port `:3000`.
 
@@ -211,7 +221,7 @@ Jika output-nya adalah `syntax is ok` dan `test is successful`, restart Nginx un
 sudo systemctl restart nginx
 ```
 
-## 9. Cara Memperbarui Aplikasi (Update)
+## 10. Cara Memperbarui Aplikasi (Update)
 
 Setiap kali Anda membuat perubahan pada kode dan mendorongnya ke repositori Git, Anda tidak perlu mengulang semua langkah instalasi. Cukup ikuti proses pembaruan berikut:
 
