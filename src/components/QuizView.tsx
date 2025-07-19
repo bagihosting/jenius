@@ -10,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, BrainCircuit, PartyPopper, RotateCw, CheckCircle2, XCircle } from 'lucide-react';
-import type { QuizData, SchoolInfo, User } from '@/lib/types';
+import type { GenerateQuizOutput, SchoolInfo, User } from '@/lib/types';
 import { Progress } from './ui/progress';
 import { useProgress } from '@/hooks/use-progress';
 import { Confetti } from './Confetti';
@@ -25,13 +25,14 @@ interface QuizViewProps {
 }
 
 const normalizeAnswer = (answer: string): string => {
+  if (typeof answer !== 'string') return '';
   return answer.replace(/^[A-D]\.\s*/, '').trim().toLowerCase();
 };
 
 export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProps) {
   const { user, updateUser } = useAuth();
   const [quizState, setQuizState] = useState<QuizState>('idle');
-  const [quiz, setQuiz] = useState<QuizData | null>(null);
+  const [quiz, setQuiz] = useState<GenerateQuizOutput | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<string[]>([]);
   const [score, setScore] = useState(0);
@@ -86,7 +87,7 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
   };
 
   const handleNextQuestion = () => {
-    if (currentQuestionIndex < quiz!.quiz.length - 1) {
+    if (quiz && currentQuestionIndex < quiz.quiz.length - 1) {
         setCurrentQuestionIndex(prev => prev + 1);
     } else {
         handleSubmitQuiz();
@@ -102,17 +103,17 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
   };
 
   const handleSubmitQuiz = async () => {
-    if (!user) return;
+    if (!user || !quiz) return;
 
     let finalScore = 0;
-    quiz?.quiz.forEach((q, index) => {
+    quiz.quiz.forEach((q, index) => {
       const userAnswer = userAnswers[index] || '';
       if (normalizeAnswer(q.correctAnswer) === normalizeAnswer(userAnswer)) {
         finalScore++;
       }
     });
 
-    const percentageScore = Math.round((finalScore / quiz!.quiz.length) * 100);
+    const percentageScore = Math.round((finalScore / quiz.quiz.length) * 100);
     setScore(percentageScore);
     await updateSubjectProgress(subjectId, percentageScore);
     

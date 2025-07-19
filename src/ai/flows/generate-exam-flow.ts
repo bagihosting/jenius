@@ -10,25 +10,15 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-import { MultipleChoiceQuestionSchema, EssayQuestionSchema, type MultipleChoiceQuestion, type EssayQuestion } from '@/lib/types';
+import {
+    GenerateExamInputSchema, 
+    GenerateExamOutputSchema, 
+    type GenerateExamInput, 
+    type ExamData,
+    type MultipleChoiceQuestion,
+    type EssayQuestion
+} from '@/lib/types';
 
-const GenerateExamInputSchema = z.object({
-  subjectContent: z.string().describe('The content of the subject to generate the exam from, including semester context.'),
-  dateSeed: z.string().describe('The current date (YYYY-MM-DD) to ensure daily variety.'),
-  schoolType: z.string().describe('The type of school (e.g., SDN, MTs, SMA).'),
-  grade: z.string().describe('The grade level (e.g., 1, 8, 11).'),
-  semester: z.string().describe('The semester (1 or 2).'),
-  userEmail: z.string().describe('The email of the user to ensure question uniqueness per user.'),
-});
-export type GenerateExamInput = z.infer<typeof GenerateExamInputSchema>;
-
-
-const GenerateExamOutputSchema = z.object({
-  multipleChoice: z.array(MultipleChoiceQuestionSchema).min(5).max(5).describe('An array of 5 multiple-choice questions.'),
-  essay: z.array(EssayQuestionSchema).min(2).max(2).describe('An array of 2 essay questions with detailed answers.'),
-});
-export type ExamData = z.infer<typeof GenerateExamOutputSchema>;
 
 export async function generateDailyExam(input: GenerateExamInput): Promise<ExamData> {
   const result = await generateExamFlow(input);

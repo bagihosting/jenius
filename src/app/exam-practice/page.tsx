@@ -16,7 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { getSubjects } from '@/lib/subjects';
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import type { ExamData, Subject, SchoolType, Grade, Semester, MultipleChoiceQuestion, EssayQuestion } from '@/lib/types';
+import type { ExamData, Subject, Grade, Semester, MultipleChoiceQuestion, EssayQuestion } from '@/lib/types';
 import { generateExamAction } from '../actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -36,7 +36,13 @@ interface SubjectExam {
 const schoolTypeMap: { [key: string]: string } = {
   SDN: 'SD Negeri',
   SDIT: 'SD Islam Terpadu',
-  MI: 'Madrasah Ibtidaiyah'
+  MI: 'Madrasah Ibtidaiyah',
+  SMP: 'SMP',
+  MTs: 'Madrasah Tsanawiyah',
+  SMA: 'SMA',
+  MA: 'Madrasah Aliyah',
+  AKADEMI: 'Akademi',
+  UNIVERSITAS: 'Universitas'
 };
 
 
@@ -56,20 +62,21 @@ export default function ExamPracticePage() {
     }
   }, [isClient, loading, isAuthenticated, router]);
 
-  const grade = (searchParams.get('grade') as Grade) || '5';
-  const semester = (searchParams.get('semester') as Semester) || '1';
+  const grade = (searchParams.get('grade') as Grade) || undefined;
+  const semester = (searchParams.get('semester') as Semester) || undefined;
+  
   const schoolType = user?.schoolType;
   const userEmail = user?.email;
 
   const subjects = useMemo(() => {
-      if (!schoolType) return [];
+      if (!schoolType || !grade || !semester) return [];
       return getSubjects(schoolType, grade, semester);
   }, [schoolType, grade, semester]);
 
   const [examData, setExamData] = useState<Record<string, SubjectExam>>({});
 
   const fetchExam = useCallback(async (subject: Subject) => {
-    if (examData[subject.id]?.state === 'loading' || examData[subject.id]?.state === 'success' || !schoolType || !userEmail) {
+    if (examData[subject.id]?.state === 'loading' || examData[subject.id]?.state === 'success' || !schoolType || !userEmail || !grade || !semester) {
       return;
     }
     
@@ -92,15 +99,15 @@ export default function ExamPracticePage() {
     }
   }, [examData, schoolType, grade, semester, userEmail]);
 
-  if (!isClient || loading || !isAuthenticated || !schoolType) {
+  if (!isClient || loading || !isAuthenticated) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }
-
-  if (!grade || !semester) {
+  
+  if (!grade || !semester || !schoolType) {
     return (
       <div className="flex flex-col min-h-screen">
         <Header />
@@ -108,11 +115,11 @@ export default function ExamPracticePage() {
           <Card className="text-center">
             <CardHeader>
               <CardTitle>Parameter Tidak Lengkap</CardTitle>
-              <CardDescription>Silakan kembali ke halaman utama untuk memilih sekolah, kelas, dan semester.</CardDescription>
+              <CardDescription>Silakan kembali ke dasbor untuk memilih kelas dan semester.</CardDescription>
             </CardHeader>
             <CardContent>
               <Button asChild>
-                <Link href="/">
+                <Link href="/belajar">
                   <ArrowLeft className="mr-2" />
                   Kembali ke Halaman Utama
                 </Link>
@@ -183,9 +190,9 @@ export default function ExamPracticePage() {
                               <ol className="space-y-6 list-decimal list-inside">
                                 {examData[subject.id]?.data?.multipleChoice.map((q, index) => (
                                   <li key={index} className="pl-2 border-l-2 border-primary/50">
-                                    <p className="font-semibold mb-2 inline">
+                                    <div className="font-semibold mb-2 prose prose-sm max-w-none dark:prose-invert">
                                       <ReactMarkdown rehypePlugins={[rehypeRaw]}>{q.question}</ReactMarkdown>
-                                    </p>
+                                    </div>
                                     {q.imageUrl && (
                                        <div className="my-3 relative w-full aspect-video max-w-sm mx-auto">
                                             <Image
@@ -220,9 +227,9 @@ export default function ExamPracticePage() {
                               <ol className="space-y-6 list-decimal list-inside">
                                 {examData[subject.id]?.data?.essay.map((q, index) => (
                                   <li key={index} className="pl-2 border-l-2 border-primary/50">
-                                    <p className="font-semibold mb-2 inline">
+                                    <div className="font-semibold mb-2 prose prose-sm max-w-none dark:prose-invert">
                                        <ReactMarkdown rehypePlugins={[rehypeRaw]}>{q.question}</ReactMarkdown>
-                                    </p>
+                                    </div>
                                     {q.imageUrl && (
                                        <div className="my-3 relative w-full aspect-video max-w-sm mx-auto">
                                             <Image

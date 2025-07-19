@@ -10,39 +10,16 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-import type { QuizData, Question } from '@/lib/types';
+import {
+  GenerateQuizInputSchema,
+  GenerateQuizOutputSchema,
+  type GenerateQuizInput,
+  type GenerateQuizOutput,
+  type Question,
+} from '@/lib/types';
 
-const GenerateQuizInputSchema = z.object({
-  subjectContent: z
-    .string()
-    .describe('The content of the subject to generate the quiz from.'),
-  numberOfQuestions: z
-    .number()
-    .default(10)
-    .describe('The number of questions to generate for the quiz.'),
-  schoolType: z.string().describe('The type of school (e.g., SDN, MTs, SMA).'),
-  grade: z.string().describe('The grade level (e.g., 1, 8, 11).'),
-  semester: z.string().describe('The semester (1 or 2).'),
-  dateSeed: z.string().describe('The current date (YYYY-MM-DD) to ensure daily variety.'),
-  userEmail: z.string().describe('The email of the user to ensure question uniqueness per user.'),
-});
-export type GenerateQuizInput = z.infer<typeof GenerateQuizInputSchema>;
 
-const QuestionSchema = z.object({
-    question: z.string().describe("The text of the question."),
-    options: z.array(z.string()).min(4).max(4).describe("An array of 4 possible answers, in 'A. ...', 'B. ...' format. Each option must be unique."),
-    correctAnswer: z.string().describe("The correct answer to the question. PENTING: Nilai ini HARUS sama persis dengan salah satu string dari array 'options'."),
-    imagePrompt: z.string().optional().describe("If the question is best explained with an image, provide a concise, descriptive prompt for an image generation model. E.g., 'Diagram of a plant cell', 'Map of Indonesia provinces'. Otherwise, this field should be omitted."),
-    imageUrl: z.string().optional().describe("URL of the generated image, if any."),
-});
-
-const GenerateQuizOutputSchema = z.object({
-  quiz: z.array(QuestionSchema).describe('An array of quiz questions.'),
-});
-export type GenerateQuizOutput = z.infer<typeof GenerateQuizOutputSchema>;
-
-export async function generateQuiz(input: GenerateQuizInput): Promise<QuizData> {
+export async function generateQuiz(input: GenerateQuizInput): Promise<GenerateQuizOutput> {
   const result = await generateQuizFlow(input);
   // Ensure the output matches the QuizData type structure.
   // The flow now directly returns an object with a 'quiz' property.

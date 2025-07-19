@@ -41,12 +41,13 @@ export default function MahasiswaDashboardPage() {
 
     useEffect(() => {
         if (!loading && (!isAuthenticated || user?.role !== 'mahasiswa')) {
+            toast({ title: 'Akses Ditolak', description: 'Anda harus masuk sebagai mahasiswa.', variant: 'destructive' });
             router.push('/login');
         }
         if (user?.major) {
             setMajor(user.major);
         }
-    }, [user, loading, isAuthenticated, router]);
+    }, [user, loading, isAuthenticated, router, toast]);
 
     const handleSaveMajor = () => {
         if (!user || !major) return;
@@ -102,7 +103,7 @@ export default function MahasiswaDashboardPage() {
         setState('idle');
     };
 
-    if (!isClient || loading || !isAuthenticated) {
+    if (!isClient || loading || !isAuthenticated || user?.role !== 'mahasiswa') {
         return (
             <div className="flex h-screen w-full items-center justify-center">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -201,7 +202,7 @@ export default function MahasiswaDashboardPage() {
                                                 <Image
                                                     src={result.imageUrl}
                                                     alt={`Ilustrasi untuk: ${topic}`}
-                                                    layout="fill"
+                                                    fill
                                                     objectFit="contain"
                                                 />
                                             </div>

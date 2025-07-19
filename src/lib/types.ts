@@ -18,27 +18,42 @@ export interface Subject {
   content: string;
 }
 
-export interface Question {
-  question: string;
-  options: string[];
-  correctAnswer: string;
-  imageUrl?: string;
-  imagePrompt?: string;
-}
+//========= QUIZ TYPES =========//
 
-export interface QuizData {
-  quiz: Question[];
-}
+export const QuestionSchema = z.object({
+    question: z.string().describe("The text of the question."),
+    options: z.array(z.string()).min(4).max(4).describe("An array of 4 possible answers, in 'A. ...', 'B. ...' format. Each option must be unique."),
+    correctAnswer: z.string().describe("The correct answer to the question. PENTING: Nilai ini HARUS sama persis dengan salah satu string dari array 'options'."),
+    imagePrompt: z.string().optional().describe("If the question is best explained with an image, provide a concise, descriptive prompt for an image generation model. E.g., 'Diagram of a plant cell', 'Map of Indonesia provinces'. Otherwise, this field should be omitted."),
+    imageUrl: z.string().optional().describe("URL of the generated image, if any."),
+});
+export type Question = z.infer<typeof QuestionSchema>;
 
-export interface GenerateQuizInput {
-  subjectContent: string;
-  numberOfQuestions: number;
-  schoolType: SchoolType;
-  grade: Grade;
-  semester: Semester;
-  dateSeed: string;
-  userEmail: string;
-}
+
+export const GenerateQuizInputSchema = z.object({
+  subjectContent: z
+    .string()
+    .describe('The content of the subject to generate the quiz from.'),
+  numberOfQuestions: z
+    .number()
+    .default(10)
+    .describe('The number of questions to generate for the quiz.'),
+  schoolType: z.nativeEnum(['SDN', 'SDIT', 'MI', 'SMP', 'MTs', 'SMA', 'MA', 'AKADEMI', 'UNIVERSITAS']).describe('The type of school (e.g., SDN, MTs, SMA).'),
+  grade: z.nativeEnum(['1','2','3','4','5','6','7','8','9','10','11','12']).describe('The grade level (e.g., 1, 8, 11).'),
+  semester: z.nativeEnum(['1', '2']).describe('The semester (1 or 2).'),
+  dateSeed: z.string().describe('The current date (YYYY-MM-DD) to ensure daily variety.'),
+  userEmail: z.string().describe('The email of the user to ensure question uniqueness per user.'),
+});
+export type GenerateQuizInput = z.infer<typeof GenerateQuizInputSchema>;
+
+
+export const GenerateQuizOutputSchema = z.object({
+  quiz: z.array(QuestionSchema).describe('An array of quiz questions.'),
+});
+export type GenerateQuizOutput = z.infer<typeof GenerateQuizOutputSchema>;
+
+
+//========= EXAM TYPES =========//
 
 export const MultipleChoiceQuestionSchema = z.object({
   question: z.string().describe("The text of the multiple-choice question."),
@@ -60,19 +75,25 @@ export const EssayQuestionSchema = z.object({
 export type EssayQuestion = z.infer<typeof EssayQuestionSchema>;
 
 
-export interface ExamData {
-  multipleChoice: MultipleChoiceQuestion[];
-  essay: EssayQuestion[];
-}
+export const GenerateExamInputSchema = z.object({
+  subjectContent: z.string().describe('The content of the subject to generate the exam from, including semester context.'),
+  dateSeed: z.string().describe('The current date (YYYY-MM-DD) to ensure daily variety.'),
+  schoolType: z.nativeEnum(['SDN', 'SDIT', 'MI', 'SMP', 'MTs', 'SMA', 'MA', 'AKADEMI', 'UNIVERSITAS']).describe('The type of school (e.g., SDN, MTs, SMA).'),
+  grade: z.nativeEnum(['1','2','3','4','5','6','7','8','9','10','11','12']).describe('The grade level (e.g., 1, 8, 11).'),
+  semester: z.nativeEnum(['1', '2']).describe('The semester (1 or 2).'),
+  userEmail: z.string().describe('The email of the user to ensure question uniqueness per user.'),
+});
+export type GenerateExamInput = z.infer<typeof GenerateExamInputSchema>;
 
-export interface GenerateExamInput {
-  subjectContent: string;
-  dateSeed: string;
-  schoolType: SchoolType;
-  grade: Grade;
-  semester: Semester;
-  userEmail: string;
-}
+
+export const GenerateExamOutputSchema = z.object({
+  multipleChoice: z.array(MultipleChoiceQuestionSchema).min(5).max(5).describe('An array of 5 multiple-choice questions.'),
+  essay: z.array(EssayQuestionSchema).min(2).max(2).describe('An array of 2 essay questions with detailed answers.'),
+});
+export type ExamData = z.infer<typeof GenerateExamOutputSchema>;
+
+
+//========= USER TYPE =========//
 
 export interface User {
   uid: string;
@@ -93,12 +114,14 @@ export interface User {
   progress?: { [subjectId: string]: number };
 }
 
+//========= HOMEWORK HELPER TYPES =========//
+
 export const HomeworkHelpInputSchema = z.object({
   subject: z.string().describe('The school subject for the homework question.'),
   question: z.string().describe('The homework question to be answered.'),
-  schoolType: z.string().describe('The type of school (e.g., SDN, MTs, SMA).'),
-  grade: z.string().describe('The grade level (e.g., 1, 8, 11).'),
-  semester: z.string().describe('The semester (1 or 2).'),
+  schoolType: z.nativeEnum(['SDN', 'SDIT', 'MI', 'SMP', 'MTs', 'SMA', 'MA', 'AKADEMI', 'UNIVERSITAS']).describe('The type of school (e.g., SDN, MTs, SMA).'),
+  grade: z.nativeEnum(['1','2','3','4','5','6','7','8','9','10','11','12']).describe('The grade level (e.g., 1, 8, 11).'),
+  semester: z.nativeEnum(['1', '2']).describe('The semester (1 or 2).'),
 });
 export type HomeworkHelpInput = z.infer<typeof HomeworkHelpInputSchema>;
 
@@ -109,6 +132,8 @@ export const HomeworkHelpOutputSchema = z.object({
 });
 export type HomeworkHelpOutput = z.infer<typeof HomeworkHelpOutputSchema>;
 
+
+//========= ACADEMIC ASSISTANT TYPES =========//
 
 export const AcademicAssistantInputSchema = z.object({
   major: z.string().describe('The university major or field of study (e.g., Teknik Informatika, Ekonomi, Hukum, Kedokteran).'),

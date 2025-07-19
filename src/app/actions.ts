@@ -6,10 +6,11 @@ import { answerHomework as answerHomeworkFlow } from '@/ai/flows/homework-helper
 import { generateDailyExam as generateDailyExamFlow } from '@/ai/flows/generate-exam-flow';
 import { academicAssistant as academicAssistantFlow } from '@/ai/flows/academic-assistant-flow';
 
-import { type QuizData, type ExamData, type GenerateQuizInput, type HomeworkHelpInput, type HomeworkHelpOutput, type GenerateExamInput, type AcademicAssistantInput, type AcademicAssistantOutput, type Question, type MultipleChoiceQuestion } from '@/lib/types';
+import { type GenerateQuizOutput, type ExamData, type GenerateQuizInput, type HomeworkHelpInput, type HomeworkHelpOutput, type GenerateExamInput, type AcademicAssistantInput, type AcademicAssistantOutput, type Question, type MultipleChoiceQuestion } from '@/lib/types';
 
 // Helper function to remove prefixes (A., B., etc.) and normalize string for comparison
 const normalize = (str: string): string => {
+    if (typeof str !== 'string') return '';
     return str.replace(/^[A-D]\.\s*/, '').trim().toLowerCase();
 };
 
@@ -36,7 +37,7 @@ function findAndNormalizeCorrectAnswer(question: Question | MultipleChoiceQuesti
 
 export async function generateQuizAction(
   input: GenerateQuizInput
-): Promise<{ data?: QuizData; error?: string }> {
+): Promise<{ data?: GenerateQuizOutput; error?: string }> {
   try {
     const quizData = await generateQuizFlow(input);
 

@@ -26,17 +26,17 @@ function DashboardContent() {
         }
     }, [loading, user, router]);
 
+    const grade = (searchParams.get('grade') as Grade) || undefined;
+    const semester = (searchParams.get('semester') as Semester) || undefined;
+    
     useEffect(() => {
-        // This effect is client-side only.
-        if (typeof window !== 'undefined') {
-            const gradeNum = parseInt(searchParams.get('grade') || '99', 10);
+        if (typeof window !== 'undefined' && grade) {
+            const gradeNum = parseInt(grade, 10);
             setIsBonusFeatureActive(gradeNum <= 6);
         }
-    }, [searchParams]);
+    }, [grade]);
 
-    const grade = (searchParams.get('grade') as Grade) || '1';
-    const semester = (searchParams.get('semester') as Semester) || '1';
-    
+
     if (loading || !user) {
         return (
             <main className="flex-grow flex items-center justify-center">
@@ -45,9 +45,8 @@ function DashboardContent() {
         )
     }
 
-    const schoolType = user.schoolType;
-
-    if (!grade || !semester || !schoolType) {
+    // Guard clause to ensure all necessary data is available
+    if (!grade || !semester || !user.schoolType) {
         return (
             <main className="flex-grow flex items-center justify-center p-4">
                 <Card className="w-full max-w-md text-center">
@@ -69,8 +68,8 @@ function DashboardContent() {
     }
 
     const schoolName = user.schoolName || 'Sekolah Anda';
-    const subjects = getSubjects(schoolType, grade, semester);
-    const schoolInfo = { schoolType, grade, semester };
+    const subjects = getSubjects(user.schoolType, grade, semester);
+    const schoolInfo = { schoolType: user.schoolType, grade, semester };
     
     const backlink = `/belajar`;
 

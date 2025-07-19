@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { getSubjects } from '@/lib/subjects';
 import { homeworkHelperAction } from '@/app/actions';
-import type { HomeworkHelpInput, HomeworkHelpOutput, SchoolType, Grade, Semester } from '@/lib/types';
+import type { HomeworkHelpInput, HomeworkHelpOutput, Grade, Semester } from '@/lib/types';
 import { useAuth } from '@/context/AuthContext';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
@@ -27,8 +27,8 @@ export default function PrHelperPage() {
   const searchParams = useSearchParams();
   const { user, loading, isAuthenticated } = useAuth();
 
-  const grade = (searchParams.get('grade') as Grade) || '5';
-  const semester = (searchParams.get('semester') as Semester) || '1';
+  const grade = (searchParams.get('grade') as Grade) || undefined;
+  const semester = (searchParams.get('semester') as Semester) || undefined;
   const schoolType = user?.schoolType;
   const [isClient, setIsClient] = useState(false);
 
@@ -37,10 +37,10 @@ export default function PrHelperPage() {
   }, []);
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    if (isClient && !loading && !isAuthenticated) {
       router.push('/login');
     }
-  }, [loading, isAuthenticated, router]);
+  }, [isClient, loading, isAuthenticated, router]);
 
   const subjects = useMemo(() => {
     if (!schoolType || !grade || !semester) return [];
@@ -63,7 +63,7 @@ export default function PrHelperPage() {
       });
       return;
     }
-    if (!schoolType) return;
+    if (!schoolType || !grade || !semester) return;
 
     setState('loading');
     const input: HomeworkHelpInput = { subject, question, schoolType, grade, semester };
@@ -89,8 +89,6 @@ export default function PrHelperPage() {
     setState('idle');
   };
   
-  const backlink = `/dashboard?grade=${grade}&semester=${semester}`;
-
   if (!isClient || loading || !isAuthenticated) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
@@ -98,6 +96,16 @@ export default function PrHelperPage() {
       </div>
     );
   }
+  
+  if (!grade || !semester) {
+     return (
+        <div className="flex-grow p-4 md:p-8 flex items-center justify-center">
+            <p>Parameter grade dan semester tidak ditemukan.</p>
+        </div>
+     )
+  }
+
+  const backlink = `/dashboard?grade=${grade}&semester=${semester}`;
 
   return (
     <div className="flex flex-col min-h-screen">
