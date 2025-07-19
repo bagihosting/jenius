@@ -11,7 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import type { QuizData } from '@/lib/types';
+import type { QuizData, Question } from '@/lib/types';
 
 const GenerateQuizInputSchema = z.object({
   subjectContent: z
@@ -44,7 +44,9 @@ export type GenerateQuizOutput = z.infer<typeof GenerateQuizOutputSchema>;
 
 export async function generateQuiz(input: GenerateQuizInput): Promise<QuizData> {
   const result = await generateQuizFlow(input);
-  return { quiz: result.quiz };
+  // Ensure the output matches the QuizData type structure.
+  // The flow now directly returns an object with a 'quiz' property.
+  return result;
 }
 
 const prompt = ai.definePrompt({
@@ -91,25 +93,27 @@ const generateQuizFlow = ai.defineFlow(
     }
     
     // Process questions to generate images if needed
-    output.quiz = await Promise.all(output.quiz.map(async (q) => {
-      if (q.imagePrompt) {
-        try {
-          const {media} = await ai.generate({
-            model: 'googleai/gemini-2.0-flash-preview-image-generation',
-            prompt: `sebuah gambar ilustrasi datar yang mendidik dan sederhana untuk anak-anak: ${q.imagePrompt}`,
-            config: { responseModalities: ['TEXT', 'IMAGE'] },
-          });
-          if (media) {
-            q.imageUrl = media.url;
+    if (output.quiz) {
+      output.quiz = await Promise.all(output.quiz.map(async (q: Question) => {
+        if (q.imagePrompt) {
+          try {
+            const {media} = await ai.generate({
+              model: 'googleai/gemini-2.0-flash-preview-image-generation',
+              prompt: `sebuah gambar ilustrasi datar yang mendidik dan sederhana untuk anak-anak: ${q.imagePrompt}`,
+              config: { responseModalities: ['TEXT', 'IMAGE'] },
+            });
+            if (media) {
+              q.imageUrl = media.url;
+            }
+          } catch (e) {
+            console.error("Image generation failed for prompt:", q.imagePrompt, e);
+            // Don't block the question if image fails
+            q.imageUrl = undefined;
           }
-        } catch (e) {
-          console.error("Image generation failed for prompt:", q.imagePrompt, e);
-          // Don't block the question if image fails
-          q.imageUrl = undefined;
         }
-      }
-      return q;
-    }));
+        return q;
+      }));
+    }
 
     return output;
   }

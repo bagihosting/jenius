@@ -11,7 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import type { MultipleChoiceQuestion, EssayQuestion } from '@/lib/types';
+import { MultipleChoiceQuestionSchema, EssayQuestionSchema, type MultipleChoiceQuestion, type EssayQuestion } from '@/lib/types';
 
 const GenerateExamInputSchema = z.object({
   subjectContent: z.string().describe('The content of the subject to generate the exam from, including semester context.'),
@@ -23,21 +23,6 @@ const GenerateExamInputSchema = z.object({
 });
 export type GenerateExamInput = z.infer<typeof GenerateExamInputSchema>;
 
-const MultipleChoiceQuestionSchema = z.object({
-  question: z.string().describe("The text of the multiple-choice question."),
-  options: z.array(z.string()).min(4).max(4).describe("An array of 4 possible answers in 'A. ...', 'B. ...' format. Each option must be unique."),
-  correctAnswer: z.string().describe("The correct answer to the question, matching one of the options exactly."),
-  explanation: z.string().describe("A short and genius-level explanation for the correct answer, using Markdown for bolding important words (e.g., **kata penting**)."),
-  imagePrompt: z.string().optional().describe("If the question is best explained with an image, provide a concise, descriptive prompt for an image generation model. E.g., 'Diagram of the water cycle', 'Map of ancient Indonesian kingdoms'. Otherwise, this field should be omitted."),
-  imageUrl: z.string().optional().describe("URL of the generated image, if any."),
-});
-
-const EssayQuestionSchema = z.object({
-    question: z.string().describe("The text of the essay question."),
-    answer: z.string().describe("A simple, smart, and genius explanation for the answer. Format: 'Konsep Kunci: [explanation]\\n\\nJawaban Cerdas: [answer]'."),
-    imagePrompt: z.string().optional().describe("If the question is best explained with an image, provide a concise, descriptive prompt for an image generation model. E.g., 'Illustration of tectonic plates moving', 'Chart of government branches'. Otherwise, this field should be omitted."),
-    imageUrl: z.string().optional().describe("URL of the generated image, if any."),
-});
 
 const GenerateExamOutputSchema = z.object({
   multipleChoice: z.array(MultipleChoiceQuestionSchema).min(5).max(5).describe('An array of 5 multiple-choice questions.'),
@@ -118,8 +103,12 @@ const generateExamFlow = ai.defineFlow(
       }));
     };
 
-    output.multipleChoice = await processQuestions(output.multipleChoice) as MultipleChoiceQuestion[];
-    output.essay = await processQuestions(output.essay) as EssayQuestion[];
+    if (output.multipleChoice) {
+      output.multipleChoice = await processQuestions(output.multipleChoice) as MultipleChoiceQuestion[];
+    }
+    if (output.essay) {
+      output.essay = await processQuestions(output.essay) as EssayQuestion[];
+    }
     
     return output;
   }

@@ -23,6 +23,7 @@ export interface Question {
   options: string[];
   correctAnswer: string;
   imageUrl?: string;
+  imagePrompt?: string;
 }
 
 export interface QuizData {
@@ -39,19 +40,25 @@ export interface GenerateQuizInput {
   userEmail: string;
 }
 
-export interface MultipleChoiceQuestion {
-  question: string;
-  options: string[];
-  correctAnswer: string;
-  explanation: string;
-  imageUrl?: string;
-}
+export const MultipleChoiceQuestionSchema = z.object({
+  question: z.string().describe("The text of the multiple-choice question."),
+  options: z.array(z.string()).min(4).max(4).describe("An array of 4 possible answers in 'A. ...', 'B. ...' format. Each option must be unique."),
+  correctAnswer: z.string().describe("The correct answer to the question, matching one of the options exactly."),
+  explanation: z.string().describe("A short and genius-level explanation for the correct answer, using Markdown for bolding important words (e.g., **kata penting**)."),
+  imagePrompt: z.string().optional().describe("If the question is best explained with an image, provide a concise, descriptive prompt for an image generation model. E.g., 'Diagram of the water cycle', 'Map of ancient Indonesian kingdoms'. Otherwise, this field should be omitted."),
+  imageUrl: z.string().optional().describe("URL of the generated image, if any."),
+});
+export type MultipleChoiceQuestion = z.infer<typeof MultipleChoiceQuestionSchema>;
 
-export interface EssayQuestion {
-  question: string;
-  answer: string;
-  imageUrl?: string;
-}
+
+export const EssayQuestionSchema = z.object({
+    question: z.string().describe("The text of the essay question."),
+    answer: z.string().describe("A simple, smart, and genius explanation for the answer. Format: 'Konsep Kunci: [explanation]\\n\\nJawaban Cerdas: [answer]'."),
+    imagePrompt: z.string().optional().describe("If the question is best explained with an image, provide a concise, descriptive prompt for an image generation model. E.g., 'Illustration of tectonic plates moving', 'Chart of government branches'. Otherwise, this field should be omitted."),
+    imageUrl: z.string().optional().describe("URL of the generated image, if any."),
+});
+export type EssayQuestion = z.infer<typeof EssayQuestionSchema>;
+
 
 export interface ExamData {
   multipleChoice: MultipleChoiceQuestion[];
