@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Sparkles, BrainCircuit, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { academicAssistantAction } from '@/app/actions';
-import type { AcademicAssistantOutput } from '@/ai/flows/academic-assistant-flow';
+import type { AcademicAssistantOutput } from '@/lib/types';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
