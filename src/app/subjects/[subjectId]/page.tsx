@@ -37,7 +37,7 @@ export default function SubjectPage() {
   }, [schoolType, grade, semester, subjectId]);
 
 
-  if (loading || subject === undefined || !user) {
+  if (loading || subject === undefined || !user || !schoolType) {
     return (
       <div className="flex flex-col min-h-screen">
         <Header />
