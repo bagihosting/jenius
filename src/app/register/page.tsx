@@ -88,12 +88,15 @@ export default function RegisterPage() {
       await updateProfile(user, { displayName: name });
       
       // Langkah 4: Siapkan dan simpan data ke Realtime Database
+      const isAdmin = email.toLowerCase() === 'admin@ayahjenius.com';
+      const userRole = isAdmin ? 'admin' : 'user';
+
       const userData = {
         uid: user.uid,
         name,
         username,
         email: user.email,
-        role: 'user',
+        role: userRole,
         schoolType,
         schoolName,
         registeredAt: new Date().toISOString(),
@@ -108,7 +111,7 @@ export default function RegisterPage() {
 
       toast({
           title: "Pendaftaran Berhasil!",
-          description: "Akun Anda telah dibuat. Silakan masuk.",
+          description: isAdmin ? "Akun Admin Anda telah dibuat. Silakan masuk." : "Akun Anda telah dibuat. Silakan masuk.",
       });
 
       router.push('/login');
