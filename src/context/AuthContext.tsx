@@ -16,7 +16,6 @@ interface AuthContextType {
   updateUser: (userData: Partial<User>) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
   loading: boolean;
-  // We no longer need to expose firebase services as they are directly imported.
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -53,12 +52,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               photoUrl: firebaseUser.photoURL || dbUser.photoUrl, 
             });
           } else {
-             signOut(auth);
+             if (auth) signOut(auth);
           }
           setLoading(false);
         }, (error) => {
           console.error("Firebase read failed: " + error.message);
-          signOut(auth); 
+          if (auth) signOut(auth); 
           setLoading(false);
         });
         
@@ -87,16 +86,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     const updateData: Partial<User> = { ...userData };
     
-    // These fields should not be updated directly from the client profile update
     delete updateData.uid;
     delete updateData.email;
     delete updateData.registeredAt;
-    delete updateData.role; // Prevent role escalation
+    delete updateData.role; 
 
     const userRef = ref(db, `users/${user.uid}`);
     await update(userRef, updateData);
 
-     // Also update the auth profile if name or photoUrl changed
     if (auth?.currentUser && (userData.name || userData.photoUrl)) {
         await updateProfile(auth.currentUser, {
             displayName: userData.name,
