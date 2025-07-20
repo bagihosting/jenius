@@ -73,7 +73,7 @@ export default function RegisterPage() {
     let createdUser = null;
 
     try {
-      // Step 1: Check username availability
+      // Step 1: Check username availability first for faster feedback
       const usernameRef = child(ref(db), `usernames/${usernameKey}`);
       const usernameSnapshot = await get(usernameRef);
       if (usernameSnapshot.exists()) {
@@ -106,11 +106,12 @@ export default function RegisterPage() {
         progress: {},
       };
 
-      // Atomic update for users and usernames paths
+      // Atomic update for both users and usernames paths
       const updates: { [key: string]: any } = {};
       updates[`/users/${createdUser.uid}`] = userData;
       updates[`/usernames/${usernameKey}`] = { uid: createdUser.uid };
 
+      // This is the single, atomic write operation to the database
       await update(ref(db), updates);
 
       toast({
