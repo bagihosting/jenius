@@ -71,6 +71,7 @@ export default function RegisterPage() {
     const usernameKey = username.toLowerCase();
 
     try {
+      // Langkah 1: Periksa ketersediaan username di Realtime Database
       const usernameRef = child(ref(db), `usernames/${usernameKey}`);
       const usernameSnapshot = await get(usernameRef);
       if (usernameSnapshot.exists()) {
@@ -79,11 +80,14 @@ export default function RegisterPage() {
         return;
       }
       
+      // Langkah 2: Buat pengguna di Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
+      // Langkah 3: Perbarui profil di Firebase Auth
       await updateProfile(user, { displayName: name });
       
+      // Langkah 4: Siapkan dan simpan data ke Realtime Database
       const userData = {
         uid: user.uid,
         name,
@@ -98,6 +102,7 @@ export default function RegisterPage() {
         progress: {},
       };
 
+      // Simpan data pengguna dan username secara bersamaan
       await set(ref(db, `users/${user.uid}`), userData);
       await set(ref(db, `usernames/${usernameKey}`), { uid: user.uid });
 
@@ -114,6 +119,9 @@ export default function RegisterPage() {
         if (error.code === 'auth/email-already-in-use') {
             errorMessage = "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk.";
             form.setError("email", { type: "manual", message: errorMessage });
+        } else if (error.code === 'auth/weak-password') {
+            errorMessage = 'Password terlalu lemah. Gunakan minimal 6 karakter.';
+            form.setError("password", { type: "manual", message: errorMessage });
         }
         toast({
             title: "Pendaftaran Gagal",
@@ -171,7 +179,7 @@ export default function RegisterPage() {
                 <SelectValue placeholder="Pilih jenis sekolah..." />
               </SelectTrigger>
             <SelectContent>
-              {schoolTypes.filter(st => !['AKADEMI', 'UNIVERSITAS'].includes(st.id)).map(st => <SelectItem key={st.id} value={st.id}>{st.name}</SelectItem>)}
+              {schoolTypes.map(st => <SelectItem key={st.id} value={st.id}>{st.name}</SelectItem>)}
             </SelectContent>
           </Select>
           {form.formState.errors.schoolType && <p className="text-sm text-destructive">{form.formState.errors.schoolType.message}</p>}
@@ -208,3 +216,5 @@ export default function RegisterPage() {
     </div>
   );
 }
+
+    
