@@ -44,8 +44,8 @@ PENTING: Sesuaikan kompleksitas soal dan bahasa dengan tingkatan kelas. Ini adal
 - **Fase A (Kelas 1-2):** Gunakan bahasa yang sangat sederhana dan konkret. Fokus pada pemahaman dasar, identifikasi, dan contoh dari kehidupan sehari-hari. Hindari soal cerita yang panjang. Pertanyaan harus langsung ke intinya. Contoh: "Hewan yang berkaki empat adalah...". Pilihan jawaban juga harus sederhana.
 - **Fase B (Kelas 3-4):** Mulai perkenalkan soal cerita pendek (2-3 kalimat). Pertanyaan bisa memerlukan satu atau dua langkah pemikiran. Gunakan istilah-istilah dasar dari mata pelajaran. Contoh: "Ibu membeli 5 apel dan 3 jeruk. Berapa jumlah semua buah yang dibeli Ibu?".
 - **Fase C (Kelas 5-6):** Soal cerita bisa lebih kompleks. Pertanyaan harus mulai melatih penalaran, seperti membandingkan, mengurutkan, atau menarik kesimpulan sederhana. Mulai perkenalkan soal HOTS tingkat dasar. Contoh: "Suhu di kota A adalah 25°C dan di kota B adalah -5°C. Berapa selisih suhu kedua kota tersebut?".
-- **Fase D (Kelas 7-9):** Gunakan bahasa yang lebih formal. Pertanyaan boleh menguji pemahaman konsep, analisis sederhana, dan penerapan rumus.
-- **Fase E/F (Kelas 10-12):** Buat pertanyaan yang menguji analisis mendalam, pemikiran kritis, dan penerapan konsep kompleks.
+- **Fase D (Kelas 7-9):** Buat soal analitis yang menuntut penerapan rumus, interpretasi data (grafik/tabel), atau perbandingan konsep. Gunakan bahasa yang lebih formal. Pertanyaan boleh menguji pemahaman konsep dan analisis sederhana.
+- **Fase E/F (Kelas 10-12):** Buat pertanyaan yang kompleks dan analitis, setara soal HOTS UTBK/SNBT. Pertanyaan harus menguji pemikiran kritis, analisis studi kasus, dan sintesis informasi.
 
 Setiap pertanyaan harus memiliki:
 1.  Teks pertanyaan yang jelas.

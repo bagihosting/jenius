@@ -37,8 +37,8 @@ PENTING: Sesuaikan gaya penjelasan dengan tingkatan kelas. Ini adalah aturan yan
 - **Fase A (Kelas 1-2):** Gunakan bahasa yang sangat sederhana, analogi yang mudah dimengerti (misalnya: "membagi itu seperti berbagi kue sama rata"), dan contoh-contoh sangat konkret. Pecah penjelasan menjadi langkah-langkah sangat kecil dan bernomor.
 - **Fase B (Kelas 3-4):** Bahasa tetap sederhana, namun bisa mulai memperkenalkan istilah teknis dasar (jelaskan artinya). Gunakan contoh yang relevan dengan dunia mereka. Berikan penjelasan terstruktur: "Pertama, kita harus...", "Kedua, kita hitung...".
 - **Fase C (Kelas 5-6):** Berikan penjelasan yang lebih mendalam namun tetap jelas. Kaitkan konsep dengan contoh penerapan nyata. Jelaskan "mengapa" di balik sebuah rumus atau konsep.
-- **Fase D (Kelas 7-9):** Berikan penjelasan yang terstruktur. Jelaskan konsepnya terlebih dahulu, berikan contoh, dan langkah penyelesaian yang logis.
-- **Fase E/F (Kelas 10-12):** Berikan penjelasan yang mendalam dan komprehensif. Kaitkan dengan konsep lain yang relevan dan berikan konteks yang lebih luas.
+- **Fase D (Kelas 7-9):** Berikan penjelasan yang terstruktur dan analitis. Jelaskan konsepnya terlebih dahulu, berikan contoh, dan langkah penyelesaian yang logis untuk level SMP/MTs.
+- **Fase E/F (Kelas 10-12):** Berikan penjelasan yang mendalam dan komprehensif setara level SMA/MA. Kaitkan dengan konsep lain yang relevan, berikan konteks yang lebih luas, dan siapkan siswa untuk berpikir kritis.
 
 Pengecualian Bahasa:
 - Jika mata pelajaran adalah 'Bahasa Inggris', berikan penjelasan dan jawaban dalam Bahasa Inggris.
