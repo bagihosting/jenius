@@ -15,8 +15,8 @@ import { useAuth } from '@/context/AuthContext';
 import { LeaderboardCard } from '@/components/LeaderboardCard';
 
 interface DashboardContentProps {
-  grade?: Grade;
-  semester?: Semester;
+  grade: Grade;
+  semester: Semester;
 }
 
 function DashboardContent({ grade, semester }: DashboardContentProps) {
@@ -45,19 +45,19 @@ function DashboardContent({ grade, semester }: DashboardContentProps) {
         )
     }
 
-    if (!grade || !semester || !user.schoolType) {
-        return (
+    if (!user.schoolType) {
+         return (
             <main className="flex-grow flex items-center justify-center p-4">
                 <Card className="w-full max-w-md text-center">
                     <CardHeader>
-                        <CardTitle>Parameter Tidak Lengkap</CardTitle>
-                        <CardDescription>Silakan kembali dan pilih kelas serta semester.</CardDescription>
+                        <CardTitle>Data Pengguna Tidak Lengkap</CardTitle>
+                        <CardDescription>Jenis sekolah tidak ditemukan. Silakan perbarui profil Anda atau daftar ulang.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Button asChild>
-                            <Link href="/belajar">
+                            <Link href="/login">
                                 <ArrowLeft className="mr-2 h-4 w-4" />
-                                Kembali
+                                Kembali ke Login
                             </Link>
                         </Button>
                     </CardContent>
@@ -162,8 +162,29 @@ function DashboardContent({ grade, semester }: DashboardContentProps) {
 
 function DashboardPageWrapper() {
   const searchParams = useSearchParams();
-  const grade = searchParams.get('grade') as Grade | undefined;
-  const semester = searchParams.get('semester') as Semester | undefined;
+  const grade = searchParams.get('grade') as Grade | null;
+  const semester = searchParams.get('semester') as Semester | null;
+
+  if (!grade || !semester) {
+    return (
+        <main className="flex-grow flex items-center justify-center p-4">
+            <Card className="w-full max-w-md text-center">
+                <CardHeader>
+                    <CardTitle>Parameter Tidak Lengkap</CardTitle>
+                    <CardDescription>Silakan kembali dan pilih kelas serta semester.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button asChild>
+                        <Link href="/belajar">
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Kembali
+                        </Link>
+                    </Button>
+                </CardContent>
+            </Card>
+        </main>
+    );
+  }
 
   return <DashboardContent grade={grade} semester={semester} />;
 }
