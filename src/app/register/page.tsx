@@ -125,6 +125,8 @@ export default function RegisterPage() {
         } else if (error.code === 'auth/weak-password') {
             errorMessage = 'Password terlalu lemah. Gunakan minimal 6 karakter.';
             form.setError("password", { type: "manual", message: errorMessage });
+        } else if (error.code === 'PERMISSION_DENIED') {
+            errorMessage = 'Akses ditolak. Pastikan aturan keamanan Firebase Anda sudah benar.'
         }
         toast({
             title: "Pendaftaran Gagal",
