@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!isFirebaseConfigured || !auth) {
       setLoading(false);
-      return;
+      return () => {}; // Return an empty function for cleanup
     }
 
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
@@ -47,12 +47,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setUser({
               ...dbUser, 
               uid: firebaseUser.uid, 
-              email: firebaseUser.email, 
-              name: firebaseUser.displayName || dbUser.name,
+              email: firebaseUser.email || '', 
+              name: firebaseUser.displayName || dbUser.name || 'User',
               photoUrl: firebaseUser.photoURL || dbUser.photoUrl, 
             });
           } else {
-             if (auth) signOut(auth);
+             // If user exists in Auth but not in DB, log them out.
+             if (auth) {
+                console.warn(`User data not found in DB for UID: ${firebaseUser.uid}, logging out.`);
+                signOut(auth);
+             }
           }
           setLoading(false);
         }, (error) => {
@@ -61,13 +65,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setLoading(false);
         });
         
+        // Return the cleanup function for the database listener
         return () => unsubscribeDb();
       } else {
+        // No user is signed in.
         setUser(null);
         setLoading(false);
       }
     });
 
+    // Return the cleanup function for the auth listener
     return () => unsubscribeAuth();
   }, []);
 
@@ -86,6 +93,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     const updateData: Partial<User> = { ...userData };
     
+    // Prevent critical fields from being overwritten from client-side updates
     delete updateData.uid;
     delete updateData.email;
     delete updateData.registeredAt;
@@ -94,6 +102,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const userRef = ref(db, `users/${user.uid}`);
     await update(userRef, updateData);
 
+    // Also update Firebase Auth profile if name or photoUrl is changed
     if (auth?.currentUser && (userData.name || userData.photoUrl)) {
         await updateProfile(auth.currentUser, {
             displayName: userData.name,
