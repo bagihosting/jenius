@@ -38,9 +38,9 @@ export const GenerateQuizInputSchema = z.object({
     .number()
     .default(10)
     .describe('The number of questions to generate for the quiz.'),
-  schoolType: z.nativeEnum(['SDN', 'SDIT', 'MI', 'SMP', 'MTs', 'SMA', 'MA', 'AKADEMI', 'UNIVERSITAS']).describe('The type of school (e.g., SDN, MTs, SMA).'),
-  grade: z.nativeEnum(['1','2','3','4','5','6','7','8','9','10','11','12']).describe('The grade level (e.g., 1, 8, 11).'),
-  semester: z.nativeEnum(['1', '2']).describe('The semester (1 or 2).'),
+  schoolType: z.enum(['SDN', 'SDIT', 'MI', 'SMP', 'MTs', 'SMA', 'MA', 'AKADEMI', 'UNIVERSITAS']).describe('The type of school (e.g., SDN, MTs, SMA).'),
+  grade: z.enum(['1','2','3','4','5','6','7','8','9','10','11','12']).describe('The grade level (e.g., 1, 8, 11).'),
+  semester: z.enum(['1', '2']).describe('The semester (1 or 2).'),
   dateSeed: z.string().describe('The current date (YYYY-MM-DD) to ensure daily variety.'),
   userEmail: z.string().describe('The email of the user to ensure question uniqueness per user.'),
 });
@@ -78,9 +78,9 @@ export type EssayQuestion = z.infer<typeof EssayQuestionSchema>;
 export const GenerateExamInputSchema = z.object({
   subjectContent: z.string().describe('The content of the subject to generate the exam from, including semester context.'),
   dateSeed: z.string().describe('The current date (YYYY-MM-DD) to ensure daily variety.'),
-  schoolType: z.nativeEnum(['SDN', 'SDIT', 'MI', 'SMP', 'MTs', 'SMA', 'MA', 'AKADEMI', 'UNIVERSITAS']).describe('The type of school (e.g., SDN, MTs, SMA).'),
-  grade: z.nativeEnum(['1','2','3','4','5','6','7','8','9','10','11','12']).describe('The grade level (e.g., 1, 8, 11).'),
-  semester: z.nativeEnum(['1', '2']).describe('The semester (1 or 2).'),
+  schoolType: z.enum(['SDN', 'SDIT', 'MI', 'SMP', 'MTs', 'SMA', 'MA', 'AKADEMI', 'UNIVERSITAS']).describe('The type of school (e.g., SDN, MTs, SMA).'),
+  grade: z.enum(['1','2','3','4','5','6','7','8','9','10','11','12']).describe('The grade level (e.g., 1, 8, 11).'),
+  semester: z.enum(['1', '2']).describe('The semester (1 or 2).'),
   userEmail: z.string().describe('The email of the user to ensure question uniqueness per user.'),
 });
 export type GenerateExamInput = z.infer<typeof GenerateExamInputSchema>;
@@ -119,9 +119,9 @@ export interface User {
 export const HomeworkHelpInputSchema = z.object({
   subject: z.string().describe('The school subject for the homework question.'),
   question: z.string().describe('The homework question to be answered.'),
-  schoolType: z.nativeEnum(['SDN', 'SDIT', 'MI', 'SMP', 'MTs', 'SMA', 'MA', 'AKADEMI', 'UNIVERSITAS']).describe('The type of school (e.g., SDN, MTs, SMA).'),
-  grade: z.nativeEnum(['1','2','3','4','5','6','7','8','9','10','11','12']).describe('The grade level (e.g., 1, 8, 11).'),
-  semester: z.nativeEnum(['1', '2']).describe('The semester (1 or 2).'),
+  schoolType: z.enum(['SDN', 'SDIT', 'MI', 'SMP', 'MTs', 'SMA', 'MA', 'AKADEMI', 'UNIVERSITAS']).describe('The type of school (e.g., SDN, MTs, SMA).'),
+  grade: z.enum(['1','2','3','4','5','6','7','8','9','10','11','12']).describe('The grade level (e.g., 1, 8, 11).'),
+  semester: z.enum(['1', '2']).describe('The semester (1 or 2).'),
 });
 export type HomeworkHelpInput = z.infer<typeof HomeworkHelpInputSchema>;
 
