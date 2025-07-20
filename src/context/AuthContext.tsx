@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { useRouter } from 'next/navigation';
 import type { User } from '@/lib/types';
 import { onAuthStateChanged, signOut, updatePassword as updateAuthPassword, updateProfile } from 'firebase/auth';
-import { ref, onValue, update } from 'firebase/database';
+import { ref, update, get } from 'firebase/database';
 import { auth, db, isFirebaseConfigured } from '@/lib/firebase';
 
 interface AuthContextType {
@@ -30,9 +30,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        // User is signed in, now get their data from Realtime Database.
         if (!db) {
             setUser(null);
             setLoading(false);
@@ -40,38 +39,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             return;
         }
 
-        const userRef = ref(db, `users/${firebaseUser.uid}`);
-        const unsubscribeDb = onValue(userRef, (snapshot) => {
-          if (snapshot.exists()) {
-            const dbUser = snapshot.val();
-            setUser({
-              ...dbUser,
-              uid: firebaseUser.uid,
-              email: firebaseUser.email || '',
-              name: firebaseUser.displayName || dbUser.name || 'User',
-              photoUrl: firebaseUser.photoURL || dbUser.photoUrl,
-            });
-          } else {
-            // User exists in Auth but not in DB.
-            // This can happen during registration race conditions or if DB entry was deleted.
-            // We set a minimal user object to keep them logged in.
-            setUser({
-              uid: firebaseUser.uid,
-              email: firebaseUser.email || '',
-              name: firebaseUser.displayName || 'Pengguna Baru',
-              role: 'user',
-            });
-            console.warn(`User data not found in DB for UID: ${firebaseUser.uid}.`);
-          }
-          setLoading(false);
-        }, (error) => {
-          console.error("Firebase DB read failed:", error);
-          setUser(null);
-          setLoading(false);
-        });
+        try {
+            const userRef = ref(db, `users/${firebaseUser.uid}`);
+            const snapshot = await get(userRef);
 
-        // Cleanup the database listener when the auth state changes.
-        return () => unsubscribeDb();
+            if (snapshot.exists()) {
+                const dbUser = snapshot.val();
+                setUser({
+                    ...dbUser,
+                    uid: firebaseUser.uid,
+                    email: firebaseUser.email || '',
+                    name: firebaseUser.displayName || dbUser.name || 'User',
+                    photoUrl: firebaseUser.photoURL || dbUser.photoUrl,
+                });
+            } else {
+                setUser({
+                    uid: firebaseUser.uid,
+                    email: firebaseUser.email || '',
+                    name: firebaseUser.displayName || 'Pengguna Baru',
+                    role: 'user',
+                });
+                console.warn(`User data not found in DB for UID: ${firebaseUser.uid}.`);
+            }
+        } catch (error) {
+            console.error("Firebase DB read failed:", error);
+            setUser(null); // On error, ensure user is logged out state-wise
+        } finally {
+            setLoading(false);
+        }
+
       } else {
         // User is signed out.
         setUser(null);
@@ -104,7 +100,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const userRef = ref(db, `users/${user.uid}`);
     await update(userRef, updateData);
-
+    
     // Also update Firebase Auth profile if name or photoUrl is changed
     if (auth?.currentUser && (userData.name || userData.photoUrl)) {
         await updateProfile(auth.currentUser, {
@@ -112,6 +108,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             photoURL: userData.photoUrl,
         });
     }
+
+    // Manually update local state to reflect changes immediately
+    setUser(prevUser => prevUser ? { ...prevUser, ...updateData } : null);
 
   }, [user]);
 
