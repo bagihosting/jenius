@@ -27,12 +27,10 @@ export function LeaderboardCard() {
       const usersData: User[] = [];
       snapshot.forEach((childSnapshot) => {
         const user = childSnapshot.val();
-        // Show users even if their score is 0, but exclude admins.
         if (user.role !== 'admin') {
             usersData.push({ uid: childSnapshot.key!, ...user });
         }
       });
-      // Sort descending since Firebase returns ascending order
       setLeaderboard(usersData.sort((a, b) => (b.bonusPoints || 0) - (a.bonusPoints || 0)));
       setIsLoading(false);
     }, (error) => {

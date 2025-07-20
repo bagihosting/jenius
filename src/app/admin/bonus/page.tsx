@@ -40,6 +40,9 @@ export default function BonusManagementPage() {
         setUsers([]);
       }
       setIsLoading(false);
+    }, (error) => {
+        console.error("Firebase bonus management read failed:", error);
+        setIsLoading(false);
     });
 
     return () => unsubscribe();

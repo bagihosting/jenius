@@ -78,6 +78,9 @@ export default function UsersPage() {
         setUsers([]);
       }
       setIsLoading(false);
+    }, (error) => {
+        console.error("Firebase user list read failed:", error);
+        setIsLoading(false);
     });
 
     return () => unsubscribe();

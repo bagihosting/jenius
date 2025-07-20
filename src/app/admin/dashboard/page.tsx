@@ -27,6 +27,9 @@ export default function AdminDashboardPage() {
                 setUserCount(0);
             }
             setIsLoading(false);
+        }, (error) => {
+            console.error("Firebase user count read failed:", error);
+            setIsLoading(false);
         });
 
         return () => unsubscribe();
