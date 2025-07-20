@@ -3,6 +3,7 @@ import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
 import { getDatabase, type Database } from "firebase/database";
 import { getStorage, type FirebaseStorage } from "firebase/storage";
+import { getFunctions, type Functions } from "firebase/functions";
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -15,17 +16,22 @@ const firebaseConfig = {
     databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
 };
 
-// This flag indicates if the configuration values themselves are present.
 export const isFirebaseConfigured = !!firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith('GANTI_DENGAN');
 
-// Initialize Firebase App
-let app: FirebaseApp;
+let app: FirebaseApp | undefined;
 if (isFirebaseConfigured) {
     app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 }
 
-// Export initialized services, or null if not configured
-// This provides a single point of access for all firebase services.
-export const auth: Auth | null = isFirebaseConfigured ? getAuth(app!) : null;
-export const db: Database | null = isFirebaseConfigured ? getDatabase(app!) : null;
-export const storage: FirebaseStorage | null = isFirebaseConfigured ? getStorage(app!) : null;
+export const auth: Auth | null = app ? getAuth(app) : null;
+export const db: Database | null = app ? getDatabase(app) : null;
+export const storage: FirebaseStorage | null = app ? getStorage(app) : null;
+export const getFunctionsInstance = (): Functions | null => {
+    if (!app) return null;
+    // You might need to specify the region if it's not us-central1
+    // e.g., getFunctions(app, 'asia-southeast1');
+    return getFunctions(app);
+}
+
+// Re-export for easier access in client components
+export { getFunctions, httpsCallable } from "firebase/functions";
