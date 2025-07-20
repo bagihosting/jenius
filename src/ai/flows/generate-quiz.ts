@@ -30,7 +30,7 @@ const prompt = ai.definePrompt({
   name: 'generateQuizPrompt',
   input: {schema: GenerateQuizInputSchema},
   output: {schema: GenerateQuizOutputSchema},
-  prompt: `Anda adalah seorang ahli pembuat kuis untuk siswa sekolah di Indonesia.
+  prompt: `Anda adalah seorang ahli pembuat kuis yang jenius untuk siswa sekolah di Indonesia.
 Buatlah kuis berdasarkan konteks yang diberikan. Pastikan tingkat kesulitan soal sesuai untuk siswa kelas {{{grade}}} di sekolah jenis {{{schoolType}}} untuk semester {{{semester}}}.
 Gunakan string berikut sebagai 'benih' untuk memastikan soal yang Anda buat UNIK dan BERBEDA setiap kali diminta:
 - Tanggal: {{{dateSeed}}}
@@ -40,10 +40,12 @@ PENTING: Untuk setiap pertanyaan, secara cerdas tentukan apakah pertanyaan terse
 - Jika YA, berikan deskripsi singkat dan jelas untuk membuat gambar tersebut di kolom 'imagePrompt'. Contoh: "Ilustrasi rantai makanan di sawah", "Gambar bangun ruang kubus", "Grafik permintaan dan penawaran".
 - Jika TIDAK, jangan sertakan kolom 'imagePrompt'.
 
-PENTING: Sesuaikan kompleksitas soal dan bahasa dengan tingkatan kelas:
-- Kelas 1-6 (SD/MI): Gunakan bahasa yang sederhana dan pertanyaan yang menguji pemahaman dasar hingga penerapan konsep sederhana.
-- Kelas 7-9 (SMP/MTs): Gunakan bahasa yang lebih formal. Pertanyaan boleh menguji pemahaman konsep, analisis sederhana, dan penerapan rumus.
-- Kelas 10-12 (SMA/MA): Buat pertanyaan yang menguji analisis mendalam, pemikiran kritis, dan penerapan konsep kompleks.
+PENTING: Sesuaikan kompleksitas soal dan bahasa dengan tingkatan kelas. Ini adalah aturan yang paling penting:
+- **Fase A (Kelas 1-2):** Gunakan bahasa yang sangat sederhana dan konkret. Fokus pada pemahaman dasar, identifikasi, dan contoh dari kehidupan sehari-hari. Hindari soal cerita yang panjang. Pertanyaan harus langsung ke intinya. Contoh: "Hewan yang berkaki empat adalah...". Pilihan jawaban juga harus sederhana.
+- **Fase B (Kelas 3-4):** Mulai perkenalkan soal cerita pendek (2-3 kalimat). Pertanyaan bisa memerlukan satu atau dua langkah pemikiran. Gunakan istilah-istilah dasar dari mata pelajaran. Contoh: "Ibu membeli 5 apel dan 3 jeruk. Berapa jumlah semua buah yang dibeli Ibu?".
+- **Fase C (Kelas 5-6):** Soal cerita bisa lebih kompleks. Pertanyaan harus mulai melatih penalaran, seperti membandingkan, mengurutkan, atau menarik kesimpulan sederhana. Mulai perkenalkan soal HOTS tingkat dasar. Contoh: "Suhu di kota A adalah 25°C dan di kota B adalah -5°C. Berapa selisih suhu kedua kota tersebut?".
+- **Fase D (Kelas 7-9):** Gunakan bahasa yang lebih formal. Pertanyaan boleh menguji pemahaman konsep, analisis sederhana, dan penerapan rumus.
+- **Fase E/F (Kelas 10-12):** Buat pertanyaan yang menguji analisis mendalam, pemikiran kritis, dan penerapan konsep kompleks.
 
 Setiap pertanyaan harus memiliki:
 1.  Teks pertanyaan.

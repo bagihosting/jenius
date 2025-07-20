@@ -39,11 +39,12 @@ PENTING: Untuk setiap soal (pilihan ganda dan esai), secara cerdas tentukan apak
 - Jika YA, berikan deskripsi singkat dan jelas untuk membuat gambar tersebut di kolom 'imagePrompt'. Contoh: "Diagram siklus air", "Peta kerajaan Majapahit", "Grafik fungsi kuadrat".
 - Jika TIDAK, jangan sertakan kolom 'imagePrompt'.
 
-PENTING: Sesuaikan kompleksitas soal dan bahasa dengan tingkatan kelas:
-- Kelas 1-3 (Fase A/B): Gunakan bahasa yang sangat sederhana dan pertanyaan konkret. Fokus pada pemahaman dasar.
-- Kelas 4-6 (Fase B/C): Gunakan bahasa yang jelas dan mulai perkenalkan soal yang membutuhkan penalaran sederhana. Jawaban mungkin memerlukan satu atau dua langkah pemikiran.
-- Kelas 7-9 (Fase D): Buat soal yang analitis dan menguji pemahaman konsep tingkat SMP/MTs. Bahasa harus formal namun mudah dipahami. Fokus pada soal HOTS yang relevan.
-- Kelas 10-12 (Fase E/F): Buat soal yang kompleks, analitis, dan membutuhkan pemikiran tingkat tinggi (HOTS) setara SMA/MA. Fokus pada soal-soal yang prediktif akan keluar di ujian 2025 (UTBK, dll). Boleh menyertakan soal cerita atau studi kasus.
+PENTING: Sesuaikan kompleksitas soal dan bahasa dengan tingkatan kelas. Ini adalah aturan yang paling penting:
+- **Fase A (Kelas 1-2):** Gunakan bahasa yang sangat sederhana dan konkret. Fokus pada pemahaman dasar, identifikasi, dan contoh dari kehidupan sehari-hari. Hindari soal cerita yang panjang. Pertanyaan harus langsung ke intinya. Contoh: "Berapa jumlah 3 apel ditambah 2 apel?".
+- **Fase B (Kelas 3-4):** Mulai perkenalkan soal cerita pendek (2-3 kalimat). Pertanyaan bisa memerlukan satu atau dua langkah pemikiran. Gunakan istilah-istilah dasar dari mata pelajaran. Contoh: "Andi punya 10 kelereng, ia memberikan 3 kepada Budi. Berapa sisa kelereng Andi?".
+- **Fase C (Kelas 5-6):** Soal cerita bisa lebih kompleks. Pertanyaan harus mulai melatih penalaran, seperti membandingkan, mengurutkan, atau menarik kesimpulan sederhana. Mulai perkenalkan soal HOTS tingkat dasar. Contoh: "Sebuah kebun berbentuk persegi panjang dengan panjang 10m dan lebar 5m. Jika setiap meter persegi membutuhkan 2 bibit, berapa total bibit yang dibutuhkan?".
+- **Fase D (Kelas 7-9):** Buat soal yang analitis dan menguji pemahaman konsep tingkat SMP/MTs. Bahasa harus formal namun mudah dipahami. Fokus pada soal HOTS yang relevan.
+- **Fase E/F (Kelas 10-12):** Buat soal yang kompleks, analitis, dan membutuhkan pemikiran tingkat tinggi (HOTS) setara SMA/MA. Fokus pada soal-soal yang prediktif akan keluar di ujian 2025 (UTBK, dll). Boleh menyertakan soal cerita atau studi kasus.
 
 Buat 5 soal pilihan ganda dengan 4 pilihan jawaban (A, B, C, D). PENTING: Pastikan setiap pilihan jawaban UNIK dan hanya ada SATU jawaban yang benar secara definitif. Untuk setiap soal pilihan ganda, berikan penjelasan singkat, cerdas, dan mudah dimengerti. Dalam penjelasan, **tebalkan (gunakan Markdown: **kata**) kata-kata kunci atau jawaban yang benar** agar mudah dikenali.
 

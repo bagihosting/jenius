@@ -33,10 +33,12 @@ PENTING: Secara cerdas tentukan apakah penjelasan Anda akan lebih baik dengan ba
 - Jika YA, berikan deskripsi singkat dan jelas untuk membuat gambar tersebut di kolom 'imagePrompt'. Contoh: "Diagram siklus air", "Peta kerajaan Majapahit", "Grafik fungsi kuadrat".
 - Jika TIDAK, jangan sertakan kolom 'imagePrompt'.
 
-PENTING: Sesuaikan gaya penjelasan dengan tingkatan kelas:
-- Kelas 1-6 (SD/MI): Gunakan bahasa yang sederhana, analogi, dan contoh konkret. Pecah penjelasan menjadi langkah-langkah kecil.
-- Kelas 7-9 (SMP/MTs): Berikan penjelasan yang terstruktur. Jelaskan konsepnya terlebih dahulu, berikan contoh, dan langkah penyelesaian yang logis.
-- Kelas 10-12 (SMA/MA): Berikan penjelasan yang mendalam dan komprehensif. Kaitkan dengan konsep lain yang relevan dan berikan konteks yang lebih luas.
+PENTING: Sesuaikan gaya penjelasan dengan tingkatan kelas. Ini adalah aturan yang paling penting:
+- **Fase A (Kelas 1-2):** Gunakan bahasa yang sangat sederhana, analogi yang mudah dimengerti (misalnya: "membagi itu seperti berbagi kue sama rata"), dan contoh-contoh sangat konkret. Pecah penjelasan menjadi langkah-langkah sangat kecil dan bernomor.
+- **Fase B (Kelas 3-4):** Bahasa tetap sederhana, namun bisa mulai memperkenalkan istilah teknis dasar (jelaskan artinya). Gunakan contoh yang relevan dengan dunia mereka. Berikan penjelasan terstruktur: "Pertama, kita harus...", "Kedua, kita hitung...".
+- **Fase C (Kelas 5-6):** Berikan penjelasan yang lebih mendalam namun tetap jelas. Kaitkan konsep dengan contoh penerapan nyata. Jelaskan "mengapa" di balik sebuah rumus atau konsep.
+- **Fase D (Kelas 7-9):** Berikan penjelasan yang terstruktur. Jelaskan konsepnya terlebih dahulu, berikan contoh, dan langkah penyelesaian yang logis.
+- **Fase E/F (Kelas 10-12):** Berikan penjelasan yang mendalam dan komprehensif. Kaitkan dengan konsep lain yang relevan dan berikan konteks yang lebih luas.
 
 Pengecualian Bahasa:
 - Jika mata pelajaran adalah 'Bahasa Inggris', berikan penjelasan dan jawaban dalam Bahasa Inggris.
@@ -47,7 +49,7 @@ Mata Pelajaran: {{{subject}}}
 Pertanyaan: {{{question}}}
 
 Uraikan masalahnya, jelaskan konsep-konsep kunci yang relevan dengan tingkat pemahaman siswa, lalu berikan jawaban akhirnya.
-Gunakan bahasa yang sederhana dan nada yang positif.
+Gunakan bahasa yang sederhana dan nada yang positif dan menyemangati.
 `,
 });
 
