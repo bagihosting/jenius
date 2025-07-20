@@ -85,6 +85,8 @@ function findAndNormalizeCorrectAnswer(question: MultipleChoiceQuestion): string
     }
     
     console.warn("Could not find a matching option for correctAnswer in Exam:", question.correctAnswer, "Options:", question.options);
+    // Fallback to original answer, though it's likely incorrect.
+    // The UI should ideally handle this gracefully.
     return question.correctAnswer;
 }
 
@@ -118,14 +120,28 @@ export async function generateExamAction(
     }
     
     // Clean and validate multiple choice answers
-    examData.multipleChoice.forEach(q => {
+    const validatedMultipleChoice = examData.multipleChoice.map(q => {
         if (!q.options || !Array.isArray(q.options) || q.options.length < 4) {
-            throw new Error('Beberapa soal pilihan ganda tidak memiliki 4 pilihan jawaban.');
+            console.error('Soal PG tidak valid: Pilihan jawaban kurang dari 4.', q);
+            return null;
         }
-        if (!q.correctAnswer || !q.options.some(opt => normalize(opt) === normalize(q.correctAnswer))) {
-            q.correctAnswer = findAndNormalizeCorrectAnswer(q);
+        
+        const matchingOption = q.options.find(opt => normalize(opt) === normalize(q.correctAnswer));
+
+        if (matchingOption) {
+            q.correctAnswer = matchingOption; // Koreksi jawaban agar sama persis
+            return q;
+        } else {
+            console.error('Soal PG tidak valid: Jawaban benar tidak ada di pilihan.', q);
+            return null; // Tandai sebagai tidak valid
         }
-    });
+    }).filter((q): q is MultipleChoiceQuestion => q !== null);
+
+    if (validatedMultipleChoice.length !== examData.multipleChoice.length) {
+         throw new Error('Ayah Jenius membuat beberapa soal pilihan ganda yang tidak akurat. Coba lagi untuk hasil yang lebih baik.');
+    }
+    
+    examData.multipleChoice = validatedMultipleChoice;
 
     return { data: examData };
   } catch (e) {
