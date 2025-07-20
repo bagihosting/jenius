@@ -69,28 +69,6 @@ export async function generateQuizAction(
   }
 }
 
-// Helper function to find the correct answer in options for EXAMS
-function findAndNormalizeCorrectAnswer(question: MultipleChoiceQuestion): string {
-    if (!question || !question.correctAnswer || !Array.isArray(question.options)) {
-        console.warn("Invalid question object passed to findAndNormalizeCorrectAnswer");
-        return '';
-    }
-
-    const normalizedCorrectAnswer = normalize(question.correctAnswer);
-
-    for (const option of question.options) {
-        if (normalize(option) === normalizedCorrectAnswer) {
-            return option; // Return the full option string
-        }
-    }
-    
-    console.warn("Could not find a matching option for correctAnswer in Exam:", question.correctAnswer, "Options:", question.options);
-    // Fallback to original answer, though it's likely incorrect.
-    // The UI should ideally handle this gracefully.
-    return question.correctAnswer;
-}
-
-
 export async function homeworkHelperAction(
   input: HomeworkHelpInput
 ): Promise<{ data?: HomeworkHelpOutput; error?: string }> {

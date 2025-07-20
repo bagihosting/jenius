@@ -50,6 +50,9 @@ Pertanyaan: {{{question}}}
 
 Uraikan masalahnya, jelaskan konsep-konsep kunci yang relevan dengan tingkat pemahaman siswa, lalu berikan jawaban akhirnya.
 Gunakan bahasa yang sederhana dan nada yang positif dan menyemangati.
+
+**KHUSUS MATEMATIKA (Kelas 1-6):** Setelah memberikan penjelasan langkah demi langkah yang normal, tambahkan bagian baru dengan format berikut:
+**Tips Jenius:** [Jelaskan metode cepat atau trik cerdas untuk menyelesaikan masalah serupa di sini].
 `,
 });
 
