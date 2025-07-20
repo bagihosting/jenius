@@ -73,10 +73,10 @@ const schoolTypeMap: Record<SchoolType, string> = {
 const semesterTopics: Record<Semester, Record<string, string[]>> = {
     '1': {
         // SD Topics
-        'Matematika': ['Bilangan Cacah hingga 10.000', 'Penjumlahan dan Pengurangan', 'Bentuk Geometri Dasar', 'Pengukuran Panjang dan Berat'],
-        'Bahasa Indonesia': ['Membaca dan Memahami Teks Narasi', 'Menulis Kalimat Efektif', 'Mengidentifikasi Ide Pokok Paragraf'],
+        'Pendidikan Pancasila': ['Mengenal anggota keluarga', 'Tata tertib di rumah dan sekolah', 'Perilaku baik (saling menolong, berbagi)', 'Makna dan Penerapan Sila Pancasila', 'Norma dan Aturan di Masyarakat', 'Gotong Royong'],
+        'Bahasa Indonesia': ['Memperkenalkan diri', 'Menyebutkan nama anggota keluarga dan teman', 'Mengenal huruf vokal dan konsonan dasar', 'Membaca dan menulis kata sederhana (nama diri, benda)', 'Membaca dan Memahami Teks Narasi', 'Mengidentifikasi Ide Pokok Paragraf'],
+        'Matematika': ['Mengenal bilangan 1-10', 'Membilang dan mengurutkan benda', 'Konsep lebih banyak/lebih sedikit', 'Bilangan Cacah hingga 10.000', 'Penjumlahan dan Pengurangan', 'Bentuk Geometri Dasar'],
         'IPAS': ['Rangka dan Panca Indra Manusia', 'Ciri-ciri Makhluk Hidup', 'Wujud Benda dan Perubahannya', 'Kenampakan Alam dan Buatan'],
-        'Pendidikan Pancasila': ['Makna dan Penerapan Sila Pancasila', 'Norma dan Aturan di Masyarakat', 'Gotong Royong'],
         'Pendidikan Agama & Budi Pekerti': ['Kisah Nabi Adam A.S. dan Nabi Idris A.S.', 'Mengenal Asmaul Husna', 'Tata Cara Wudhu dan Tayamum'],
         'Bahasa Inggris': ['Greetings and Introductions', 'Things in the Classroom', 'Family Members', 'Colors and Numbers'],
         'PJOK': ['Gerak Dasar Lokomotor (Jalan, Lari, Lompat)', 'Permainan Bola Besar (Sepak Bola, Voli)'],
