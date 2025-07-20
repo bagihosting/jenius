@@ -73,7 +73,6 @@ export default function RegisterPage() {
     let createdUser = null;
 
     try {
-      // Step 1: Check username availability first for faster feedback
       const usernameRef = child(ref(db), `usernames/${usernameKey}`);
       const usernameSnapshot = await get(usernameRef);
       if (usernameSnapshot.exists()) {
@@ -82,14 +81,11 @@ export default function RegisterPage() {
         return;
       }
       
-      // Step 2: Create user in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       createdUser = userCredential.user;
 
-      // Step 3: Update profile in Firebase Auth (Display Name)
       await updateProfile(createdUser, { displayName: name });
       
-      // Step 4: Prepare data and save to Realtime Database atomically
       const isAdmin = email.toLowerCase() === 'admin@ayahjenius.com';
       const userRole = isAdmin ? 'admin' : 'user';
 
@@ -106,12 +102,10 @@ export default function RegisterPage() {
         progress: {},
       };
 
-      // Atomic update for both users and usernames paths
       const updates: { [key: string]: any } = {};
       updates[`/users/${createdUser.uid}`] = userData;
       updates[`/usernames/${usernameKey}`] = { uid: createdUser.uid };
 
-      // This is the single, atomic write operation to the database
       await update(ref(db), updates);
 
       toast({
@@ -125,7 +119,6 @@ export default function RegisterPage() {
         console.error("Registration error:", error);
         let errorMessage = "Terjadi kesalahan saat pendaftaran. Silakan coba lagi.";
 
-        // If user was created in Auth but DB write failed, attempt to delete the user for consistency.
         if (createdUser) {
             await deleteUser(createdUser).catch(delErr => {
                 console.error("Failed to cleanup created user:", delErr);

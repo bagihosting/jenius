@@ -126,7 +126,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
     
     if (!isAuthorized) {
-        // This prevents rendering children for non-admins, even for a flash.
         return null;
     }
     

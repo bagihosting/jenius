@@ -46,11 +46,10 @@ export default function LoginPage() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Fetch user role from Realtime Database to determine redirect path
       const userRef = ref(db, `users/${user.uid}`);
       const snapshot = await get(userRef);
       
-      let redirectPath = '/belajar'; // Default path for regular users
+      let redirectPath = '/belajar';
       
       if (snapshot.exists()) {
         const userData = snapshot.val();
@@ -60,7 +59,6 @@ export default function LoginPage() {
             redirectPath = '/mahasiswa/dashboard';
         }
       } else {
-        // Fallback for users in Auth but not in DB.
         console.warn(`User with UID ${user.uid} is in Auth but not in Realtime DB.`);
       }
       
