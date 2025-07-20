@@ -36,6 +36,7 @@ import { db } from '@/lib/firebase';
 import { ref, onValue, update, remove } from 'firebase/database';
 import { useToast } from '@/hooks/use-toast';
 import { UserForm, userSchema } from '@/components/UserForm';
+import { useAuth } from '@/context/AuthContext';
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -43,6 +44,8 @@ export default function UsersPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { toast } = useToast();
+  const { loading, isAuthenticated } = useAuth();
+  const [isClient, setIsClient] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(userSchema),
@@ -60,6 +63,17 @@ export default function UsersPage() {
   });
 
   useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient || loading) {
+        return;
+    }
+    if (!isAuthenticated) {
+        setIsLoading(false);
+        return;
+    }
     if (!db) {
       setIsLoading(false);
       return;
@@ -80,11 +94,12 @@ export default function UsersPage() {
       setIsLoading(false);
     }, (error) => {
         console.error("Firebase user list read failed:", error);
+        toast({ title: 'Gagal memuat pengguna', description: error.message, variant: 'destructive' });
         setIsLoading(false);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [isClient, loading, isAuthenticated, toast]);
 
   const handleEdit = (user: User) => {
     setEditingUser(user);

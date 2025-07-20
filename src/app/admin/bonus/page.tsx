@@ -16,12 +16,24 @@ import type { User } from '@/lib/types';
 
 export default function BonusManagementPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const { user, loading, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient || loading) {
+        return;
+    }
+    if (!isAuthenticated) {
+        setIsLoading(false);
+        return;
+    }
+
     if (!db) {
         setIsLoading(false);
         return;
@@ -42,11 +54,12 @@ export default function BonusManagementPage() {
       setIsLoading(false);
     }, (error) => {
         console.error("Firebase bonus management read failed:", error);
+        toast({ title: 'Gagal Memuat Data', description: error.message, variant: 'destructive'});
         setIsLoading(false);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [isClient, loading, isAuthenticated, toast]);
 
   const handlePointsChange = (uid: string, value: string) => {
     const newUsers = users.map(user => {

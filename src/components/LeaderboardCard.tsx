@@ -8,38 +8,52 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { db } from '@/lib/firebase';
 import { ref, onValue, query, orderByChild, limitToLast } from 'firebase/database';
 import type { User } from '@/lib/types';
+import { useAuth } from '@/context/AuthContext';
 
 
 export function LeaderboardCard() {
   const [leaderboard, setLeaderboard] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { loading } = useAuth();
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    if (!db) {
-        setIsLoading(false);
-        return;
-    }
-    
-    const usersRef = ref(db, 'users');
-    const topUsersQuery = query(usersRef, orderByChild('bonusPoints'), limitToLast(5));
-    
-    const unsubscribe = onValue(topUsersQuery, (snapshot) => {
-      const usersData: User[] = [];
-      snapshot.forEach((childSnapshot) => {
-        const user = childSnapshot.val();
-        if (user.role !== 'admin') {
-            usersData.push({ uid: childSnapshot.key!, ...user });
-        }
-      });
-      setLeaderboard(usersData.sort((a, b) => (b.bonusPoints || 0) - (a.bonusPoints || 0)));
-      setIsLoading(false);
-    }, (error) => {
-        console.error("Firebase Leaderboard read failed:", error);
-        setIsLoading(false);
-    });
-
-    return () => unsubscribe();
+    setIsClient(true);
   }, []);
+
+  useEffect(() => {
+    // Wait for auth state to be confirmed before fetching data
+    if (isClient && !loading) {
+      if (!db) {
+          setIsLoading(false);
+          return;
+      }
+      
+      const usersRef = ref(db, 'users');
+      // Query to get top 5 users by bonusPoints
+      const topUsersQuery = query(usersRef, orderByChild('bonusPoints'), limitToLast(5));
+      
+      const unsubscribe = onValue(topUsersQuery, (snapshot) => {
+        const usersData: User[] = [];
+        snapshot.forEach((childSnapshot) => {
+          const user = childSnapshot.val();
+          // Exclude admins from the leaderboard
+          if (user.role !== 'admin') {
+              usersData.push({ uid: childSnapshot.key!, ...user });
+          }
+        });
+        // Sort in descending order and set state
+        setLeaderboard(usersData.sort((a, b) => (b.bonusPoints || 0) - (a.bonusPoints || 0)));
+        setIsLoading(false);
+      }, (error) => {
+          console.error("Firebase Leaderboard read failed:", error);
+          setIsLoading(false);
+      });
+
+      // Cleanup subscription on component unmount
+      return () => unsubscribe();
+    }
+  }, [isClient, loading]);
   
   return (
     <Card>
