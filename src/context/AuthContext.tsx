@@ -52,11 +52,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               photoUrl: firebaseUser.photoURL || dbUser.photoUrl, 
             });
           } else {
-             // If user exists in Auth but not in DB, log them out.
-             if (auth) {
-                console.warn(`User data not found in DB for UID: ${firebaseUser.uid}, logging out.`);
-                signOut(auth);
-             }
+             // If user exists in Auth but not in DB, it's a temporary state during registration
+             // or an anomaly. We'll set a minimal user object and let the app handle it.
+             // We no longer signOut here as it causes a race condition on login.
+             setUser({
+                uid: firebaseUser.uid,
+                email: firebaseUser.email || '',
+                name: firebaseUser.displayName || 'Pengguna Baru',
+                role: 'user', // Default role
+             });
+             console.warn(`User data not found in DB for UID: ${firebaseUser.uid}. A minimal user object is created.`);
           }
           setLoading(false);
         }, (error) => {
@@ -76,7 +81,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Return the cleanup function for the auth listener
     return () => unsubscribeAuth();
-  }, []);
+  }, [router]);
 
 
   const logout = async () => {
