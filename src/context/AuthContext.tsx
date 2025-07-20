@@ -57,6 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                     uid: firebaseUser.uid,
                     email: firebaseUser.email || '',
                     name: firebaseUser.displayName || 'Pengguna Baru',
+                    username: 'pengguna_baru', // Add required username property
                     role: 'user',
                 });
                 console.warn(`User data not found in DB for UID: ${firebaseUser.uid}.`);
