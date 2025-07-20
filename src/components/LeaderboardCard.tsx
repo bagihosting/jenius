@@ -21,21 +21,23 @@ export function LeaderboardCard() {
     }
     
     const usersRef = ref(db, 'users');
-    // Query to get top 5 users ordered by bonusPoints
     const topUsersQuery = query(usersRef, orderByChild('bonusPoints'), limitToLast(5));
     
     const unsubscribe = onValue(topUsersQuery, (snapshot) => {
       const usersData: User[] = [];
       snapshot.forEach((childSnapshot) => {
         const user = childSnapshot.val();
-        // Ensure only users with bonus points are included, and they are not admins
-        if ((user.bonusPoints || 0) > 0 && user.role !== 'admin') {
-            usersData.push({ uid: childSnapshot.key, ...user });
+        // Show users even if their score is 0, but exclude admins.
+        if (user.role !== 'admin') {
+            usersData.push({ uid: childSnapshot.key!, ...user });
         }
       });
       // Sort descending since Firebase returns ascending order
       setLeaderboard(usersData.sort((a, b) => (b.bonusPoints || 0) - (a.bonusPoints || 0)));
       setIsLoading(false);
+    }, (error) => {
+        console.error("Firebase Leaderboard read failed:", error);
+        setIsLoading(false);
     });
 
     return () => unsubscribe();
@@ -62,12 +64,12 @@ export function LeaderboardCard() {
                         <span className="font-bold text-lg w-5 text-center">{index + 1}</span>
                         <Avatar>
                             <AvatarImage src={user.photoUrl} alt={user.name} />
-                            <AvatarFallback>{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
+                            <AvatarFallback>{user.name?.charAt(0).toUpperCase() || '?'}</AvatarFallback>
                         </Avatar>
                         <div className="flex-grow">
                             <p className="font-semibold truncate flex items-center gap-1.5">
                                 {user.name}
-                                {index === 0 && <Crown className="w-4 h-4 text-yellow-500" />}
+                                {index === 0 && (user.bonusPoints || 0) > 0 && <Crown className="w-4 h-4 text-yellow-500" />}
                             </p>
                             <p className="text-sm text-muted-foreground">@{user.username}</p>
                         </div>
