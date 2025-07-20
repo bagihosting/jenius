@@ -16,7 +16,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, AlertCircle } from 'lucide-react';
-import { isFirebaseConfigured, getFunctions, httpsCallable } from '@/lib/firebase';
+import { auth, db, isFirebaseConfigured } from '@/lib/firebase';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { ref, set, get, child } from 'firebase/database';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import type { SchoolType } from '@/lib/types';
 
@@ -36,7 +38,7 @@ const registerSchema = z.object({
     .regex(/^[a-z0-9_]+$/, 'Username hanya boleh berisi huruf kecil, angka, dan garis bawah (_).'),
   email: z.string().email({ message: 'Email tidak valid.' }),
   password: z.string().min(6, { message: 'Password harus memiliki setidaknya 6 karakter.' }),
-  schoolType: z.enum(['SDN', 'SDIT', 'MI', 'SMP', 'MTs', 'SMA', 'MA'], { required_error: 'Jenis sekolah harus dipilih.' }),
+  schoolType: z.enum(['SDN', 'SDIT', 'MI', 'SMP', 'MTs', 'SMA', 'MA']),
   schoolName: z.string().min(3, { message: 'Nama sekolah harus diisi.' }),
 });
 
@@ -59,40 +61,63 @@ export default function RegisterPage() {
   const handleRegister = async (data: RegisterFormValues) => {
     setIsLoading(true);
 
-    const functions = getFunctions();
-    if (!functions) {
+    if (!isFirebaseConfigured || !auth || !db) {
        toast({ title: "Layanan tidak tersedia", description: "Tidak dapat terhubung ke server pendaftaran.", variant: "destructive" });
        setIsLoading(false);
        return;
     }
-
-    const createUser = httpsCallable(functions, 'createUser');
+    
+    const { name, username, email, password, schoolType, schoolName } = data;
+    const usernameKey = username.toLowerCase();
 
     try {
-        const result = await createUser(data);
-        
-        const resultData = result.data as { success: boolean, message: string, field?: string };
+      const usernameRef = child(ref(db), `usernames/${usernameKey}`);
+      const usernameSnapshot = await get(usernameRef);
+      if (usernameSnapshot.exists()) {
+        form.setError("username", { type: "manual", message: "Username ini sudah digunakan. Silakan pilih yang lain." });
+        setIsLoading(false);
+        return;
+      }
+      
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-        if (!resultData.success) {
-            const field = resultData.field as keyof RegisterFormValues | undefined;
-            if (field) {
-                form.setError(field, { type: 'manual', message: resultData.message });
-            }
-            throw new Error(resultData.message);
-        }
+      await updateProfile(user, { displayName: name });
+      
+      const userData = {
+        uid: user.uid,
+        name,
+        username,
+        email: user.email,
+        role: 'user',
+        schoolType,
+        schoolName,
+        registeredAt: new Date().toISOString(),
+        quizCompletions: 0,
+        bonusPoints: 0,
+        progress: {},
+      };
 
-        toast({
-            title: "Pendaftaran Berhasil!",
-            description: "Akun Anda telah dibuat. Silakan masuk.",
-        });
+      await set(ref(db, `users/${user.uid}`), userData);
+      await set(ref(db, `usernames/${usernameKey}`), { uid: user.uid });
 
-        router.push('/login');
+      toast({
+          title: "Pendaftaran Berhasil!",
+          description: "Akun Anda telah dibuat. Silakan masuk.",
+      });
+
+      router.push('/login');
 
     } catch (error: any) {
         console.error("Registration error:", error);
+        let errorMessage = "Terjadi kesalahan saat pendaftaran.";
+        if (error.code === 'auth/email-already-in-use') {
+            errorMessage = "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk.";
+            form.setError("email", { type: "manual", message: errorMessage });
+        }
         toast({
             title: "Pendaftaran Gagal",
-            description: error.message || "Terjadi kesalahan saat pendaftaran.",
+            description: errorMessage,
             variant: "destructive",
         });
     } finally {
@@ -146,7 +171,7 @@ export default function RegisterPage() {
                 <SelectValue placeholder="Pilih jenis sekolah..." />
               </SelectTrigger>
             <SelectContent>
-              {schoolTypes.map(st => <SelectItem key={st.id} value={st.id}>{st.name}</SelectItem>)}
+              {schoolTypes.filter(st => !['AKADEMI', 'UNIVERSITAS'].includes(st.id)).map(st => <SelectItem key={st.id} value={st.id}>{st.name}</SelectItem>)}
             </SelectContent>
           </Select>
           {form.formState.errors.schoolType && <p className="text-sm text-destructive">{form.formState.errors.schoolType.message}</p>}
