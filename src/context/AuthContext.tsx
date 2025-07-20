@@ -6,8 +6,7 @@ import { useRouter } from 'next/navigation';
 import type { User } from '@/lib/types';
 import { onAuthStateChanged, signOut, updatePassword as updateAuthPassword, updateProfile } from 'firebase/auth';
 import { ref, onValue, update } from 'firebase/database';
-import { ref as storageRef, uploadString, getDownloadURL } from 'firebase/storage';
-import { auth, db, storage, isFirebaseConfigured } from '@/lib/firebase';
+import { auth, db, isFirebaseConfigured } from '@/lib/firebase';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -20,7 +19,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -29,68 +27,68 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!isFirebaseConfigured || !auth) {
       setLoading(false);
-      return () => {}; // Return an empty function for cleanup
+      return;
     }
 
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
+        // User is signed in, now get their data from Realtime Database.
         if (!db) {
+            setUser(null);
             setLoading(false);
+            console.error("Database is not configured.");
             return;
         }
+
         const userRef = ref(db, `users/${firebaseUser.uid}`);
-        
         const unsubscribeDb = onValue(userRef, (snapshot) => {
-          setLoading(true); 
           if (snapshot.exists()) {
             const dbUser = snapshot.val();
             setUser({
-              ...dbUser, 
-              uid: firebaseUser.uid, 
-              email: firebaseUser.email || '', 
+              ...dbUser,
+              uid: firebaseUser.uid,
+              email: firebaseUser.email || '',
               name: firebaseUser.displayName || dbUser.name || 'User',
-              photoUrl: firebaseUser.photoURL || dbUser.photoUrl, 
+              photoUrl: firebaseUser.photoURL || dbUser.photoUrl,
             });
           } else {
-             // If user exists in Auth but not in DB, it's a temporary state during registration
-             // or an anomaly. We'll set a minimal user object and let the app handle it.
-             // We no longer signOut here as it causes a race condition on login.
-             setUser({
-                uid: firebaseUser.uid,
-                email: firebaseUser.email || '',
-                name: firebaseUser.displayName || 'Pengguna Baru',
-                role: 'user', // Default role
-             });
-             console.warn(`User data not found in DB for UID: ${firebaseUser.uid}. A minimal user object is created.`);
+            // User exists in Auth but not in DB.
+            // This can happen during registration race conditions or if DB entry was deleted.
+            // We set a minimal user object to keep them logged in.
+            setUser({
+              uid: firebaseUser.uid,
+              email: firebaseUser.email || '',
+              name: firebaseUser.displayName || 'Pengguna Baru',
+              role: 'user',
+            });
+            console.warn(`User data not found in DB for UID: ${firebaseUser.uid}.`);
           }
           setLoading(false);
         }, (error) => {
-          console.error("Firebase read failed: " + error.message);
-          if (auth) signOut(auth); 
+          console.error("Firebase DB read failed:", error);
+          setUser(null);
           setLoading(false);
         });
-        
-        // Return the cleanup function for the database listener
+
+        // Cleanup the database listener when the auth state changes.
         return () => unsubscribeDb();
       } else {
-        // No user is signed in.
+        // User is signed out.
         setUser(null);
         setLoading(false);
       }
     });
 
-    // Return the cleanup function for the auth listener
+    // Cleanup the auth listener on component unmount.
     return () => unsubscribeAuth();
   }, [router]);
 
 
   const logout = async () => {
     if (!auth) return;
-    setLoading(true);
     await signOut(auth);
-    setUser(null);
+    setUser(null); // Explicitly set user to null
     router.push('/login');
-    setLoading(false);
   };
 
   const updateUser = useCallback(async (userData: Partial<User>) => {
