@@ -12,7 +12,8 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth, isFirebaseConfigured } from '@/lib/firebase';
+import { auth, db, isFirebaseConfigured } from '@/lib/firebase';
+import { ref, get } from "firebase/database";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function LoginPage() {
@@ -31,7 +32,7 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    if (!auth) {
+    if (!auth || !db) {
         toast({
             title: "Konfigurasi Tidak Lengkap",
             description: "Aplikasi belum terhubung ke server. Silakan periksa file .env Anda.",
@@ -42,14 +43,29 @@ export default function LoginPage() {
     }
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Fetch user role from Realtime Database to determine redirect path
+      const userRef = ref(db, `users/${user.uid}`);
+      const snapshot = await get(userRef);
+      let redirectPath = '/belajar'; // Default path for regular users
+      
+      if (snapshot.exists()) {
+        const userData = snapshot.val();
+        if (userData.role === 'admin') {
+          redirectPath = '/admin/dashboard';
+        } else if (userData.role === 'mahasiswa') {
+            redirectPath = '/mahasiswa/dashboard';
+        }
+      }
       
       toast({
           title: "Login Berhasil",
-          description: `Selamat datang kembali!`,
+          description: `Selamat datang kembali! Mengarahkan...`,
       });
       
-      router.push('/belajar');
+      router.push(redirectPath);
 
     } catch (error: any) {
       console.error("Login error:", error);
