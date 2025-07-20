@@ -2,7 +2,7 @@
 
 'use client';
 
-import { BookHeart, LogIn, LayoutDashboard, User, Loader2, UserPlus } from 'lucide-react';
+import { BookHeart, LogIn, LayoutDashboard, User, Loader2, UserPlus, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 
 export function Header() {
-  const { isAuthenticated, user, loading } = useAuth();
+  const { isAuthenticated, user, loading, logout } = useAuth();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -61,6 +61,10 @@ export function Header() {
                             </Avatar>
                             </Button>
                         </ProfileDialog>
+                        <Button onClick={logout} variant="outline">
+                            <LogOut />
+                            Keluar
+                        </Button>
                    </>
                 ) : (
                   <>
