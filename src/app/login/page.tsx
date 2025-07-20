@@ -32,7 +32,7 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    if (!auth || !db) {
+    if (!isFirebaseConfigured || !auth || !db) {
         toast({
             title: "Konfigurasi Tidak Lengkap",
             description: "Aplikasi belum terhubung ke server. Silakan periksa file .env Anda.",
@@ -49,6 +49,7 @@ export default function LoginPage() {
       // Fetch user role from Realtime Database to determine redirect path
       const userRef = ref(db, `users/${user.uid}`);
       const snapshot = await get(userRef);
+      
       let redirectPath = '/belajar'; // Default path for regular users
       
       if (snapshot.exists()) {
@@ -58,6 +59,9 @@ export default function LoginPage() {
         } else if (userData.role === 'mahasiswa') {
             redirectPath = '/mahasiswa/dashboard';
         }
+      } else {
+        // Fallback for users in Auth but not in DB.
+        console.warn(`User with UID ${user.uid} is in Auth but not in Realtime DB.`);
       }
       
       toast({

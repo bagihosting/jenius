@@ -1,14 +1,14 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Gift, Loader2, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { get, ref, update, onValue } from 'firebase/database';
+import { get, ref, update } from 'firebase/database';
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
 import type { User } from '@/lib/types';
@@ -16,7 +16,7 @@ import type { User } from '@/lib/types';
 
 export default function BonusManagementPage() {
   const [users, setUsers] = useState<User[]>([]);
-  const { user, loading, isAuthenticated } = useAuth();
+  const { user: adminUser, loading: authLoading, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
   const { toast } = useToast();
@@ -25,22 +25,16 @@ export default function BonusManagementPage() {
     setIsClient(true);
   }, []);
 
-  useEffect(() => {
-    if (!isClient || loading) {
-        return;
+  const fetchUsers = useCallback(async () => {
+    if (!isAuthenticated || !db) {
+      setUsers([]);
+      setIsLoading(false);
+      return;
     }
-    if (!isAuthenticated) {
-        setIsLoading(false);
-        return;
-    }
-
-    if (!db) {
-        setIsLoading(false);
-        return;
-    }
-    
-    const usersRef = ref(db, 'users');
-    const unsubscribe = onValue(usersRef, (snapshot) => {
+    setIsLoading(true);
+    try {
+      const usersRef = ref(db, 'users');
+      const snapshot = await get(usersRef);
       if (snapshot.exists()) {
         const usersData = snapshot.val();
         const usersList: User[] = Object.keys(usersData).map(key => ({
@@ -51,15 +45,23 @@ export default function BonusManagementPage() {
       } else {
         setUsers([]);
       }
+    } catch (error: any) {
+      console.error("Firebase bonus management read failed:", error);
+      toast({ title: 'Gagal Memuat Data', description: error.message, variant: 'destructive'});
+    } finally {
       setIsLoading(false);
-    }, (error) => {
-        console.error("Firebase bonus management read failed:", error);
-        toast({ title: 'Gagal Memuat Data', description: error.message, variant: 'destructive'});
-        setIsLoading(false);
-    });
+    }
+  }, [isAuthenticated, toast]);
 
-    return () => unsubscribe();
-  }, [isClient, loading, isAuthenticated, toast]);
+  useEffect(() => {
+    if (isClient && !authLoading) {
+      if (isAuthenticated && adminUser?.role === 'admin') {
+        fetchUsers();
+      } else {
+        setIsLoading(false);
+      }
+    }
+  }, [isClient, authLoading, isAuthenticated, adminUser, fetchUsers]);
 
   const handlePointsChange = (uid: string, value: string) => {
     const newUsers = users.map(user => {
@@ -73,18 +75,20 @@ export default function BonusManagementPage() {
   };
   
   const handleSavePoints = async (uid: string) => {
-    const user = users.find(u => u.uid === uid);
-    if (!user || !db) return;
+    const userToUpdate = users.find(u => u.uid === uid);
+    if (!userToUpdate || !db) return;
 
     try {
       const userRef = ref(db, `users/${uid}`);
       // Ensure that we save a number, defaulting to 0 if it's undefined or NaN
-      const pointsToSave = Number.isNaN(Number(user.bonusPoints)) ? 0 : Number(user.bonusPoints) || 0;
+      const pointsToSave = Number.isNaN(Number(userToUpdate.bonusPoints)) ? 0 : Number(userToUpdate.bonusPoints) || 0;
       await update(userRef, { bonusPoints: pointsToSave });
       toast({
         title: 'Berhasil!',
-        description: `Poin bonus untuk ${user.name} telah diperbarui.`,
+        description: `Poin bonus untuk ${userToUpdate.name} telah diperbarui.`,
       });
+      // Optionally re-fetch or update local state precisely
+      setUsers(prevUsers => prevUsers.map(u => u.uid === uid ? {...u, bonusPoints: pointsToSave} : u));
     } catch (error) {
       console.error("Error saving points:", error);
       toast({
@@ -144,7 +148,7 @@ export default function BonusManagementPage() {
                 </div>
               </div>
             ))}
-            {users.length === 0 && (
+            {users.length === 0 && !isLoading && (
               <p className="text-muted-foreground text-center">Tidak ada pengguna yang ditemukan.</p>
             )}
            </div>

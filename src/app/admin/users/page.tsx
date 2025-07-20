@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -33,7 +33,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Edit, Trash2 } from 'lucide-react';
 import type { User } from '@/lib/types';
 import { db } from '@/lib/firebase';
-import { ref, onValue, update, remove } from 'firebase/database';
+import { ref, get, update, remove } from 'firebase/database';
 import { useToast } from '@/hooks/use-toast';
 import { UserForm, userSchema } from '@/components/UserForm';
 import { useAuth } from '@/context/AuthContext';
@@ -44,7 +44,7 @@ export default function UsersPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { toast } = useToast();
-  const { loading, isAuthenticated } = useAuth();
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [isClient, setIsClient] = useState(false);
 
   const form = useForm({
@@ -66,40 +66,44 @@ export default function UsersPage() {
     setIsClient(true);
   }, []);
 
-  useEffect(() => {
-    if (!isClient || loading) {
-        return;
-    }
-    if (!isAuthenticated) {
+  const fetchUsers = useCallback(async () => {
+    if (!isAuthenticated || !db) {
+        setUsers([]);
         setIsLoading(false);
         return;
     }
-    if (!db) {
-      setIsLoading(false);
-      return;
-    }
-
-    const usersRef = ref(db, 'users');
-    const unsubscribe = onValue(usersRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const userList = Object.keys(data).map((key) => ({
-          uid: key,
-          ...data[key],
-        }));
-        setUsers(userList);
-      } else {
-        setUsers([]);
-      }
-      setIsLoading(false);
-    }, (error) => {
+    setIsLoading(true);
+    try {
+        const usersRef = ref(db, 'users');
+        const snapshot = await get(usersRef);
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            const userList = Object.keys(data).map((key) => ({
+                uid: key,
+                ...data[key],
+            }));
+            setUsers(userList);
+        } else {
+            setUsers([]);
+        }
+    } catch (error: any) {
         console.error("Firebase user list read failed:", error);
         toast({ title: 'Gagal memuat pengguna', description: error.message, variant: 'destructive' });
+        setUsers([]);
+    } finally {
         setIsLoading(false);
-    });
+    }
+  }, [isAuthenticated, toast]);
 
-    return () => unsubscribe();
-  }, [isClient, loading, isAuthenticated, toast]);
+  useEffect(() => {
+    if (isClient && !authLoading) {
+      if (isAuthenticated && user?.role === 'admin') {
+        fetchUsers();
+      } else {
+        setIsLoading(false);
+      }
+    }
+  }, [isClient, authLoading, isAuthenticated, user, fetchUsers]);
 
   const handleEdit = (user: User) => {
     setEditingUser(user);
@@ -119,6 +123,7 @@ export default function UsersPage() {
       try {
         await remove(ref(db, `users/${uid}`));
         toast({ title: 'Pengguna berhasil dihapus dari database' });
+        setUsers(prev => prev.filter(u => u.uid !== uid)); // Optimistic UI update
       } catch (error) {
         toast({ title: 'Gagal menghapus pengguna', variant: 'destructive' });
         console.error(error);
@@ -144,16 +149,13 @@ export default function UsersPage() {
 
         await update(userRef, updateData);
         
-        // Note: Password changes are not handled by this form because it's an admin operation.
-        if (password) {
-            toast({ title: "Info", description: "Perubahan data pengguna berhasil. Perubahan password tidak dapat dilakukan dari panel admin."});
-        } else {
-            toast({ title: "Pengguna berhasil diperbarui" });
-        }
+        toast({ title: "Pengguna berhasil diperbarui" });
+        
+        // Refresh local data
+        setUsers(prev => prev.map(u => u.uid === editingUser.uid ? { ...u, ...updateData } : u));
 
         setIsSheetOpen(false);
         setEditingUser(null);
-
 
       } catch (error: any) {
           toast({ title: "Operasi Gagal", description: error.message, variant: 'destructive' });

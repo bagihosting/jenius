@@ -17,8 +17,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { auth, db, isFirebaseConfigured } from '@/lib/firebase';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { ref, set, get, child } from 'firebase/database';
+import { createUserWithEmailAndPassword, updateProfile, deleteUser } from 'firebase/auth';
+import { ref, set, get, child, update } from 'firebase/database';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import type { SchoolType } from '@/lib/types';
 
@@ -69,9 +69,11 @@ export default function RegisterPage() {
     
     const { name, username, email, password, schoolType, schoolName } = data;
     const usernameKey = username.toLowerCase();
+    
+    let createdUser = null;
 
     try {
-      // Langkah 1: Periksa ketersediaan username di Realtime Database
+      // Step 1: Check username availability
       const usernameRef = child(ref(db), `usernames/${usernameKey}`);
       const usernameSnapshot = await get(usernameRef);
       if (usernameSnapshot.exists()) {
@@ -80,22 +82,21 @@ export default function RegisterPage() {
         return;
       }
       
-      // Langkah 2: Buat pengguna di Firebase Authentication
+      // Step 2: Create user in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      createdUser = userCredential.user;
 
-      // Langkah 3: Perbarui profil di Firebase Auth
-      await updateProfile(user, { displayName: name });
+      // Step 3: Update profile in Firebase Auth (Display Name)
+      await updateProfile(createdUser, { displayName: name });
       
-      // Langkah 4: Siapkan dan simpan data ke Realtime Database
+      // Step 4: Prepare data and save to Realtime Database atomically
       const isAdmin = email.toLowerCase() === 'admin@ayahjenius.com';
       const userRole = isAdmin ? 'admin' : 'user';
 
       const userData = {
-        uid: user.uid,
         name,
         username,
-        email: user.email,
+        email: createdUser.email,
         role: userRole,
         schoolType,
         schoolName,
@@ -105,20 +106,32 @@ export default function RegisterPage() {
         progress: {},
       };
 
-      // Simpan data pengguna dan username secara bersamaan
-      await set(ref(db, `users/${user.uid}`), userData);
-      await set(ref(db, `usernames/${usernameKey}`), { uid: user.uid });
+      // Atomic update for users and usernames paths
+      const updates: { [key: string]: any } = {};
+      updates[`/users/${createdUser.uid}`] = userData;
+      updates[`/usernames/${usernameKey}`] = { uid: createdUser.uid };
+
+      await update(ref(db), updates);
 
       toast({
           title: "Pendaftaran Berhasil!",
-          description: isAdmin ? "Akun Admin Anda telah dibuat. Silakan masuk." : "Akun Anda telah dibuat. Silakan masuk.",
+          description: isAdmin ? "Akun Admin Anda telah dibuat. Mengarahkan ke login..." : "Akun Anda telah dibuat. Mengarahkan ke login...",
       });
 
       router.push('/login');
 
     } catch (error: any) {
         console.error("Registration error:", error);
-        let errorMessage = "Terjadi kesalahan saat pendaftaran.";
+        let errorMessage = "Terjadi kesalahan saat pendaftaran. Silakan coba lagi.";
+
+        // If user was created in Auth but DB write failed, attempt to delete the user for consistency.
+        if (createdUser) {
+            await deleteUser(createdUser).catch(delErr => {
+                console.error("Failed to cleanup created user:", delErr);
+                errorMessage += " Terjadi error saat pembersihan, hubungi support.";
+            });
+        }
+        
         if (error.code === 'auth/email-already-in-use') {
             errorMessage = "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk.";
             form.setError("email", { type: "manual", message: errorMessage });
@@ -126,8 +139,9 @@ export default function RegisterPage() {
             errorMessage = 'Password terlalu lemah. Gunakan minimal 6 karakter.';
             form.setError("password", { type: "manual", message: errorMessage });
         } else if (error.code === 'PERMISSION_DENIED') {
-            errorMessage = 'Akses ditolak. Pastikan aturan keamanan Firebase Anda sudah benar.'
+            errorMessage = 'Akses ditolak. Pastikan aturan keamanan Firebase Anda sudah benar dan coba lagi.'
         }
+
         toast({
             title: "Pendaftaran Gagal",
             description: errorMessage,

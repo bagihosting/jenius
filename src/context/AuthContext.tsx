@@ -89,30 +89,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateUser = useCallback(async (userData: Partial<User>) => {
-    if (!user || !db) throw new Error("User not authenticated or DB not configured");
-    
-    const updateData: Partial<User> = { ...userData };
-    
-    // Prevent critical fields from being overwritten from client-side updates
-    delete updateData.uid;
-    delete updateData.email;
-    delete updateData.registeredAt;
-    delete updateData.role; 
-
-    const userRef = ref(db, `users/${user.uid}`);
-    await update(userRef, updateData);
-    
-    // Also update Firebase Auth profile if name or photoUrl is changed
-    if (auth?.currentUser && (userData.name || userData.photoUrl)) {
-        await updateProfile(auth.currentUser, {
-            displayName: userData.name,
-            photoURL: userData.photoUrl,
-        });
+    if (!user || !db || !auth?.currentUser) {
+      throw new Error("User not authenticated or DB not configured");
     }
-
-    // Manually update local state to reflect changes immediately
-    setUser(prevUser => prevUser ? { ...prevUser, ...updateData } : null);
-
+  
+    const { uid } = user;
+    const currentUser = auth.currentUser;
+  
+    // Data for Realtime Database update
+    const dbUpdateData: Partial<User> = { ...userData };
+    delete dbUpdateData.uid;
+    delete dbUpdateData.email;
+    delete dbUpdateData.registeredAt;
+    delete dbUpdateData.role;
+  
+    // Data for Firebase Auth profile update
+    const authUpdateData: { displayName?: string; photoURL?: string } = {};
+    if (userData.name) authUpdateData.displayName = userData.name;
+    if (userData.photoUrl) authUpdateData.photoURL = userData.photoUrl;
+  
+    try {
+      // Update DB and Auth Profile concurrently
+      const dbRef = ref(db, `users/${uid}`);
+      await Promise.all([
+        update(dbRef, dbUpdateData),
+        Object.keys(authUpdateData).length > 0 ? updateProfile(currentUser, authUpdateData) : Promise.resolve(),
+      ]);
+  
+      // On success, update the local state with the new data
+      setUser(prevUser => prevUser ? { ...prevUser, ...dbUpdateData, ...authUpdateData } : null);
+  
+    } catch (error) {
+      console.error("Failed to update user:", error);
+      // Re-throw the error so the calling component can handle it (e.g., show a toast)
+      throw error;
+    }
   }, [user]);
 
 
