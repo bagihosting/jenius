@@ -2,7 +2,7 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Suspense, useEffect, useState, useMemo } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { Header } from '@/components/Header';
 import { SubjectCard } from '@/components/SubjectCard';
 import { getSubjects } from '@/lib/subjects';
@@ -14,9 +14,13 @@ import type { Grade, Semester } from '@/lib/types';
 import { useAuth } from '@/context/AuthContext';
 import { LeaderboardCard } from '@/components/LeaderboardCard';
 
-function DashboardContent() {
+interface DashboardContentProps {
+  grade?: Grade;
+  semester?: Semester;
+}
+
+function DashboardContent({ grade, semester }: DashboardContentProps) {
     const router = useRouter();
-    const searchParams = useSearchParams();
     const { user, loading } = useAuth();
     const [isBonusFeatureActive, setIsBonusFeatureActive] = useState(false);
     
@@ -25,9 +29,6 @@ function DashboardContent() {
             router.push('/login');
         }
     }, [loading, user, router]);
-
-    const grade = (searchParams.get('grade') as Grade) || undefined;
-    const semester = (searchParams.get('semester') as Semester) || undefined;
     
     useEffect(() => {
         if (typeof window !== 'undefined' && grade) {
@@ -35,7 +36,6 @@ function DashboardContent() {
             setIsBonusFeatureActive(gradeNum <= 6);
         }
     }, [grade]);
-
 
     if (loading || !user) {
         return (
@@ -45,7 +45,6 @@ function DashboardContent() {
         )
     }
 
-    // Guard clause to ensure all necessary data is available
     if (!grade || !semester || !user.schoolType) {
         return (
             <main className="flex-grow flex items-center justify-center p-4">
@@ -161,12 +160,20 @@ function DashboardContent() {
     );
 }
 
+function DashboardPageWrapper() {
+  const searchParams = useSearchParams();
+  const grade = searchParams.get('grade') as Grade | undefined;
+  const semester = searchParams.get('semester') as Semester | undefined;
+
+  return <DashboardContent grade={grade} semester={semester} />;
+}
+
 export default function DashboardPage() {
     return (
         <div className="flex flex-col min-h-screen">
             <Header />
             <Suspense fallback={<main className="flex-grow flex items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary"/></main>}>
-                <DashboardContent />
+                <DashboardPageWrapper />
             </Suspense>
              <footer className="text-center p-4 text-muted-foreground text-sm">
                 © {new Date().getFullYear()} Ayah Jenius. All rights reserved.
