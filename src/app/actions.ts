@@ -14,8 +14,63 @@ const normalize = (str: string): string => {
     return str.replace(/^[A-D]\.\s*/, '').trim().toLowerCase();
 };
 
-// Helper function to find the correct answer in options
-function findAndNormalizeCorrectAnswer(question: Question | MultipleChoiceQuestion): string {
+export async function generateQuizAction(
+  input: GenerateQuizInput
+): Promise<{ data?: GenerateQuizOutput; error?: string }> {
+  try {
+    const quizData = await generateQuizFlow(input);
+
+    if (!quizData || !quizData.quiz || !Array.isArray(quizData.quiz) || quizData.quiz.length === 0) {
+      throw new Error('Menerima format kuis yang tidak valid atau kosong dari Ayah Jenius.');
+    }
+    
+    //--- VALIDASI DAN KOREKSI HASIL AI ---//
+    const validatedQuiz = quizData.quiz.map(q => {
+        if (!q.options || !Array.isArray(q.options) || q.options.length < 4) {
+            console.error('Soal tidak valid: Pilihan jawaban kurang dari 4.', q);
+            return null; // Tandai soal sebagai tidak valid
+        }
+        if (!q.correctAnswer) {
+            console.error('Soal tidak valid: Tidak ada jawaban benar.', q);
+            return null;
+        }
+
+        const normalizedCorrectAnswerFromAI = normalize(q.correctAnswer);
+        
+        // Cari opsi yang cocok setelah dinormalisasi
+        const matchingOption = q.options.find(opt => normalize(opt) === normalizedCorrectAnswerFromAI);
+
+        if (matchingOption) {
+            // Koreksi `correctAnswer` agar sama persis dengan opsi yang ada
+            q.correctAnswer = matchingOption;
+            return q;
+        } else {
+            // Jika tidak ada opsi yang cocok sama sekali, soal ini cacat.
+            console.error('Soal tidak valid: Jawaban benar tidak ditemukan di dalam pilihan.', q);
+            return null;
+        }
+    }).filter((q): q is Question => q !== null); // Hapus semua soal yang tidak valid
+
+    // Jika setelah validasi, tidak ada soal yang tersisa atau jumlahnya berkurang, tolak seluruh kuis.
+    if (validatedQuiz.length !== quizData.quiz.length) {
+        throw new Error('Ayah Jenius membuat beberapa soal yang tidak akurat. Silakan coba buat kuis lagi untuk mendapatkan hasil yang lebih baik.');
+    }
+    
+    quizData.quiz = validatedQuiz;
+    //--- AKHIR VALIDASI ---//
+
+    return { data: quizData };
+  } catch (e) {
+    console.error("generateQuizAction failed:", e);
+    const errorMessage = e instanceof Error ? e.message : 'Terjadi kesalahan tidak dikenal.';
+    return {
+      error: `Maaf, Ayah Jenius gagal membuat kuis saat ini. Coba lagi nanti. (Detail: ${errorMessage})`,
+    };
+  }
+}
+
+// Helper function to find the correct answer in options for EXAMS
+function findAndNormalizeCorrectAnswer(question: MultipleChoiceQuestion): string {
     if (!question || !question.correctAnswer || !Array.isArray(question.options)) {
         console.warn("Invalid question object passed to findAndNormalizeCorrectAnswer");
         return '';
@@ -29,42 +84,10 @@ function findAndNormalizeCorrectAnswer(question: Question | MultipleChoiceQuesti
         }
     }
     
-    // Fallback if no exact match after normalization, return original but warn
-    console.warn("Could not find a matching option for correctAnswer:", question.correctAnswer, "Options:", question.options);
+    console.warn("Could not find a matching option for correctAnswer in Exam:", question.correctAnswer, "Options:", question.options);
     return question.correctAnswer;
 }
 
-
-export async function generateQuizAction(
-  input: GenerateQuizInput
-): Promise<{ data?: GenerateQuizOutput; error?: string }> {
-  try {
-    const quizData = await generateQuizFlow(input);
-
-    if (!quizData || !quizData.quiz || !Array.isArray(quizData.quiz) || quizData.quiz.length === 0) {
-      throw new Error('Menerima format kuis yang tidak valid atau kosong dari Ayah Jenius.');
-    }
-    
-    // Clean and validate AI output before sending to client
-    quizData.quiz.forEach(q => {
-        if (!q.options || !Array.isArray(q.options) || q.options.length < 4) {
-            throw new Error('Beberapa soal kuis tidak memiliki 4 pilihan jawaban.');
-        }
-        if (!q.correctAnswer || !q.options.some(opt => normalize(opt) === normalize(q.correctAnswer))) {
-            q.correctAnswer = findAndNormalizeCorrectAnswer(q);
-        }
-    });
-
-
-    return { data: quizData };
-  } catch (e) {
-    console.error("generateQuizAction failed:", e);
-    const errorMessage = e instanceof Error ? e.message : 'Terjadi kesalahan tidak dikenal.';
-    return {
-      error: `Maaf, Ayah Jenius gagal membuat kuis saat ini. Coba lagi nanti. (Detail: ${errorMessage})`,
-    };
-  }
-}
 
 export async function homeworkHelperAction(
   input: HomeworkHelpInput

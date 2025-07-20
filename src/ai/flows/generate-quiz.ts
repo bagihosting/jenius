@@ -48,9 +48,9 @@ PENTING: Sesuaikan kompleksitas soal dan bahasa dengan tingkatan kelas. Ini adal
 - **Fase E/F (Kelas 10-12):** Buat pertanyaan yang menguji analisis mendalam, pemikiran kritis, dan penerapan konsep kompleks.
 
 Setiap pertanyaan harus memiliki:
-1.  Teks pertanyaan.
-2.  Empat (4) pilihan jawaban, masing-masing diawali dengan huruf (A., B., C., D.). Pastikan setiap pilihan jawaban UNIK dan berbeda satu sama lain.
-3.  Satu jawaban yang benar. PENTING: Nilai di kolom 'correctAnswer' HARUS SAMA PERSIS dengan teks salah satu pilihan di kolom 'options'. Tidak boleh ada lebih dari satu jawaban yang benar.
+1.  Teks pertanyaan yang jelas.
+2.  Empat (4) pilihan jawaban, masing-masing diawali dengan huruf (Contoh: "A. Teks jawaban", "B. Teks jawaban", dst.). Pastikan setiap pilihan jawaban UNIK dan berbeda satu sama lain.
+3.  Satu jawaban yang benar. ATURAN PALING KRUSIAL: Nilai di kolom 'correctAnswer' HARUS SAMA PERSIS SECARA TEKSTUAL dengan salah satu dari empat string di kolom 'options'. Contoh: Jika options berisi "A. Jakarta", maka correctAnswer harus "A. Jakarta", bukan "Jakarta".
 
 Semua konten harus dalam Bahasa Indonesia.
 
