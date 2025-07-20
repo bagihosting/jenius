@@ -62,7 +62,7 @@ export default function LoginPage() {
       
       toast({
           title: "Login Berhasil",
-          description: `Selamat datang kembali! Mengarahkan...`,
+          description: `Selamat datang kembali! Mengarahkan ke dasbor...`,
       });
       
       router.push(redirectPath);

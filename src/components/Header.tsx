@@ -61,9 +61,9 @@ export function Header() {
                             </Avatar>
                             </Button>
                         </ProfileDialog>
-                        <Button onClick={logout} variant="outline">
+                        <Button onClick={logout} variant="outline" size="icon" className="shrink-0">
                             <LogOut />
-                            Keluar
+                            <span className="sr-only">Keluar</span>
                         </Button>
                    </>
                 ) : (
