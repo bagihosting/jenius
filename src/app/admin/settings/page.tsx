@@ -11,7 +11,7 @@ import { Loader2, Settings, Save, Banknote } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
-import { ref, get } from 'firebase/database';
+import { ref, onValue } from 'firebase/database';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -50,21 +50,27 @@ export default function SettingsPage() {
     }, []);
 
     useEffect(() => {
-        if (isClient && !authLoading && user?.role === 'admin' && db) {
-            setIsLoadingData(true);
-            const settingsRef = ref(db, 'appSettings/upgradeInfo');
-            get(settingsRef).then((snapshot) => {
-                if (snapshot.exists()) {
-                    form.reset(snapshot.val());
-                }
-            }).catch(error => {
-                toast({ title: 'Gagal Memuat Pengaturan', description: error.message, variant: 'destructive' });
-            }).finally(() => {
-                setIsLoadingData(false);
-            });
-        } else if (!authLoading) {
-            setIsLoadingData(false);
+        if (!isClient || authLoading || user?.role !== 'admin' || !db) {
+            if (!authLoading) setIsLoadingData(false);
+            return;
         }
+
+        setIsLoadingData(true);
+        const settingsRef = ref(db, 'appSettings/upgradeInfo');
+        
+        const unsubscribe = onValue(settingsRef, (snapshot) => {
+            if (snapshot.exists()) {
+                form.reset(snapshot.val());
+            }
+            setIsLoadingData(false);
+        }, (error) => {
+            console.error("Firebase settings read failed:", error);
+            toast({ title: 'Gagal Memuat Pengaturan', description: error.message, variant: 'destructive' });
+            setIsLoadingData(false);
+        });
+        
+        return () => unsubscribe();
+        
     }, [isClient, authLoading, user, form, toast]);
     
     const onSubmit = async (data: UpgradeInfoFormValues) => {
