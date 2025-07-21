@@ -74,13 +74,13 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
     '1': {
         // SD Topics
         'Pendidikan Pancasila': ['Mengenal anggota keluarga', 'Tata tertib di rumah dan sekolah', 'Perilaku baik (saling menolong, berbagi)', 'Menjaga kebersihan lingkungan sekolah', 'Menghargai perbedaan teman', 'Antre', 'Menyayangi makhluk hidup (tumbuhan dan hewan)', 'Tanggung jawab merawat', 'Sportivitas dalam bermain', 'kerja sama dalam kelompok', 'menghargai perbedaan minat'],
-        'Bahasa Indonesia': ['Memperkenalkan diri', 'Menyebutkan nama anggota keluarga dan teman', 'Mengenal huruf vokal dan konsonan dasar', 'Membaca dan menulis kata sederhana (nama diri, benda)', 'Menyebutkan benda-benda di sekolah', 'Membaca dan menulis suku kata', 'Kalimat sederhana tentang kegiatan di sekolah', 'Menyebutkan nama-nama tumbuhan dan hewan', 'Membaca dan menulis kalimat sederhana tentang ciri-ciri tumbuhan/hewan'],
-        'Matematika': ['Mengenal bilangan 1-10', 'Membilang dan mengurutkan benda', 'Konsep lebih banyak/lebih sedikit', 'Penjumlahan dan pengurangan bilangan 1-10 (dengan benda konkret)', 'mengenal bangun datar sederhana (lingkaran, persegi, segitiga)', 'Mengenal pola bilangan', 'Mengukur panjang benda sederhana (tidak baku)'],
+        'Bahasa Indonesia': ['Memperkenalkan diri', 'Menyebutkan nama anggota keluarga dan teman', 'Mengenal huruf vokal dan konsonan dasar', 'Membaca dan menulis kata sederhana (nama diri, benda)', 'Menyebutkan benda-benda di sekolah', 'Membaca dan menulis suku kata', 'Kalimat sederhana tentang kegiatan di sekolah', 'Menyebutkan nama-nama tumbuhan dan hewan', 'Membaca dan menulis kalimat sederhana tentang ciri-ciri tumbuhan/hewan', 'Menceritakan pengalaman bermain', 'membaca cerita pendek tentang permainan', 'menulis kalimat ajakan'],
+        'Matematika': ['Mengenal bilangan 1-10', 'Membilang dan mengurutkan benda', 'Konsep lebih banyak/lebih sedikit', 'Penjumlahan dan pengurangan bilangan 1-10 (dengan benda konkret)', 'mengenal bangun datar sederhana (lingkaran, persegi, segitiga)', 'Mengenal pola bilangan', 'Mengukur panjang benda sederhana (tidak baku)', 'Mengenal nilai tempat (puluhan, satuan) untuk bilangan 11-20', 'membandingkan berat benda'],
         'IPAS': ['Rangka dan Panca Indra Manusia', 'Ciri-ciri Makhluk Hidup', 'Wujud Benda dan Perubahannya', 'Kenampakan Alam dan Buatan'],
-        'Pendidikan Agama & Budi Pekerti': ['Mengenal ciptaan Tuhan', 'Bersyukur atas diri dan keluarga', 'Doa sebelum dan sesudah kegiatan sederhana', 'Adab dan sopan santun di sekolah (hormat kepada guru, sayang pada teman)', 'kebersihan diri dan lingkungan', 'Kisah Nabi Adam A.S. dan Nabi Idris A.S.', 'Mengenal Asmaul Husna', 'Tata Cara Wudhu dan Tayamum', 'Mengenal kebesaran Tuhan melalui ciptaan-Nya (tumbuhan dan hewan)', 'Doa untuk kesehatan'],
+        'Pendidikan Agama & Budi Pekerti': ['Mengenal ciptaan Tuhan', 'Bersyukur atas diri dan keluarga', 'Doa sebelum dan sesudah kegiatan sederhana', 'Adab dan sopan santun di sekolah (hormat kepada guru, sayang pada teman)', 'kebersihan diri dan lingkungan', 'Kisah Nabi Adam A.S. dan Nabi Idris A.S.', 'Mengenal Asmaul Husna', 'Tata Cara Wudhu dan Tayamum', 'Mengenal kebesaran Tuhan melalui ciptaan-Nya (tumbuhan dan hewan)', 'Doa untuk kesehatan', 'Berbagi mainan', 'bersikap jujur'],
         'Bahasa Inggris': ['Greetings and Introductions', 'Things in the Classroom', 'Family Members', 'Colors and Numbers'],
-        'PJOK': ['Gerak dasar lokomotor (berjalan, berlari)', 'Gerak dasar non-lokomotor (membungkuk, mengayun)', 'Gerak dasar lempar dan tangkap bola', 'permainan sederhana', 'Gerak menirukan hewan (melompat seperti katak, berjalan seperti bebek)'],
-        'Seni Budaya dan Prakarya (SBDP)': ['Menggambar anggota keluarga', 'Mewarnai gambar', 'Bernyanyi lagu anak-anak tentang diri dan keluarga', 'Membuat prakarya dari bahan bekas (misal: bentuk bangunan sekolah)', 'meniru gerak tari sederhana', 'Menggambar dan mewarnai tumbuhan/hewan', 'Membuat kolase'],
+        'PJOK': ['Gerak dasar lokomotor (berjalan, berlari)', 'Gerak dasar non-lokomotor (membungkuk, mengayun)', 'Gerak dasar lempar dan tangkap bola', 'permainan sederhana', 'Gerak menirukan hewan (melompat seperti katak, berjalan seperti bebek)', 'Permainan tradisional', 'senam irama sederhana'],
+        'Seni Budaya dan Prakarya (SBDP)': ['Menggambar anggota keluarga', 'Mewarnai gambar', 'Bernyanyi lagu anak-anak tentang diri dan keluarga', 'Membuat prakarya dari bahan bekas (misal: bentuk bangunan sekolah)', 'meniru gerak tari sederhana', 'Menggambar dan mewarnai tumbuhan/hewan', 'Membuat kolase', 'Membuat alat musik sederhana', 'bermain peran'],
         'Bahasa Daerah': ['Menyimak cerita rakyat lokal', 'Kosakata tentang keluarga dan rumah', 'Unggah-ungguh basa (Sopan santun berbahasa)'],
         
         // SMP & MTs Topics (Fase D)
@@ -201,5 +201,6 @@ export const getSubjectById = (school: SchoolType, grade: Grade, semester: Semes
   const subjects = getSubjects(school, grade, semester);
   return subjects.find((subject) => subject.id === id);
 };
+
 
 
