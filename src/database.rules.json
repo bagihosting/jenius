@@ -14,12 +14,12 @@
           ".write": "root.child('users').child(auth.uid).child('role').val() === 'admin'"
         },
         "bonusPoints": {
-          ".read": "auth.uid != null",
-          ".write": "auth.uid === $uid && newData.isNumber() && (!data.exists() || newData.val() > data.val())"
+           ".read": "auth.uid === $uid",
+           ".write": "auth.uid === $uid && newData.isNumber()"
         },
         "lastClaimedAt": {
-           ".read": "auth.uid != null",
-           ".write": "auth.uid === $uid && newData.val() === now"
+           ".read": "auth.uid === $uid",
+           ".write": "auth.uid === $uid && newData.isNumber() && newData.val() > data.val() && newData.val() <= now + 1000"
         }
       }
     },
@@ -45,6 +45,11 @@
     "appSettings": {
       ".read": "root.child('users').child(auth.uid).child('role').val() === 'admin'",
       ".write": "root.child('users').child(auth.uid).child('role').val() === 'admin'"
+    },
+    "leaderboard": {
+      ".read": "auth.uid != null",
+      ".write": false,
+      ".indexOn": "bonusPoints"
     }
   }
 }
