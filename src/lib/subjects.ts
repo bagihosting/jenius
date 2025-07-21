@@ -73,7 +73,21 @@ const schoolTypeMap: Record<SchoolType, string> = {
 const semesterTopics: Record<Semester, Record<string, string[]>> = {
     '1': {
         // SD Topics
-        'Pendidikan Pancasila': ['Mengenal anggota keluarga', 'Tata tertib di rumah dan sekolah', 'Perilaku baik (saling menolong, berbagi)', 'Menjaga kebersihan lingkungan sekolah', 'Menghargai perbedaan teman', 'Antre', 'Menyayangi makhluk hidup (tumbuhan dan hewan)', 'Tanggung jawab merawat', 'Sportivitas dalam bermain', 'kerja sama dalam kelompok', 'menghargai perbedaan minat'],
+        'Pendidikan Pancasila': [
+            'Unit 1: Aku dan Keluargaku - Hak dan kewajiban di rumah',
+            'Unit 1: Aku dan Keluargaku - Aturan di rumah',
+            'Unit 1: Aku dan Keluargaku - Kerja sama dalam keluarga',
+            'Unit 1: Aku dan Keluargaku - Menghargai perbedaan anggota keluarga',
+            'Tata tertib di sekolah', 
+            'Perilaku baik (saling menolong, berbagi)', 
+            'Menjaga kebersihan lingkungan sekolah', 
+            'Menghargai perbedaan teman', 
+            'Antre', 
+            'Menyayangi makhluk hidup (tumbuhan dan hewan)', 
+            'Tanggung jawab merawat', 
+            'Sportivitas dalam bermain', 
+            'Kerja sama dalam kelompok',
+        ],
         'Bahasa Indonesia': ['Memperkenalkan diri', 'Menyebutkan nama anggota keluarga dan teman', 'Mengenal huruf vokal dan konsonan dasar', 'Membaca dan menulis kata sederhana (nama diri, benda)', 'Menyebutkan benda-benda di sekolah', 'Membaca dan menulis suku kata', 'Kalimat sederhana tentang kegiatan di sekolah', 'Menyebutkan nama-nama tumbuhan dan hewan', 'Membaca dan menulis kalimat sederhana tentang ciri-ciri tumbuhan/hewan', 'Menceritakan pengalaman bermain', 'membaca cerita pendek tentang permainan', 'menulis kalimat ajakan'],
         'Matematika': ['Mengenal bilangan 1-10', 'Membilang dan mengurutkan benda', 'Konsep lebih banyak/lebih sedikit', 'Penjumlahan dan pengurangan bilangan 1-10 (dengan benda konkret)', 'mengenal bangun datar sederhana (lingkaran, persegi, segitiga)', 'Mengenal pola bilangan', 'Mengukur panjang benda sederhana (tidak baku)', 'Mengenal nilai tempat (puluhan, satuan) untuk bilangan 11-20', 'membandingkan berat benda'],
         'IPAS': ['Rangka dan Panca Indra Manusia', 'Ciri-ciri Makhluk Hidup', 'Wujud Benda dan Perubahannya', 'Kenampakan Alam dan Buatan'],
