@@ -12,6 +12,14 @@
         ".write": "auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin'",
         "role": {
           ".write": "root.child('users').child(auth.uid).child('role').val() === 'admin'"
+        },
+        "bonusPoints": {
+          ".read": "auth.uid != null",
+          ".write": "auth.uid === $uid && newData.isNumber() && (!data.exists() || newData.val() > data.val())"
+        },
+        "lastClaimedAt": {
+           ".read": "auth.uid != null",
+           ".write": "auth.uid === $uid && newData.val() === now"
         }
       }
     },
