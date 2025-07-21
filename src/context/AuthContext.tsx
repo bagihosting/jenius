@@ -96,13 +96,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { uid } = user;
     const currentUser = auth.currentUser;
   
-    // Data for Realtime Database update
-    const dbUpdateData: Partial<User> = { ...userData };
-    delete dbUpdateData.uid;
-    delete dbUpdateData.email;
-    delete dbUpdateData.registeredAt;
-    delete dbUpdateData.role;
-  
     // Data for Firebase Auth profile update
     const authUpdateData: { displayName?: string; photoURL?: string } = {};
     if (userData.name) authUpdateData.displayName = userData.name;
@@ -110,8 +103,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
     try {
         const updates: { [key: string]: any } = {};
-        const userRef = `users/${uid}`;
-        updates[userRef] = { ...user, ...dbUpdateData }; // Update user profile
+        
+        // Build the update object for the user profile, ensuring no undefined values.
+        // This is the core fix for the 'undefined property' error.
+        const userProfilePath = `users/${uid}`;
+        const userProfileUpdate: any = { ...userData };
+
+        // We must merge with existing data, but filter out undefined values before sending.
+        const mergedUser = { ...user, ...userData };
+        Object.keys(mergedUser).forEach(key => {
+            const typedKey = key as keyof User;
+            if (mergedUser[typedKey] === undefined) {
+                delete mergedUser[typedKey];
+            }
+        });
+        
+        updates[userProfilePath] = mergedUser;
+
 
         // Handle Roblox username uniqueness
         if (userData.robloxUsername !== undefined) {
@@ -145,7 +153,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(prevUser => {
             if (!prevUser) return null;
             // Create a new merged user object to trigger re-render
-            const updatedUser = { ...prevUser, ...dbUpdateData };
+            const updatedUser = { ...prevUser, ...userData };
             if (authUpdateData.displayName) updatedUser.name = authUpdateData.displayName;
             if (authUpdateData.photoURL) updatedUser.photoUrl = authUpdateData.photoURL;
             return updatedUser;
