@@ -24,9 +24,6 @@
     "robloxUsernames": {
       ".read": "auth.uid != null",
       "$username": {
-        // A user can write to this path if:
-        // 1. The username doesn't exist yet (claiming a new one).
-        // 2. The username already exists, but it belongs to the current user (re-saving their own name).
         ".write": "auth.uid != null && (!data.exists() || data.val() === auth.uid)"
       }
     },
