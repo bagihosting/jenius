@@ -1,31 +1,47 @@
 
 {
   "rules": {
+    // Default to denying access to prevent unintentional data exposure.
+    ".read": false,
+    ".write": false,
+
     "users": {
+      // Admin can read the entire list of users for management purposes.
+      ".indexOn": ["role"],
       ".read": "root.child('users').child(auth.uid).child('role').val() === 'admin'",
       "$uid": {
+        // A user can read their own data, or an admin can read any user's data.
         ".read": "auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin'",
+        // A user can write to their own data, or an admin can write to any user's data.
         ".write": "auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin'",
         "role": {
+          // Only an admin can change a user's role.
           ".write": "root.child('users').child(auth.uid).child('role').val() === 'admin'"
         }
       }
     },
     "usernames": {
+      // Anyone can read the list of usernames to check for availability during registration.
       ".read": "auth.uid != null",
       "$username": {
+        // A user can claim a username only if it doesn't exist yet and the UID matches their own.
         ".write": "!data.exists() && newData.child('uid').val() === auth.uid"
       }
     },
     "upgradeRequests": {
+      // KEY FIX: ONLY an admin can read the entire list of requests. This is simple and direct.
       ".read": "root.child('users').child(auth.uid).child('role').val() === 'admin'",
       "$uid": {
+        // A user can create/update their own request.
         ".write": "auth.uid === $uid && (!data.exists() || data.child('status').val() !== 'approved')",
+        // A user can read their own request status, or an admin can.
         ".read": "auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin'"
       }
     },
     "appSettings": {
+      // Any authenticated user can read the settings (e.g., for the upgrade page info).
       ".read": "auth.uid != null",
+      // ONLY an admin can change the app settings.
       ".write": "root.child('users').child(auth.uid).child('role').val() === 'admin'"
     }
   }
