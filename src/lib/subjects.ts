@@ -108,7 +108,9 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
             'Pengukuran panjang dengan satuan baku (cm, meter)',
             'mengenal bangun datar dan bangun ruang sederhana (kubus, balok, bola)',
             'Menyelesaikan masalah sehari-hari yang berkaitan dengan penjumlahan dan pengurangan (maksimal tiga angka)',
-            'mengenal waktu (jam dan menit)'
+            'mengenal waktu (jam dan menit)',
+            'Mengenal pola bilangan',
+            'menyelesaikan soal cerita sederhana yang melibatkan uang (rupiah)'
         ],
         'IPAS': ['Rangka dan Panca Indra Manusia', 'Ciri-ciri Makhluk Hidup', 'Wujud Benda dan Perubahannya', 'Kenampakan Alam dan Buatan'],
         'Pendidikan Agama & Budi Pekerti': [
@@ -119,7 +121,9 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
             'menghargai teman yang berbeda agama/suku',
             'doa belajar',
             'Mensyukuri nikmat Allah atas ciptaan-Nya (tumbuhan dan hewan)',
-            'menjaga kebersihan dan kelestarian alam'
+            'menjaga kebersihan dan kelestarian alam',
+            'Pentingnya wudu dan salat sebagai bentuk kebersihan spiritual',
+            'menjaga kebersihan adalah sebagian dari iman'
         ],
         'Bahasa Inggris': ['Greetings and Introductions', 'Things in the Classroom', 'Family Members', 'Colors and Numbers'],
         'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)': [
@@ -127,7 +131,9 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
             'Permainan tradisional yang melibatkan kerjasama',
             'senam irama dengan iringan musik',
             'Gerak menirukan gerakan hewan',
-            'menjaga kebugaran tubuh dengan gerakan sederhana'
+            'menjaga kebugaran tubuh dengan gerakan sederhana',
+            'Gerakan senam lantai dasar (misal: guling depan sederhana)',
+            'pentingnya makanan sehat dan istirahat cukup'
         ],
         'Seni Budaya dan Prakarya (SBDP)': [
             'Menggambar kegiatan keluarga',
@@ -137,7 +143,9 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
             'menggambar lingkungan sekolah',
             'membuat hiasan kelas',
             'Membuat diorama kebun binatang/pertanian',
-            'menggambar dan mewarnai jenis-jenis tumbuhan/hewan'
+            'menggambar dan mewarnai jenis-jenis tumbuhan/hewan',
+            'Membuat poster kesehatan',
+            'membuat karya seni dari bahan daur ulang'
         ],
         'Bahasa Daerah': ['Menyimak cerita rakyat lokal', 'Kosakata tentang keluarga dan rumah', 'Unggah-ungguh basa (Sopan santun berbahasa)'],
         
@@ -281,3 +289,6 @@ export const getSubjectById = (school: SchoolType, grade: Grade, semester: Semes
 
 
 
+
+
+    
