@@ -168,7 +168,7 @@ export interface UpgradeInfo {
   bankName: string;
   accountNumber: string;
   accountName: string;
-  instructions: string;
+  instructions?: string;
 }
 
 export interface AppSettings {
