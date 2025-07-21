@@ -29,9 +29,8 @@
       }
     },
     "appSettings": {
-      ".read": "auth.uid != null",
+      ".read": "root.child('users').child(auth.uid).child('role').val() === 'admin'",
       ".write": "root.child('users').child(auth.uid).child('role').val() === 'admin'"
     }
   }
 }
-
