@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, Save, Gift, Info } from 'lucide-react';
+import { ArrowLeft, Loader2, Save, Gift, Info, BadgeCheck, BadgeAlert } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -13,7 +13,10 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import type { Grade } from '@/lib/types';
+import type { Grade, RobloxUser } from '@/lib/types';
+import { checkRobloxUsernameAction } from '@/app/actions';
+
+type VerificationStatus = 'idle' | 'loading' | 'verified' | 'error';
 
 export default function BonusPage() {
   const router = useRouter();
@@ -31,6 +34,9 @@ export default function BonusPage() {
   const backlink = `/dashboard?grade=${grade}&semester=${semester}`;
 
   const [robloxUsername, setRobloxUsername] = useState('');
+  const [verifiedRobloxUser, setVerifiedRobloxUser] = useState<RobloxUser | null>(null);
+  const [verificationStatus, setVerificationStatus] = useState<VerificationStatus>('idle');
+  const [verificationError, setVerificationError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   
   useEffect(() => {
@@ -52,13 +58,45 @@ export default function BonusPage() {
    }, [isClient, user, backlink, router, toast]);
 
   useEffect(() => {
-    if (user) {
-        setRobloxUsername(user.robloxUsername || '');
+    if (user?.robloxUsername) {
+        setRobloxUsername(user.robloxUsername);
+        setVerificationStatus('verified'); // Assume stored username is verified
     }
   }, [user]);
 
+  const handleUsernameChange = (value: string) => {
+    setRobloxUsername(value);
+    setVerificationStatus('idle');
+    setVerifiedRobloxUser(null);
+    setVerificationError(null);
+  };
+
+  const handleVerifyUsername = async () => {
+    if (!robloxUsername) return;
+    setVerificationStatus('loading');
+    setVerificationError(null);
+
+    const result = await checkRobloxUsernameAction(robloxUsername);
+    if (result.exists && result.user) {
+        setVerificationStatus('verified');
+        setVerifiedRobloxUser(result.user);
+        toast({
+            title: 'Verifikasi Berhasil!',
+            description: `Username ${result.user.name} (${result.user.displayName}) ditemukan.`,
+        });
+    } else {
+        setVerificationStatus('error');
+        setVerificationError(result.error || 'Username tidak ditemukan.');
+        toast({
+            title: 'Verifikasi Gagal',
+            description: result.error,
+            variant: 'destructive',
+        });
+    }
+  };
+
   const handleSaveUsername = async () => {
-    if (!user) return;
+    if (!user || verificationStatus !== 'verified') return;
     setIsSaving(true);
     try {
         await updateUser({ robloxUsername: robloxUsername });
@@ -84,6 +122,8 @@ export default function BonusPage() {
       </div>
     );
   }
+
+  const isSaveDisabled = isSaving || verificationStatus !== 'verified' || robloxUsername === user?.robloxUsername;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -111,17 +151,31 @@ export default function BonusPage() {
                 
                 <div className="space-y-4">
                     <Label htmlFor="roblox-username">Username Roblox Anda</Label>
-                    <div className="flex gap-2">
-                        <Input 
-                            id="roblox-username" 
-                            placeholder="Masukkan username Roblox kamu"
-                            value={robloxUsername}
-                            onChange={(e) => setRobloxUsername(e.target.value)}
-                        />
-                        <Button onClick={handleSaveUsername} disabled={isSaving}>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                        <div className="relative w-full">
+                            <Input 
+                                id="roblox-username" 
+                                placeholder="Masukkan username Roblox kamu"
+                                value={robloxUsername}
+                                onChange={(e) => handleUsernameChange(e.target.value)}
+                                className="pr-10"
+                            />
+                            {verificationStatus === 'verified' && <BadgeCheck className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500" />}
+                            {verificationStatus === 'error' && <BadgeAlert className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500" />}
+                        </div>
+                        <Button onClick={handleVerifyUsername} disabled={verificationStatus === 'loading' || !robloxUsername} className="w-full sm:w-auto">
+                            {verificationStatus === 'loading' ? <Loader2 className="animate-spin" /> : 'Verifikasi'}
+                        </Button>
+                        <Button onClick={handleSaveUsername} disabled={isSaveDisabled} className="w-full sm:w-auto">
                             {isSaving ? <Loader2 className="animate-spin" /> : <Save />}
                         </Button>
                     </div>
+                    {verificationError && (
+                        <p className="text-sm text-destructive">{verificationError}</p>
+                    )}
+                    {verifiedRobloxUser && verificationStatus === 'verified' && (
+                        <p className="text-sm text-muted-foreground">Username Valid: {verifiedRobloxUser.name} (Display: {verifiedRobloxUser.displayName})</p>
+                    )}
                 </div>
             </CardContent>
             <CardFooter>
@@ -129,7 +183,7 @@ export default function BonusPage() {
                     <Info className="h-4 w-4" />
                     <AlertTitle>Bagaimana Cara Kerjanya?</AlertTitle>
                     <AlertDescription>
-                        <p>Kumpulkan poin dan tukarkan dengan Robux. Proses penukaran akan diinformasikan di sini jika poin sudah mencukupi. Pastikan username Roblox kamu sudah benar!</p>
+                        <p>Kumpulkan poin dan tukarkan dengan Robux. Proses penukaran akan diinformasikan di sini jika poin sudah mencukupi. Pastikan username Roblox kamu sudah benar dan terverifikasi!</p>
                     </AlertDescription>
                  </Alert>
             </CardFooter>

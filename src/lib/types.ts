@@ -114,6 +114,14 @@ export interface User {
   progress?: { [subjectId: string]: number };
 }
 
+//========= ROBLOX USER TYPE =========//
+export interface RobloxUser {
+  id: number;
+  name: string;
+  displayName: string;
+}
+
+
 //========= HOMEWORK HELPER TYPES =========//
 
 export const HomeworkHelpInputSchema = z.object({

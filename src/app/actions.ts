@@ -6,7 +6,7 @@ import { answerHomework as answerHomeworkFlow } from '@/ai/flows/homework-helper
 import { generateDailyExam as generateDailyExamFlow } from '@/ai/flows/generate-exam-flow';
 import { academicAssistant as academicAssistantFlow } from '@/ai/flows/academic-assistant-flow';
 
-import { type GenerateQuizOutput, type ExamData, type GenerateQuizInput, type HomeworkHelpInput, type HomeworkHelpOutput, type GenerateExamInput, type AcademicAssistantInput, type AcademicAssistantOutput, type Question, type MultipleChoiceQuestion, type UpgradeRequest, type User, UpgradeInfo } from '@/lib/types';
+import { type GenerateQuizOutput, type ExamData, type GenerateQuizInput, type HomeworkHelpInput, type HomeworkHelpOutput, type GenerateExamInput, type AcademicAssistantInput, type AcademicAssistantOutput, type Question, type MultipleChoiceQuestion, type UpgradeRequest, type User, UpgradeInfo, type RobloxUser } from '@/lib/types';
 import { db } from '@/lib/firebase';
 import { ref, set, serverTimestamp } from 'firebase/database';
 
@@ -199,4 +199,55 @@ export async function saveUpgradeSettingsAction(
     console.error('saveUpgradeSettingsAction failed:', e);
     return { error: `Gagal menyimpan pengaturan: ${errorMessage}` };
   }
+}
+
+
+export async function checkRobloxUsernameAction(
+  username: string
+): Promise<{ exists: boolean; user?: RobloxUser; error?: string }> {
+    if (!username) {
+        return { exists: false, error: "Username tidak boleh kosong." };
+    }
+    
+    const url = 'https://users.roblox.com/v1/usernames/users';
+    const data = {
+        usernames: [username],
+        excludeBannedUsers: true
+    };
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            // Roblox API might return 400 for various validation errors
+            // or 5xx for server issues.
+            const errorBody = await response.json().catch(() => ({}));
+            console.error(`HTTP error! status: ${response.status}`, errorBody);
+            const errorMessage = errorBody.errors?.[0]?.message || `Error dari Roblox: ${response.status}`;
+            return { exists: false, error: errorMessage };
+        }
+
+        const result = await response.json();
+
+        if (result.data && result.data.length > 0) {
+            const robloxUser: RobloxUser = {
+                id: result.data[0].id,
+                name: result.data[0].name,
+                displayName: result.data[0].displayName
+            };
+            return { exists: true, user: robloxUser };
+        } else {
+            return { exists: false, error: "Username Roblox tidak ditemukan." };
+        }
+    } catch (error) {
+        console.error("Terjadi kesalahan saat memeriksa username Roblox:", error);
+        return { exists: false, error: "Gagal terhubung ke server Roblox. Silakan coba lagi nanti." };
+    }
 }
