@@ -100,15 +100,16 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
         'Pendidikan Agama & Budi Pekerti': ['Unit 1: Doa untuk orang tua, pentingnya berbakti', 'Unit 2: Adab berteman, doa belajar', 'Unit 3: Mensyukuri nikmat Allah atas ciptaan-Nya', 'Unit 4: Pentingnya wudu dan salat, kebersihan sebagian dari iman'],
         'Seni Budaya dan Prakarya (SBDP)': ['Unit 1: Menggambar kegiatan keluarga, membuat kartu ucapan', 'Unit 2: Membuat mading sederhana, menggambar lingkungan sekolah', 'Unit 3: Membuat diorama kebun binatang/pertanian', 'Unit 4: Membuat poster kesehatan, karya dari bahan daur ulang'],
         'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)': ['Unit 1: Gerak dasar lokomotor dan non-lokomotor dalam permainan', 'Unit 2: Permainan tradisional yang melibatkan kerjasama, senam irama', 'Unit 3: Gerak menirukan gerakan hewan', 'Unit 4: Gerakan senam lantai dasar, pentingnya makanan sehat'],
-        'Tahsin/Tahfidz': ['Peningkatan kelancaran membaca (Iqra/Utsmani)', 'Hafalan surat-surat pendek (Al-Ikhlas, Al-Lahab, An-Nasr)', 'Doa untuk kedua orang tua'],
+        'Tahsin/Tahfidz': ['Peningkatan kemampuan membaca Al-Qur\'an (Iqra\'/Utsmani)', 'hafalan surat-surat pendek Juz Amma dan doa harian.', 'Doa untuk kedua orang tua'],
         'Bahasa Arab': ['Pengenalan kosakata benda-benda di sekolah', 'Pengenalan kosakata kegiatan sehari-hari', 'Percakapan sederhana (sapaan, menanyakan kabar)'],
-        'Fiqh': ['Pengenalan rukun iman secara sederhana', 'Tata cara bersuci (wudu)', 'Praktik bacaan dan gerakan shalat fardu yang benar'],
-        'Aqidah Akhlak': ['Pengenalan sifat wajib Allah (Wujud, Qidam, Baqa)', 'Kisah keteladanan Nabi Nuh A.S.', 'Akhlak terpuji (disiplin, mandiri, berani)'],
+        'Fiqh': ['Pengenalan rukun iman secara sederhana', 'tata cara bersuci (istinja, wudu)', 'dan praktik salat fardu.'],
+        'Aqidah Akhlak': ['Pengenalan sifat wajib Allah', 'kisah keteladanan para Nabi dan Sahabat', 'akhlak terpuji (disiplin, mandiri, berani).'],
         
         // --- KELAS 3 (FASE B) ---
         'Pendidikan Pancasila': ['Unit 1: Hak dan kewajiban terhadap lingkungan, gotong royong menjaga kebersihan lingkungan, pentingnya menjaga kelestarian alam.'],
-        'Bahasa Indonesia': ['Mengidentifikasi Informasi dari Teks Narasi', 'Menulis Paragraf Sederhana', 'Menggunakan Tanda Baca (Titik, Koma)'],
-        'Matematika': ['Bilangan Cacah sampai 1.000', 'Operasi Perkalian dan Pembagian Dasar', 'Satuan Baku (Berat: gram, kg; Waktu: menit, jam)'],
+        'Bahasa Indonesia': ['Mengidentifikasi informasi dari teks tentang lingkungan', 'menulis ringkasan cerita atau informasi', 'menulis laporan sederhana hasil observasi.'],
+        'Matematika': ['Penjumlahan dan pengurangan bilangan cacah sampai 1.000 (termasuk soal cerita)', 'perkalian dan pembagian dasar (fakta dasar sampai 10x10).'],
+        'Pendidikan Agama & Budi Pekerti': ['Bersyukur atas nikmat alam', 'menjaga kebersihan adalah sebagian dari iman', 'pentingnya menjaga lingkungan sebagai titipan Tuhan.'],
         'IPAS': ['Ciri-ciri Makhluk Hidup', 'Sistem Pencernaan Manusia secara Sederhana', 'Rangkaian Listrik Sederhana'],
 
         // --- KELAS 4 (FASE B) ---
@@ -179,6 +180,7 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
         'Bahasa Indonesia': ['Menulis Laporan Pengamatan Sederhana', 'Membaca Intensif Teks Informasi', 'Menggunakan Kalimat Efektif'],
         'Matematika': ['Pecahan Sederhana (1/2, 1/3, 1/4)', 'Diagram Gambar (Piktogram)', 'Sudut dan Alat Ukurnya (Busur Derajat)'],
         'IPAS': ['Perubahan Energi', 'Sifat-sifat Benda dan Kegunaannya', 'Daur Hidup Beberapa Jenis Makhluk Hidup'],
+        'Pendidikan Agama & Budi Pekerti': ['Iman kepada Rasul-rasul Allah', 'Kisah Nabi Musa A.S.', 'Sikap Toleransi dalam Kehidupan'],
 
         // --- KELAS 4 (FASE B) ---
         'Pendidikan Pancasila': ['Pemerintahan Desa dan Kecamatan', 'Mengenal Lembaga-lembaga Negara', 'Cinta Produk Indonesia'],
