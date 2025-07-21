@@ -83,7 +83,10 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
             'sikap tolong menolong dan berbagi antar teman',
             'Peduli terhadap lingkungan hidup',
             'tanggung jawab merawat makhluk hidup',
-            'menjaga kelestarian alam'
+            'menjaga kelestarian alam',
+            'Pentingnya menjaga kebersihan diri dan lingkungan',
+            'bahaya kuman',
+            'gotong royong membersihkan lingkungan'
         ],
         'Bahasa Indonesia': [
             'Menceritakan pengalaman bersama keluarga',
@@ -93,7 +96,10 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
             'menulis paragraf pendek tentang teman atau lingkungan sekolah',
             'membaca teks pendek',
             'Menulis laporan singkat tentang hasil pengamatan tumbuhan/hewan',
-            'membaca informasi dari teks sederhana tentang tumbuhan/hewan'
+            'membaca informasi dari teks sederhana tentang tumbuhan/hewan',
+            'Menulis daftar kegiatan menjaga kebersihan',
+            'membaca petunjuk penggunaan barang (misal: sabun)',
+            'poster kesehatan'
         ],
         'Matematika': [
             'Mengenal bilangan cacah sampai 100',
@@ -271,6 +277,7 @@ export const getSubjectById = (school: SchoolType, grade: Grade, semester: Semes
     
 
     
+
 
 
 
