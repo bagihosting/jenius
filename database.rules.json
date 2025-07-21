@@ -5,7 +5,7 @@
     ".write": false,
 
     "users": {
-      ".indexOn": ["role"],
+      ".indexOn": ["role", "robloxUsername"],
       ".read": "root.child('users').child(auth.uid).child('role').val() === 'admin'",
       "$uid": {
         ".read": "auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin'",
@@ -19,6 +19,15 @@
       ".read": "auth.uid != null",
       "$username": {
         ".write": "!data.exists() && newData.child('uid').val() === auth.uid"
+      }
+    },
+    "robloxUsernames": {
+      ".read": "auth.uid != null",
+      "$username": {
+        // A user can write to this path if:
+        // 1. The username doesn't exist yet (claiming a new one).
+        // 2. The username already exists, but it belongs to the current user (re-saving their own name).
+        ".write": "auth.uid != null && (!data.exists() || data.val() === auth.uid)"
       }
     },
     "upgradeRequests": {

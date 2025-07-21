@@ -109,19 +109,50 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (userData.photoUrl) authUpdateData.photoURL = userData.photoUrl;
   
     try {
-      // Update DB and Auth Profile concurrently
-      const dbRef = ref(db, `users/${uid}`);
-      await Promise.all([
-        update(dbRef, dbUpdateData),
-        Object.keys(authUpdateData).length > 0 ? updateProfile(currentUser, authUpdateData) : Promise.resolve(),
-      ]);
-  
-      // On success, update the local state with the new data
-      setUser(prevUser => prevUser ? { ...prevUser, ...dbUpdateData, ...authUpdateData } : null);
+        const updates: { [key: string]: any } = {};
+        const userRef = `users/${uid}`;
+        updates[userRef] = { ...user, ...dbUpdateData }; // Update user profile
+
+        // Handle Roblox username uniqueness
+        if (userData.robloxUsername !== undefined) {
+            const oldUsername = user.robloxUsername?.toLowerCase();
+            const newUsername = userData.robloxUsername?.toLowerCase();
+            
+            // If username has changed, update the unique index
+            if (oldUsername !== newUsername) {
+                if (oldUsername) {
+                    updates[`robloxUsernames/${oldUsername}`] = null; // Remove old username lock
+                }
+                if (newUsername) {
+                    const newUsernameRef = ref(db, `robloxUsernames/${newUsername}`);
+                    const snapshot = await get(newUsernameRef);
+                    if (snapshot.exists() && snapshot.val() !== uid) {
+                        throw new Error("Username Roblox ini sudah digunakan oleh pengguna lain.");
+                    }
+                    updates[`robloxUsernames/${newUsername}`] = uid; // Set new username lock
+                }
+            }
+        }
+
+        // Update DB and Auth Profile concurrently
+        await update(ref(db), updates);
+
+        if (Object.keys(authUpdateData).length > 0) {
+            await updateProfile(currentUser, authUpdateData);
+        }
+        
+        // On success, update the local state with the new data
+        setUser(prevUser => {
+            if (!prevUser) return null;
+            // Create a new merged user object to trigger re-render
+            const updatedUser = { ...prevUser, ...dbUpdateData };
+            if (authUpdateData.displayName) updatedUser.name = authUpdateData.displayName;
+            if (authUpdateData.photoURL) updatedUser.photoUrl = authUpdateData.photoURL;
+            return updatedUser;
+        });
   
     } catch (error) {
       console.error("Failed to update user:", error);
-      // Re-throw the error so the calling component can handle it (e.g., show a toast)
       throw error;
     }
   }, [user]);

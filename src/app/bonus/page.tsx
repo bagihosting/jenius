@@ -72,11 +72,11 @@ export default function BonusPage() {
   };
 
   const handleVerifyUsername = async () => {
-    if (!robloxUsername) return;
+    if (!robloxUsername || !user) return;
     setVerificationStatus('loading');
     setVerificationError(null);
 
-    const result = await checkRobloxUsernameAction(robloxUsername);
+    const result = await checkRobloxUsernameAction(robloxUsername, user.uid);
     if (result.exists && result.user) {
         setVerificationStatus('verified');
         setVerifiedRobloxUser(result.user);
@@ -104,10 +104,10 @@ export default function BonusPage() {
             title: 'Berhasil!',
             description: 'Username Roblox kamu telah disimpan.',
         });
-    } catch(e) {
+    } catch(e: any) {
         toast({
             title: 'Gagal Menyimpan',
-            description: 'Terjadi kesalahan saat menyimpan username.',
+            description: e.message || 'Terjadi kesalahan saat menyimpan username.',
             variant: 'destructive',
         });
     } finally {

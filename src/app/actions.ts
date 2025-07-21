@@ -1,3 +1,4 @@
+
 'use server';
 
 import { generateQuiz as generateQuizFlow } from '@/ai/flows/generate-quiz';
@@ -7,7 +8,7 @@ import { academicAssistant as academicAssistantFlow } from '@/ai/flows/academic-
 
 import { type GenerateQuizOutput, type ExamData, type GenerateQuizInput, type HomeworkHelpInput, type HomeworkHelpOutput, type GenerateExamInput, type AcademicAssistantInput, type AcademicAssistantOutput, type Question, type MultipleChoiceQuestion, type UpgradeRequest, type User, UpgradeInfo, type RobloxUser } from '@/lib/types';
 import { db } from '@/lib/firebase';
-import { ref, set, serverTimestamp } from 'firebase/database';
+import { ref, set, serverTimestamp, get, child } from 'firebase/database';
 
 // Helper function to remove prefixes (A., B., etc.) and normalize string for comparison
 const normalize = (str: string): string => {
@@ -202,33 +203,42 @@ export async function saveUpgradeSettingsAction(
 
 
 export async function checkRobloxUsernameAction(
-  username: string
+  username: string,
+  currentUserId: string
 ): Promise<{ exists: boolean; user?: RobloxUser; error?: string }> {
     if (!username) {
         return { exists: false, error: "Username tidak boleh kosong." };
     }
     
-    const url = 'https://users.roblox.com/v1/usernames/users';
-    const data = {
+    const robloxApiUrl = 'https://users.roblox.com/v1/usernames/users';
+    const robloxApiData = {
         usernames: [username],
         excludeBannedUsers: true
     };
+    const usernameKey = username.toLowerCase();
 
     try {
-        const response = await fetch(url, {
+        // Step 1: Check if the username is taken in our database
+        if (db) {
+            const claimedUsernameRef = child(ref(db), `robloxUsernames/${usernameKey}`);
+            const snapshot = await get(claimedUsernameRef);
+            if (snapshot.exists() && snapshot.val() !== currentUserId) {
+                return { exists: false, error: "Username Roblox ini sudah digunakan oleh pengguna lain." };
+            }
+        }
+        
+        // Step 2: Check with Roblox API if it's a valid username
+        const response = await fetch(robloxApiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify(robloxApiData)
         });
 
         if (!response.ok) {
-            // Roblox API might return 400 for various validation errors
-            // or 5xx for server issues.
             const errorBody = await response.json().catch(() => ({}));
-            console.error(`HTTP error! status: ${response.status}`, errorBody);
             const errorMessage = errorBody.errors?.[0]?.message || `Error dari Roblox: ${response.status}`;
             return { exists: false, error: errorMessage };
         }
@@ -247,6 +257,6 @@ export async function checkRobloxUsernameAction(
         }
     } catch (error) {
         console.error("Terjadi kesalahan saat memeriksa username Roblox:", error);
-        return { exists: false, error: "Gagal terhubung ke server Roblox. Silakan coba lagi nanti." };
+        return { exists: false, error: "Gagal terhubung ke server. Silakan coba lagi nanti." };
     }
 }
