@@ -14,7 +14,7 @@ import { useAuth } from '@/context/AuthContext';
 export function LeaderboardCard() {
   const [leaderboard, setLeaderboard] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { loading } = useAuth();
+  const { loading: authLoading } = useAuth();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -22,28 +22,25 @@ export function LeaderboardCard() {
   }, []);
 
   useEffect(() => {
-    // Wait for auth state to be confirmed before fetching data
-    if (isClient && !loading) {
+    if (isClient && !authLoading) {
       if (!db) {
           setIsLoading(false);
           return;
       }
       
-      const usersRef = ref(db, 'users');
-      // Query to get top 5 users by bonusPoints
-      const topUsersQuery = query(usersRef, orderByChild('bonusPoints'), limitToLast(5));
+      const leaderboardRef = ref(db, 'leaderboard');
+      // Query to get top 5 users by bonusPoints from the public leaderboard node
+      const topUsersQuery = query(leaderboardRef, orderByChild('bonusPoints'), limitToLast(5));
       
       const unsubscribe = onValue(topUsersQuery, (snapshot) => {
         const usersData: User[] = [];
-        snapshot.forEach((childSnapshot) => {
-          const user = childSnapshot.val();
-          // Exclude admins from the leaderboard
-          if (user.role !== 'admin') {
-              usersData.push({ uid: childSnapshot.key!, ...user });
-          }
-        });
+        if (snapshot.exists()) {
+          snapshot.forEach((childSnapshot) => {
+            usersData.push({ uid: childSnapshot.key!, ...childSnapshot.val() });
+          });
+        }
         // Sort in descending order and set state
-        setLeaderboard(usersData.sort((a, b) => (b.bonusPoints || 0) - (a.bonusPoints || 0)).slice(0, 5));
+        setLeaderboard(usersData.sort((a, b) => (b.bonusPoints || 0) - (a.bonusPoints || 0)));
         setIsLoading(false);
       }, (error) => {
           console.error("Firebase Leaderboard read failed:", error);
@@ -53,7 +50,7 @@ export function LeaderboardCard() {
       // Cleanup subscription on component unmount
       return () => unsubscribe();
     }
-  }, [isClient, loading]);
+  }, [isClient, authLoading]);
   
   return (
     <Card>
