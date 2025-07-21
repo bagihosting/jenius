@@ -17,7 +17,7 @@ import {
   SidebarInset,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Home, Users, LogOut, Loader2, BookHeart, Gift, GraduationCap } from 'lucide-react';
+import { Home, Users, LogOut, Loader2, BookHeart, Gift, GraduationCap, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { ProfileDialog } from './ProfileDialog';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -68,6 +68,14 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                                 <Link href="/admin/mahasiswa">
                                     <GraduationCap />
                                     <span>Manajemen Mahasiswa</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                         <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/settings')} tooltip="Pengaturan">
+                                <Link href="/admin/settings">
+                                    <Settings />
+                                    <span>Pengaturan</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

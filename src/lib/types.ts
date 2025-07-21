@@ -161,3 +161,16 @@ export interface UpgradeRequest {
   status: 'pending' | 'approved' | 'rejected';
   requestedAt: string | object; // Can be ISO string or Firebase ServerValue
 }
+
+//========= APP SETTINGS TYPES =========//
+export interface UpgradeInfo {
+  donationAmount: number;
+  bankName: string;
+  accountNumber: string;
+  accountName: string;
+  instructions: string;
+}
+
+export interface AppSettings {
+    upgradeInfo: UpgradeInfo;
+}

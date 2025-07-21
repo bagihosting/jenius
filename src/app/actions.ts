@@ -6,7 +6,7 @@ import { answerHomework as answerHomeworkFlow } from '@/ai/flows/homework-helper
 import { generateDailyExam as generateDailyExamFlow } from '@/ai/flows/generate-exam-flow';
 import { academicAssistant as academicAssistantFlow } from '@/ai/flows/academic-assistant-flow';
 
-import { type GenerateQuizOutput, type ExamData, type GenerateQuizInput, type HomeworkHelpInput, type HomeworkHelpOutput, type GenerateExamInput, type AcademicAssistantInput, type AcademicAssistantOutput, type Question, type MultipleChoiceQuestion, type UpgradeRequest, type User } from '@/lib/types';
+import { type GenerateQuizOutput, type ExamData, type GenerateQuizInput, type HomeworkHelpInput, type HomeworkHelpOutput, type GenerateExamInput, type AcademicAssistantInput, type AcademicAssistantOutput, type Question, type MultipleChoiceQuestion, type UpgradeRequest, type User, UpgradeInfo } from '@/lib/types';
 import { db } from '@/lib/firebase';
 import { ref, set, serverTimestamp } from 'firebase/database';
 
@@ -181,5 +181,22 @@ export async function submitUpgradeRequestAction(
     const errorMessage = e instanceof Error ? e.message : 'Terjadi kesalahan tidak dikenal.';
     console.error('submitUpgradeRequestAction failed:', e);
     return { error: `Gagal mengirim pengajuan: ${errorMessage}` };
+  }
+}
+
+export async function saveUpgradeSettingsAction(
+  settings: UpgradeInfo
+): Promise<{ success?: boolean; error?: string }> {
+  if (!db) {
+    return { error: 'Koneksi database tidak ditemukan.' };
+  }
+  try {
+    const settingsRef = ref(db, 'appSettings/upgradeInfo');
+    await set(settingsRef, settings);
+    return { success: true };
+  } catch (e) {
+    const errorMessage = e instanceof Error ? e.message : 'Terjadi kesalahan tidak dikenal.';
+    console.error('saveUpgradeSettingsAction failed:', e);
+    return { error: `Gagal menyimpan pengaturan: ${errorMessage}` };
   }
 }

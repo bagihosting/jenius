@@ -11,12 +11,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
-import { ref, onValue } from 'firebase/database';
+import { ref, onValue, get } from 'firebase/database';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { submitUpgradeRequestAction } from '@/app/actions';
-import { type UpgradeRequest } from '@/lib/types';
+import { type UpgradeRequest, type UpgradeInfo } from '@/lib/types';
 
 
 export default function UpgradePage() {
@@ -27,6 +27,8 @@ export default function UpgradePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [upgradeStatus, setUpgradeStatus] = useState<'not_submitted' | 'pending' | 'approved'>('not_submitted');
+  const [upgradeInfo, setUpgradeInfo] = useState<UpgradeInfo | null>(null);
+  const [isLoadingInfo, setIsLoadingInfo] = useState(true);
   
   const [universityName, setUniversityName] = useState('');
   const [major, setMajor] = useState('');
@@ -40,7 +42,27 @@ export default function UpgradePage() {
       router.push('/login');
     }
   }, [loading, isAuthenticated, router]);
+  
+  // Fetch upgrade info from database
+  useEffect(() => {
+    if (db) {
+        const infoRef = ref(db, 'appSettings/upgradeInfo');
+        get(infoRef).then((snapshot) => {
+            if (snapshot.exists()) {
+                setUpgradeInfo(snapshot.val());
+            }
+        }).catch((error) => {
+            console.error("Failed to fetch upgrade info:", error);
+            toast({ title: 'Gagal memuat info', variant: 'destructive' });
+        }).finally(() => {
+            setIsLoadingInfo(false);
+        });
+    } else {
+        setIsLoadingInfo(false);
+    }
+  }, [toast]);
 
+  // Check user's upgrade status
   useEffect(() => {
     if (user?.role === 'mahasiswa') {
       setUpgradeStatus('approved');
@@ -89,7 +111,7 @@ export default function UpgradePage() {
     setIsSubmitting(false);
   };
   
-  if (!isClient || loading || !isAuthenticated) {
+  if (!isClient || loading || !isAuthenticated || isLoadingInfo) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -132,9 +154,15 @@ export default function UpgradePage() {
                             <Banknote className="h-4 w-4" />
                             <AlertTitle>Instruksi Donasi</AlertTitle>
                             <AlertDescription>
-                                <p>Silakan lakukan donasi satu kali sebesar **Rp 100.000** untuk mendukung pengembangan Ayah Jenius ke rekening berikut:</p>
-                                <p className="font-mono font-bold text-base my-2 text-primary">BCA: 1234-5678-90 (a.n. Ayah Jenius Cendekia)</p>
-                                <p>Setelah melakukan transfer, silakan isi dan kirim formulir di bawah ini. Akun akan diaktifkan oleh admin setelah pembayaran diverifikasi.</p>
+                                {upgradeInfo ? (
+                                    <>
+                                        <p>Silakan lakukan donasi satu kali sebesar **Rp {upgradeInfo.donationAmount.toLocaleString('id-ID')}** untuk mendukung pengembangan Ayah Jenius ke rekening berikut:</p>
+                                        <p className="font-mono font-bold text-base my-2 text-primary">{upgradeInfo.bankName}: {upgradeInfo.accountNumber} (a.n. {upgradeInfo.accountName})</p>
+                                        <p>{upgradeInfo.instructions}</p>
+                                    </>
+                                ) : (
+                                    <p>Informasi donasi sedang tidak tersedia. Silakan coba lagi nanti.</p>
+                                )}
                             </AlertDescription>
                         </Alert>
                          <div className="space-y-4">
@@ -149,7 +177,7 @@ export default function UpgradePage() {
                          </div>
                     </CardContent>
                     <CardFooter>
-                      <Button className="w-full" size="lg" onClick={handleSubmit} disabled={isSubmitting}>
+                      <Button className="w-full" size="lg" onClick={handleSubmit} disabled={isSubmitting || !upgradeInfo}>
                         {isSubmitting ? (
                             <>
                                 <Loader2 className="animate-spin mr-2"/> 
