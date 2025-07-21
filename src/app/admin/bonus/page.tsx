@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { get, ref, update } from 'firebase/database';
+import { onValue, ref, update } from 'firebase/database';
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
 import type { User } from '@/lib/types';
@@ -25,43 +25,34 @@ export default function BonusManagementPage() {
     setIsClient(true);
   }, []);
 
-  const fetchUsers = useCallback(async () => {
-    if (!isAuthenticated || !db) {
-      setUsers([]);
-      setIsLoading(false);
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const usersRef = ref(db, 'users');
-      const snapshot = await get(usersRef);
-      if (snapshot.exists()) {
-        const usersData = snapshot.val();
-        const usersList: User[] = Object.keys(usersData).map(key => ({
-          ...usersData[key],
-          uid: key
-        }));
-        setUsers(usersList);
-      } else {
-        setUsers([]);
-      }
-    } catch (error: any) {
-      console.error("Firebase bonus management read failed:", error);
-      toast({ title: 'Gagal Memuat Data', description: error.message, variant: 'destructive'});
-    } finally {
-      setIsLoading(false);
-    }
-  }, [isAuthenticated, toast]);
-
   useEffect(() => {
-    if (isClient && !authLoading) {
-      if (isAuthenticated && adminUser?.role === 'admin') {
-        fetchUsers();
-      } else {
-        setIsLoading(false);
-      }
+    if (!isClient || authLoading || !isAuthenticated || adminUser?.role !== 'admin' || !db) {
+        if (!authLoading) setIsLoading(false);
+        return;
     }
-  }, [isClient, authLoading, isAuthenticated, adminUser, fetchUsers]);
+
+    setIsLoading(true);
+    const usersRef = ref(db, 'users');
+    const unsubscribe = onValue(usersRef, (snapshot) => {
+        if (snapshot.exists()) {
+            const usersData = snapshot.val();
+            const usersList: User[] = Object.keys(usersData).map(key => ({
+                ...usersData[key],
+                uid: key
+            }));
+            setUsers(usersList);
+        } else {
+            setUsers([]);
+        }
+        setIsLoading(false);
+    }, (error) => {
+        console.error("Firebase bonus management read failed:", error);
+        toast({ title: 'Gagal Memuat Data', description: error.message, variant: 'destructive'});
+        setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [isClient, authLoading, isAuthenticated, adminUser, toast]);
 
   const handlePointsChange = (uid: string, value: string) => {
     const newUsers = users.map(user => {
@@ -87,8 +78,7 @@ export default function BonusManagementPage() {
         title: 'Berhasil!',
         description: `Poin bonus untuk ${userToUpdate.name} telah diperbarui.`,
       });
-      // Optionally re-fetch or update local state precisely
-      setUsers(prevUsers => prevUsers.map(u => u.uid === uid ? {...u, bonusPoints: pointsToSave} : u));
+      // No need to manually update state, onValue will handle it.
     } catch (error) {
       console.error("Error saving points:", error);
       toast({
@@ -120,7 +110,7 @@ export default function BonusManagementPage() {
                 Manajemen Poin Bonus
             </CardTitle>
             <CardDescription>
-                Lihat dan kelola poin bonus untuk semua pengguna yang terdaftar.
+                Lihat dan kelola poin bonus untuk semua pengguna yang terdaftar secara real-time.
             </CardDescription>
         </CardHeader>
         <CardContent>

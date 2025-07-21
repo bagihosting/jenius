@@ -32,6 +32,7 @@ export default function AdminDashboardPage() {
             setIsLoading(false);
         });
 
+        // Cleanup the listener when the component unmounts
         return () => unsubscribe();
     }, []);
 
@@ -48,7 +49,7 @@ export default function AdminDashboardPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold">Dasbor Admin</h1>
-                    <p className="text-muted-foreground">Ringkasan statistik aplikasi.</p>
+                    <p className="text-muted-foreground">Ringkasan statistik aplikasi secara real-time.</p>
                 </div>
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -88,7 +89,7 @@ export default function AdminDashboardPage() {
                     <CardHeader>
                         <CardTitle>Selamat Datang, Admin!</CardTitle>
                         <CardDescription>
-                           Gunakan menu di samping untuk mengelola pengguna dan bonus.
+                           Gunakan menu di samping untuk mengelola pengguna dan fitur lainnya. Perubahan data akan terlihat secara otomatis.
                         </CardDescription>
                     </CardHeader>
                 </Card>

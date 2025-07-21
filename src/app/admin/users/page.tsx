@@ -33,7 +33,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Edit, Trash2 } from 'lucide-react';
 import type { User } from '@/lib/types';
 import { db } from '@/lib/firebase';
-import { ref, get, update, remove } from 'firebase/database';
+import { ref, onValue, update, remove } from 'firebase/database';
 import { useToast } from '@/hooks/use-toast';
 import { UserForm, userSchema } from '@/components/UserForm';
 import { useAuth } from '@/context/AuthContext';
@@ -66,16 +66,15 @@ export default function UsersPage() {
     setIsClient(true);
   }, []);
 
-  const fetchUsers = useCallback(async () => {
-    if (!isAuthenticated || !db) {
-        setUsers([]);
-        setIsLoading(false);
+  useEffect(() => {
+    if (!isClient || authLoading || !isAuthenticated || user?.role !== 'admin' || !db) {
+        if (!authLoading) setIsLoading(false);
         return;
     }
+
     setIsLoading(true);
-    try {
-        const usersRef = ref(db, 'users');
-        const snapshot = await get(usersRef);
+    const usersRef = ref(db, 'users');
+    const unsubscribe = onValue(usersRef, (snapshot) => {
         if (snapshot.exists()) {
             const data = snapshot.val();
             const userList = Object.keys(data).map((key) => ({
@@ -86,24 +85,16 @@ export default function UsersPage() {
         } else {
             setUsers([]);
         }
-    } catch (error: any) {
+        setIsLoading(false);
+    }, (error) => {
         console.error("Firebase user list read failed:", error);
         toast({ title: 'Gagal memuat pengguna', description: error.message, variant: 'destructive' });
         setUsers([]);
-    } finally {
         setIsLoading(false);
-    }
-  }, [isAuthenticated, toast]);
+    });
 
-  useEffect(() => {
-    if (isClient && !authLoading) {
-      if (isAuthenticated && user?.role === 'admin') {
-        fetchUsers();
-      } else {
-        setIsLoading(false);
-      }
-    }
-  }, [isClient, authLoading, isAuthenticated, user, fetchUsers]);
+    return () => unsubscribe();
+  }, [isClient, authLoading, isAuthenticated, user, toast]);
 
   const handleEdit = (user: User) => {
     setEditingUser(user);
@@ -123,7 +114,7 @@ export default function UsersPage() {
       try {
         await remove(ref(db, `users/${uid}`));
         toast({ title: 'Pengguna berhasil dihapus dari database' });
-        setUsers(prev => prev.filter(u => u.uid !== uid)); // Optimistic UI update
+        // No need to manually update state, onValue will handle it.
       } catch (error) {
         toast({ title: 'Gagal menghapus pengguna', variant: 'destructive' });
         console.error(error);
@@ -151,9 +142,6 @@ export default function UsersPage() {
         
         toast({ title: "Pengguna berhasil diperbarui" });
         
-        // Refresh local data
-        setUsers(prev => prev.map(u => u.uid === editingUser.uid ? { ...u, ...updateData } : u));
-
         setIsSheetOpen(false);
         setEditingUser(null);
 
@@ -167,7 +155,7 @@ export default function UsersPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold">Manajemen Pengguna</h1>
-          <p className="text-muted-foreground">Lihat dan edit pengguna yang terdaftar.</p>
+          <p className="text-muted-foreground">Lihat dan edit pengguna yang terdaftar secara real-time.</p>
         </div>
       </div>
       <Card>

@@ -20,7 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Loader2, CheckCircle, XCircle, GraduationCap } from 'lucide-react';
 import { db } from '@/lib/firebase';
-import { ref, get, update, remove } from 'firebase/database';
+import { ref, onValue, update, remove } from 'firebase/database';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { type UpgradeRequest } from '@/lib/types';
@@ -38,46 +38,35 @@ export default function MahasiswaManagementPage() {
     setIsClient(true);
   }, []);
 
-  const fetchRequests = useCallback(async () => {
-    if (!isAuthenticated || !db) {
-      setRequests([]);
-      setIsLoading(false);
+  useEffect(() => {
+    if (!isClient || authLoading || !isAuthenticated || adminUser?.role !== 'admin' || !db) {
+      if (!authLoading) setIsLoading(false);
       return;
     }
-    setIsLoading(true);
-    try {
-      const requestsRef = ref(db, 'upgradeRequests');
-      const snapshot = await get(requestsRef);
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        const requestList: UpgradeRequest[] = Object.keys(data)
-          .map((key) => ({
-            ...data[key],
-            uid: key,
-          }))
-          .filter(req => req.status === 'pending'); // Only show pending requests
-        setRequests(requestList.sort((a,b) => new Date(b.requestedAt as string).getTime() - new Date(a.requestedAt as string).getTime()));
-      } else {
-        setRequests([]);
-      }
-    } catch (error: any) {
-      console.error("Firebase requests read failed:", error);
-      toast({ title: 'Gagal memuat pengajuan', description: error.message, variant: 'destructive' });
-      setRequests([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [isAuthenticated, toast]);
 
-  useEffect(() => {
-    if (isClient && !authLoading) {
-      if (isAuthenticated && adminUser?.role === 'admin') {
-        fetchRequests();
-      } else {
+    setIsLoading(true);
+    const requestsRef = ref(db, 'upgradeRequests');
+    const unsubscribe = onValue(requestsRef, (snapshot) => {
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            const requestList: UpgradeRequest[] = Object.keys(data)
+                .map((key) => ({ ...data[key], uid: key, }))
+                .filter(req => req.status === 'pending'); // Only show pending requests
+            setRequests(requestList.sort((a,b) => new Date(b.requestedAt as string).getTime() - new Date(a.requestedAt as string).getTime()));
+        } else {
+            setRequests([]);
+        }
         setIsLoading(false);
-      }
-    }
-  }, [isClient, authLoading, isAuthenticated, adminUser, fetchRequests]);
+    }, (error) => {
+        console.error("Firebase requests read failed:", error);
+        toast({ title: 'Gagal memuat pengajuan', description: error.message, variant: 'destructive' });
+        setRequests([]);
+        setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+
+  }, [isClient, authLoading, isAuthenticated, adminUser, toast]);
 
   const handleApprove = async (request: UpgradeRequest) => {
     if (!db) return;
@@ -90,7 +79,7 @@ export default function MahasiswaManagementPage() {
       await update(ref(db), updates);
       
       toast({ title: 'Pengguna Disetujui!', description: `${request.name} sekarang adalah Mahasiswa.` });
-      setRequests(prev => prev.filter(r => r.uid !== request.uid));
+      // No need to update state manually, onValue listener will do it.
     } catch (error: any) {
         toast({ title: "Operasi Gagal", description: error.message, variant: 'destructive' });
     }
@@ -102,7 +91,7 @@ export default function MahasiswaManagementPage() {
         try {
             await remove(ref(db, `upgradeRequests/${uid}`));
             toast({ title: 'Pengajuan ditolak dan dihapus' });
-            setRequests(prev => prev.filter(r => r.uid !== uid));
+            // No need to update state manually, onValue listener will do it.
         } catch (error: any) {
             toast({ title: 'Gagal menolak pengajuan', description: error.message, variant: 'destructive' });
         }
