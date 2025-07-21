@@ -178,7 +178,7 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
         'Aqidah Akhlak': ['Pengenalan Iman kepada Kitab-kitab Allah', 'Kisah keteladanan Nabi Ibrahim A.S.', 'Menghindari Akhlak Tercela (berbohong, malas)'],
 
         // --- KELAS 3 (FASE B) ---
-        'Pendidikan Pancasila': ['Lambang dan Simbol Negara (Bendera, Bahasa, Lagu Kebangsaan)', 'Menghargai Jasa Pahlawan', 'Kerja Kelompok dan Tanggung Jawab'],
+        'Pendidikan Pancasila': ['Menghargai keberagaman suku dan budaya', 'pentingnya toleransi', 'mencintai produk dalam negeri'],
         'Bahasa Indonesia': ['Menulis Laporan Pengamatan Sederhana', 'Membaca Intensif Teks Informasi', 'Menggunakan Kalimat Efektif'],
         'Matematika': ['Pecahan Sederhana (1/2, 1/3, 1/4)', 'Diagram Gambar (Piktogram)', 'Sudut dan Alat Ukurnya (Busur Derajat)'],
         'IPAS': ['Perubahan Energi', 'Sifat-sifat Benda dan Kegunaannya', 'Daur Hidup Beberapa Jenis Makhluk Hidup'],
