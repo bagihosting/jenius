@@ -40,7 +40,7 @@ export default function SettingsPage() {
             donationAmount: 100000,
             bankName: 'BCA',
             accountNumber: '1234567890',
-            accountName: 'Ayah Jenius Cendekia',
+            accountName: 'Pintar Elementary Foundation',
             instructions: 'Setelah transfer, formulir akan ditinjau oleh admin. Aktivasi akun dapat memakan waktu hingga 1x24 jam.',
         },
     });
@@ -151,7 +151,7 @@ export default function SettingsPage() {
                                     <FormItem>
                                         <FormLabel>Atas Nama (Pemilik Rekening)</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="Contoh: Ayah Jenius Cendekia" {...field} />
+                                            <Input placeholder="Contoh: Pintar Elementary Foundation" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

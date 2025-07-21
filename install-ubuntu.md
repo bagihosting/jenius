@@ -1,6 +1,6 @@
-# Cara Instalasi Aplikasi Ayah Jenius di Ubuntu 22.04
+# Cara Instalasi Aplikasi Pintar Elementary di Ubuntu 22.04
 
-Tutorial ini akan memandu Anda melalui proses instalasi dan deployment aplikasi Next.js Ayah Jenius di server yang menjalankan Ubuntu 22.04.
+Tutorial ini akan memandu Anda melalui proses instalasi dan deployment aplikasi Next.js Pintar Elementary di server yang menjalankan Ubuntu 22.04.
 
 ## 1. Prasyarat
 
@@ -54,17 +54,17 @@ npm -v
 
 ## 4. Mendapatkan Kode Aplikasi
 
-Kloning repositori proyek ke direktori yang Anda inginkan (misalnya, `/var/www/ayah-jenius`). **Langkah ini hanya dilakukan sekali saat instalasi awal.**
+Kloning repositori proyek ke direktori yang Anda inginkan (misalnya, `/var/www/pintar-elementary`). **Langkah ini hanya dilakukan sekali saat instalasi awal.**
 
 ```bash
 # Ganti <URL_REPOSITORI_ANDA> dengan URL Git proyek Anda yang sebenarnya
-sudo git clone <URL_REPOSITORI_ANDA> /var/www/ayah-jenius
+sudo git clone <URL_REPOSITORI_ANDA> /var/www/pintar-elementary
 
 # Berikan izin ke pengguna Anda saat ini
-sudo chown -R $USER:$USER /var/www/ayah-jenius
+sudo chown -R $USER:$USER /var/www/pintar-elementary
 
 # Pindah ke direktori proyek
-cd /var/www/ayah-jenius
+cd /var/www/pintar-elementary
 ```
 
 ## 5. Konfigurasi Lingkungan
@@ -143,8 +143,8 @@ sudo npm install pm2 -g
 ### Langkah 2: Jalankan Aplikasi dengan PM2
 Gunakan PM2 untuk menjalankan perintah `npm start` dari aplikasi Anda.
 ```bash
-# Jalankan aplikasi dan beri nama "ayah-jenius"
-pm2 start npm --name "ayah-jenius" -- start
+# Jalankan aplikasi dan beri nama "pintar-elementary"
+pm2 start npm --name "pintar-elementary" -- start
 ```
 Aplikasi Anda sekarang berjalan di port 3000.
 
@@ -163,13 +163,13 @@ pm2 save
 
 ### Perintah PM2 yang Berguna
 - **Memonitor aplikasi**: `pm2 status` atau `pm2 monit`
-- **Melihat log aplikasi**: `pm2 logs ayah-jenius`
-- **Me-restart aplikasi**: `pm2 restart ayah-jenius`
-- **Menghentikan aplikasi**: `pm2 stop ayah-jenius`
+- **Melihat log aplikasi**: `pm2 logs pintar-elementary`
+- **Me-restart aplikasi**: `pm2 restart pintar-elementary`
+- **Menghentikan aplikasi**: `pm2 stop pintar-elementary`
 
 ## 9. Konfigurasi Nginx sebagai Reverse Proxy
 
-Langkah ini akan membuat aplikasi Anda dapat diakses melalui domain (misalnya, `https://app.ayahjenius.com`) tanpa perlu menyertakan nomor port `:3000`.
+Langkah ini akan membuat aplikasi Anda dapat diakses melalui domain (misalnya, `https://app.pintarelementary.com`) tanpa perlu menyertakan nomor port `:3000`.
 
 ### Langkah 1: Instal Nginx
 Instal Nginx dari repositori Ubuntu:
@@ -187,7 +187,7 @@ sudo ufw enable
 ### Langkah 3: Buat File Konfigurasi Nginx untuk Aplikasi Anda
 Buat file konfigurasi baru untuk situs Anda. Ganti `domain-anda.com` dengan domain Anda.
 ```bash
-sudo nano /etc/nginx/sites-available/ayah-jenius
+sudo nano /etc/nginx/sites-available/pintar-elementary
 ```
 
 Salin dan tempel konfigurasi berikut. **PENTING: Ganti `domain-anda.com` dengan domain atau subdomain Anda.**
@@ -212,7 +212,7 @@ Simpan file dan keluar (`Ctrl+X`, `Y`, `Enter`).
 ### Langkah 4: Aktifkan Situs dan Restart Nginx
 Buat tautan simbolik untuk mengaktifkan konfigurasi yang baru saja Anda buat:
 ```bash
-sudo ln -s /etc/nginx/sites-available/ayah-jenius /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/pintar-elementary /etc/nginx/sites-enabled/
 ```
 
 **PENTING: Nonaktifkan situs Nginx default untuk menghindari konflik.**
@@ -235,7 +235,7 @@ Setiap kali Anda membuat perubahan pada kode dan mendorongnya ke repositori Git,
 
 ### Langkah 1: Masuk ke Direktori Aplikasi
 ```bash
-cd /var/www/ayah-jenius
+cd /var/www/pintar-elementary
 ```
 
 ### Langkah 2: Ambil Kode Terbaru dari Git
@@ -255,7 +255,7 @@ npm run build
 
 ### Langkah 5: Restart Aplikasi dengan PM2
 ```bash
-pm2 restart ayah-jenius
+pm2 restart pintar-elementary
 ```
 
 Selesai! Aplikasi Anda kini berjalan dengan versi kode terbaru.
@@ -264,4 +264,4 @@ Selesai! Aplikasi Anda kini berjalan dengan versi kode terbaru.
 
 ## Selesai!
 
-Aplikasi Ayah Jenius Anda sekarang sudah berjalan dan dapat diakses melalui domain Anda. Langkah selanjutnya yang sangat direkomendasikan adalah mengamankan situs Anda dengan **SSL/TLS menggunakan Certbot (Let's Encrypt)** agar dapat diakses melalui `https://`.
+Aplikasi Pintar Elementary Anda sekarang sudah berjalan dan dapat diakses melalui domain Anda. Langkah selanjutnya yang sangat direkomendasikan adalah mengamankan situs Anda dengan **SSL/TLS menggunakan Certbot (Let's Encrypt)** agar dapat diakses melalui `https://`.

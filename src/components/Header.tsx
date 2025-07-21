@@ -34,9 +34,9 @@ export function Header() {
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-2 text-2xl font-bold text-gray-800 dark:text-gray-200 font-headline">
               <BookHeart className="h-8 w-8 text-primary" />
-              <span>Ayah Jenius</span>
+              <span>Pintar Elementary</span>
             </Link>
-            <p className="text-sm text-muted-foreground hidden md:block">Platform belajar cerdas untuk semua</p>
+            <p className="text-sm text-muted-foreground hidden md:block">Your Fun Learning Partner</p>
           </div>
           <div className="flex items-center gap-2">
             {!isClient || loading ? (
@@ -48,7 +48,7 @@ export function Header() {
                         <Button asChild>
                             <Link href={dashboardHref}>
                                 <LayoutDashboard />
-                                Masuk ke Dasbor
+                                Go to Dashboard
                             </Link>
                         </Button>
                         <ProfileDialog>
@@ -63,7 +63,7 @@ export function Header() {
                         </ProfileDialog>
                         <Button onClick={logout} variant="outline" size="icon" className="shrink-0">
                             <LogOut />
-                            <span className="sr-only">Keluar</span>
+                            <span className="sr-only">Logout</span>
                         </Button>
                    </>
                 ) : (
@@ -71,13 +71,13 @@ export function Header() {
                     <Button asChild variant="ghost">
                       <Link href="/register">
                         <UserPlus className="mr-2"/>
-                        Daftar
+                        Sign Up
                       </Link>
                     </Button>
                     <Button asChild>
                       <Link href="/login">
                         <LogIn className="mr-2"/>
-                        Masuk
+                        Login
                       </Link>
                     </Button>
                   </>

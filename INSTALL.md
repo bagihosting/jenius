@@ -1,6 +1,6 @@
-# Cara Instalasi Aplikasi Ayah Jenius di AlmaLinux 8
+# Cara Instalasi Aplikasi Pintar Elementary di AlmaLinux 8
 
-Tutorial ini akan memandu Anda melalui proses instalasi dan deployment aplikasi Next.js Ayah Jenius di server yang menjalankan AlmaLinux 8.
+Tutorial ini akan memandu Anda melalui proses instalasi dan deployment aplikasi Next.js Pintar Elementary di server yang menjalankan AlmaLinux 8.
 
 ## 1. Prasyarat
 
@@ -46,14 +46,14 @@ npm -v
 
 ## 4. Mendapatkan Kode Aplikasi
 
-Kloning repositori proyek ke direktori yang Anda inginkan (misalnya, `/var/www/ayah-jenius`). **Langkah ini hanya dilakukan sekali saat instalasi awal.**
+Kloning repositori proyek ke direktori yang Anda inginkan (misalnya, `/var/www/pintar-elementary`). **Langkah ini hanya dilakukan sekali saat instalasi awal.**
 
 ```bash
 # Ganti <URL_REPOSITORI_ANDA> dengan URL Git proyek Anda yang sebenarnya
-git clone <URL_REPOSITORI_ANDA> /var/www/ayah-jenius
+git clone <URL_REPOSITORI_ANDA> /var/www/pintar-elementary
 
 # Pindah ke direktori proyek
-cd /var/www/ayah-jenius
+cd /var/www/pintar-elementary
 ```
 
 ## 5. Konfigurasi Lingkungan
@@ -135,8 +135,8 @@ sudo npm install pm2 -g
 ### Langkah 2: Jalankan Aplikasi dengan PM2
 Gunakan PM2 untuk menjalankan perintah `npm start` dari aplikasi Anda. Ini akan menjalankan aplikasi di latar belakang.
 ```bash
-# Jalankan aplikasi dan beri nama "ayah-jenius"
-pm2 start npm --name "ayah-jenius" -- start
+# Jalankan aplikasi dan beri nama "pintar-elementary"
+pm2 start npm --name "pintar-elementary" -- start
 ```
 Aplikasi Anda sekarang berjalan di port 3000.
 
@@ -155,13 +155,13 @@ pm2 save
 
 ### Perintah PM2 yang Berguna
 - **Memonitor aplikasi**: `pm2 status` atau `pm2 monit`
-- **Melihat log aplikasi**: `pm2 logs ayah-jenius`
-- **Me-restart aplikasi**: `pm2 restart ayah-jenius`
-- **Menghentikan aplikasi**: `pm2 stop ayah-jenius`
+- **Melihat log aplikasi**: `pm2 logs pintar-elementary`
+- **Me-restart aplikasi**: `pm2 restart pintar-elementary`
+- **Menghentikan aplikasi**: `pm2 stop pintar-elementary`
 
 ## 9. Konfigurasi Nginx sebagai Reverse Proxy
 
-Langkah ini akan membuat aplikasi Anda dapat diakses melalui domain (misalnya, `https://app.ayahjenius.com`) tanpa perlu menyertakan nomor port `:3000`.
+Langkah ini akan membuat aplikasi Anda dapat diakses melalui domain (misalnya, `https://app.pintarelementary.com`) tanpa perlu menyertakan nomor port `:3000`.
 
 ### Langkah 1: Instal Nginx
 Instal Nginx dari repositori AlmaLinux:
@@ -187,7 +187,7 @@ sudo firewall-cmd --reload
 ### Langkah 4: Buat File Konfigurasi Nginx untuk Aplikasi Anda
 Buat file konfigurasi baru di dalam direktori `conf.d` Nginx. Ganti `domain-anda.com` dengan domain Anda yang sebenarnya.
 ```bash
-sudo nano /etc/nginx/conf.d/ayah-jenius.conf
+sudo nano /etc/nginx/conf.d/pintar-elementary.conf
 ```
 
 Salin dan tempel konfigurasi berikut ke dalam file tersebut. **PENTING: Ganti `domain-anda.com` dengan domain atau subdomain Anda.**
@@ -228,7 +228,7 @@ Setiap kali Anda membuat perubahan pada kode dan mendorongnya ke repositori Git,
 ### Langkah 1: Masuk ke Direktori Aplikasi
 Pastikan Anda berada di direktori proyek yang benar.
 ```bash
-cd /var/www/ayah-jenius
+cd /var/www/pintar-elementary
 ```
 
 ### Langkah 2: Ambil Kode Terbaru dari Git
@@ -252,7 +252,7 @@ npm run build
 ### Langkah 5: Restart Aplikasi dengan PM2
 Gunakan PM2 untuk me-restart aplikasi Anda. PM2 akan melakukannya dengan *zero downtime* (tanpa mematikan aplikasi sepenuhnya).
 ```bash
-pm2 restart ayah-jenius
+pm2 restart pintar-elementary
 ```
 
 Selesai! Aplikasi Anda kini berjalan dengan versi kode terbaru.
@@ -261,4 +261,4 @@ Selesai! Aplikasi Anda kini berjalan dengan versi kode terbaru.
 
 ## Selesai!
 
-Aplikasi Ayah Jenius Anda sekarang sudah berjalan secara andal di latar belakang dan dapat diakses melalui domain Anda tanpa perlu menambahkan `:3000`. Langkah selanjutnya yang sangat direkomendasikan adalah mengamankan situs Anda dengan **SSL/TLS menggunakan Certbot (Let's Encrypt)** agar dapat diakses melalui `https://`.
+Aplikasi Pintar Elementary Anda sekarang sudah berjalan secara andal di latar belakang dan dapat diakses melalui domain Anda tanpa perlu menambahkan `:3000`. Langkah selanjutnya yang sangat direkomendasikan adalah mengamankan situs Anda dengan **SSL/TLS menggunakan Certbot (Let's Encrypt)** agar dapat diakses melalui `https://`.

@@ -14,18 +14,18 @@ export default function Home() {
   const features = [
     {
       icon: <BrainCircuit className="h-10 w-10 text-primary" />,
-      title: 'Bantuan PR Cerdas',
-      description: 'Dapatkan jawaban dan penjelasan langkah-demi-langkah untuk PR tersulit sekalipun, kapan saja, di mana saja.',
+      title: 'AI-Powered Quizzes',
+      description: 'Generate adaptive quizzes that adjust in difficulty based on your performance, making learning more effective.',
     },
     {
       icon: <Edit className="h-10 w-10 text-primary" />,
-      title: 'Latihan Soal HOTS Harian',
-      description: 'Asah kemampuan dengan soal-soal HOTS (High Order Thinking Skills) baru setiap hari, dibuat khusus untuk ujian.',
+      title: 'Interactive Exercises',
+      description: 'Engage with hands-on exercises for each subject, designed to make learning fun and impactful.',
     },
     {
       icon: <BookCheck className="h-10 w-10 text-primary" />,
-      title: 'Kurikulum Merdeka Lengkap',
-      description: 'Materi belajar lengkap dari SD, SMP, hingga SMA, dirancang sesuai Kurikulum Merdeka untuk pemahaman maksimal.',
+      title: 'Offline Learning',
+      description: 'Download your learning materials and access them anytime, anywhere, even without an internet connection.',
     },
   ];
 
@@ -38,18 +38,18 @@ export default function Home() {
         <section className="container mx-auto px-4 py-16 sm:py-24 md:py-32 text-center">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold font-headline tracking-tight">
-              Buka Potensi <span className="text-primary">Jenius</span> Anak Anda
+              Unlock Your Child's Potential with <span className="text-primary">Pintar Elementary</span>
             </h1>
             <p className="mt-6 text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-              Partner belajar AI yang memahami kurikulum Indonesia, membuat PR jadi mudah, dan siap membantu anak Anda meraih nilai terbaik.
+              An AI learning partner that understands the curriculum, simplifies homework, and helps your child achieve top grades.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button size="lg" className="h-12 text-lg px-8 w-full sm:w-auto" onClick={() => router.push('/login')}>
-                Masuk Untuk Mulai Belajar <ArrowRight className="ml-2" />
+                Start Learning <ArrowRight className="ml-2" />
               </Button>
                <Button size="lg" variant="outline" className="h-12 text-lg px-8 w-full sm:w-auto" onClick={() => router.push('/register')}>
                 <UserPlus className="mr-2"/>
-                Daftar Gratis
+                Sign Up Free
               </Button>
             </div>
           </div>
@@ -59,9 +59,9 @@ export default function Home() {
         <section id="features" className="bg-secondary/50 py-16 sm:py-24">
           <div className="container mx-auto px-4">
             <div className="text-center max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-bold font-headline">Semua yang Dibutuhkan untuk Berprestasi</h2>
+              <h2 className="text-3xl md:text-4xl font-bold font-headline">Everything You Need to Excel</h2>
               <p className="mt-4 text-muted-foreground text-base sm:text-lg">
-                Dari PR hingga persiapan ujian, kami menyediakan alat yang tepat untuk setiap tantangan akademis di semua jenjang sekolah.
+                From homework help to exam prep, we provide the right tools for every academic challenge.
               </p>
             </div>
             <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -86,7 +86,7 @@ export default function Home() {
          <section className="py-16 sm:py-24">
             <div className="container mx-auto px-4">
                 <div className="text-center max-w-3xl mx-auto">
-                    <h2 className="text-3xl md:text-4xl font-bold font-headline">Mulai dalam 3 Langkah Mudah</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold font-headline">Start in 3 Easy Steps</h2>
                 </div>
                 <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 text-center relative">
                     {/* Dashed line for desktop */}
@@ -99,22 +99,22 @@ export default function Home() {
                         <div className="bg-background p-2 border-2 border-dashed border-primary rounded-full">
                            <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold">1</div>
                         </div>
-                        <h3 className="mt-4 text-xl font-semibold font-headline">Daftar Akun</h3>
-                        <p className="mt-2 text-muted-foreground">Buat akun baru hanya dalam beberapa detik.</p>
+                        <h3 className="mt-4 text-xl font-semibold font-headline">Create an Account</h3>
+                        <p className="mt-2 text-muted-foreground">Sign up for a new account in seconds.</p>
                     </div>
                      <div className="flex flex-col items-center z-10">
                         <div className="bg-background p-2 border-2 border-dashed border-primary rounded-full">
                            <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold">2</div>
                         </div>
-                        <h3 className="mt-4 text-xl font-semibold font-headline">Pilih Kelas</h3>
-                        <p className="mt-2 text-muted-foreground">Pilih jenjang, kelas, dan semester yang sedang dijalani.</p>
+                        <h3 className="mt-4 text-xl font-semibold font-headline">Choose Your Grade</h3>
+                        <p className="mt-2 text-muted-foreground">Select the grade level and semester you are currently in.</p>
                     </div>
                      <div className="flex flex-col items-center z-10">
                         <div className="bg-background p-2 border-2 border-dashed border-primary rounded-full">
                            <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold">3</div>
                         </div>
-                        <h3 className="mt-4 text-xl font-semibold font-headline">Mulai Belajar</h3>
-                        <p className="mt-2 text-muted-foreground">Akses semua materi, latihan soal, dan bantuan PR sepuasnya!</p>
+                        <h3 className="mt-4 text-xl font-semibold font-headline">Start Learning</h3>
+                        <p className="mt-2 text-muted-foreground">Access all materials, practice questions, and homework help!</p>
                     </div>
                 </div>
             </div>
@@ -126,9 +126,9 @@ export default function Home() {
                 <div className="max-w-3xl mx-auto text-center">
                     <ShieldCheck className="w-16 h-16 text-accent mx-auto" />
                     <blockquote className="mt-6 text-xl md:text-2xl font-semibold italic text-foreground/80">
-                        "Sejak pakai Ayah Jenius, nilai anak saya meningkat drastis! Penjelasannya jauh lebih mudah dimengerti daripada les privat. Sangat direkomendasikan!"
+                        "Since using Pintar Elementary, my child's grades have improved dramatically! The explanations are much easier to understand than private tutoring. Highly recommended!"
                     </blockquote>
-                    <p className="mt-4 font-semibold text-muted-foreground">- Ibu Siti, Orang Tua Murid Kelas 4 SDN</p>
+                    <p className="mt-4 font-semibold text-muted-foreground">- Jane Doe, Parent of a Grade 4 Student</p>
                 </div>
             </div>
         </section>
@@ -136,13 +136,13 @@ export default function Home() {
         {/* Final CTA Section */}
         <section className="container mx-auto px-4 py-16 sm:py-24 text-center">
              <div className="max-w-3xl mx-auto">
-                <h2 className="text-3xl md:text-4xl font-bold font-headline">Siap Mengubah Cara Belajar Anak Anda?</h2>
+                <h2 className="text-3xl md:text-4xl font-bold font-headline">Ready to Change How Your Child Learns?</h2>
                 <p className="mt-4 text-muted-foreground text-base sm:text-lg">
-                    Daftar gratis sekarang dan akses semua fitur cerdas kami.
+                    Sign up for free now and access all our smart features.
                 </p>
                 <div className="mt-8">
                      <Button size="lg" className="h-12 text-lg px-8" onClick={() => router.push('/register')}>
-                        Daftar Gratis Sekarang
+                        Sign Up for Free
                      </Button>
                 </div>
             </div>
@@ -151,7 +151,7 @@ export default function Home() {
       </main>
 
       <footer className="text-center p-6 bg-card text-muted-foreground text-sm border-t">
-        © {new Date().getFullYear()} Ayah Jenius. All rights reserved.
+        © {new Date().getFullYear()} Pintar Elementary. All rights reserved.
       </footer>
     </div>
   );
