@@ -125,8 +125,22 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
             'Doa untuk kesehatan', 'Berbagi mainan', 'bersikap jujur'
         ],
         'Bahasa Inggris': ['Greetings and Introductions', 'Things in the Classroom', 'Family Members', 'Colors and Numbers'],
-        'PJOK': ['Gerak dasar lokomotor (berjalan, berlari)', 'Gerak dasar non-lokomotor (membungkuk, mengayun)', 'Gerak dasar lempar dan tangkap bola', 'permainan sederhana', 'Gerak menirukan hewan (melompat seperti katak, berjalan seperti bebek)', 'Permainan tradisional', 'senam irama sederhana'],
-        'Seni Budaya dan Prakarya (SBDP)': ['Menggambar anggota keluarga', 'Mewarnai gambar', 'Bernyanyi lagu anak-anak tentang diri dan keluarga', 'Membuat prakarya dari bahan bekas (misal: bentuk bangunan sekolah)', 'meniru gerak tari sederhana', 'Menggambar dan mewarnai tumbuhan/hewan', 'Membuat kolase', 'Membuat alat musik sederhana', 'bermain peran'],
+        'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)': [
+            'Gerak dasar lokomotor (melompat, berlari)', 
+            'Gerak dasar non-lokomotor (membungkuk, memutar)', 
+            'Permainan sederhana yang menggabungkan gerak lokomotor dan non-lokomotor',
+            'Gerak dasar lempar dan tangkap bola', 
+            'Gerak menirukan hewan (melompat seperti katak, berjalan seperti bebek)', 
+            'Permainan tradisional', 'senam irama sederhana'
+        ],
+        'Seni Budaya dan Prakarya (SBDP)': [
+            'Menggambar kegiatan keluarga', 
+            'Membuat kartu ucapan untuk keluarga', 
+            'Bernyanyi lagu tentang keluarga',
+            'Mewarnai gambar',
+            'Membuat prakarya dari bahan bekas (misal: bentuk bangunan sekolah)', 'meniru gerak tari sederhana', 
+            'Menggambar dan mewarnai tumbuhan/hewan', 'Membuat kolase', 'Membuat alat musik sederhana', 'bermain peran'
+        ],
         'Bahasa Daerah': ['Menyimak cerita rakyat lokal', 'Kosakata tentang keluarga dan rumah', 'Unggah-ungguh basa (Sopan santun berbahasa)'],
         
         // SMP & MTs Topics (Fase D)
@@ -158,7 +172,7 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
         'Pendidikan Pancasila': ['Makna Bhinneka Tunggal Ika', 'Hak dan Kewajiban sebagai Warga Negara', 'Praktik Musyawarah untuk Mufakat'],
         'Pendidikan Agama & Budi Pekerti': ['Kisah Nabi Nuh A.S. dan Nabi Ibrahim A.S.', 'Iman kepada Malaikat dan Kitab-kitab Allah', 'Tata Cara dan Bacaan Shalat'],
         'Bahasa Inggris': ['Telling Time and Daily Activities', 'Describing People and Animals', 'Public Places', 'Simple Present Tense'],
-        'PJOK': ['Gerak Berirama (Senam Lantai)', 'Permainan Bola Kecil (Kasti, Bulu Tangkis)', 'Dasar-dasar Renang'],
+        'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)': ['Gerak Berirama (Senam Lantai)', 'Permainan Bola Kecil (Kasti, Bulu Tangkis)', 'Dasar-dasar Renang'],
         'Seni Budaya dan Prakarya (SBDP)': ['Membuat Karya Montase, Kolase, dan Mozaik', 'Lagu Daerah dan Alat Musik Tradisional', 'Membuat Produk Kerajinan dari Bahan Bekas'],
         'Bahasa Daerah': ['Berbicara menggunakan tingkatan bahasa (jika ada)', 'Menulis kalimat sederhana dengan aksara daerah (jika ada)'],
 
