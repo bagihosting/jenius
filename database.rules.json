@@ -1,8 +1,6 @@
 
 {
   "rules": {
-    ".read": "root.child('users').child(auth.uid).child('role').val() === 'admin'",
-    ".write": "root.child('users').child(auth.uid).child('role').val() === 'admin'",
     "users": {
       "$uid": {
         ".read": "auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin'",
@@ -10,7 +8,8 @@
         "role": {
           ".write": "root.child('users').child(auth.uid).child('role').val() === 'admin'"
         }
-      }
+      },
+      ".read": "root.child('users').child(auth.uid).child('role').val() === 'admin'"
     },
     "usernames": {
         ".read": "auth.uid != null",
@@ -21,14 +20,13 @@
     "upgradeRequests": {
       ".read": "root.child('users').child(auth.uid).child('role').val() === 'admin'",
       "$uid": {
-        ".write": "auth.uid === $uid"
+        ".write": "auth.uid === $uid && (!data.exists() || data.child('status').val() !== 'approved')",
+        ".read": "auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin'"
       }
     },
     "appSettings": {
-      "upgradeInfo": {
-        ".read": "auth.uid != null",
-        ".write": "root.child('users').child(auth.uid).child('role').val() === 'admin'"
-      }
+      ".read": "auth.uid != null",
+      ".write": "root.child('users').child(auth.uid).child('role').val() === 'admin'"
     }
   }
 }
