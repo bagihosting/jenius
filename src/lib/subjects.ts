@@ -99,10 +99,10 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
 
         // Religious Subjects for MI, MTs, MA
         'Al-Qur\'an Hadis': ['Hukum Bacaan Nun Sukun/Tanwin dan Mim Sukun', 'Hafalan dan Pemahaman Surat-surat Pendek (An-Nas s/d Ad-Dhuha)', 'Hadis tentang Niat dan Ikhlas'],
-        'Akidah Akhlak': ['Dasar dan Tujuan Akidah Islam', 'Asmaul Husna (Al-Alim, Al-Khabir, As-Sami, Al-Basir)', 'Sifat Wajib, Mustahil, dan Jaiz bagi Allah'],
-        'Fikih': ['Thaharah (Bersuci dari Hadas dan Najis)', 'Salat Fardhu dan Berjamaah', 'Azan dan Iqamah'],
+        'Akidah Akhlak': ['Dasar dan Tujuan Akidah Islam', 'Asmaul Husna (Al-Alim, Al-Khabir, As-Sami, Al-Basir)', 'Sifat Wajib, Mustahil, dan Jaiz bagi Allah', 'Pengenalan Asmaul Husna', 'kisah nabi-nabi sederhana', 'akhlak terpuji (jujur, sabar, disiplin)'],
+        'Fikih': ['Thaharah (Bersuci dari Hadas dan Najis)', 'Salat Fardhu dan Berjamaah', 'Azan dan Iqamah', 'Pengenalan rukun Islam (syahadat, salat, puasa, zakat, haji) secara sederhana'],
         'Sejarah Kebudayaan Islam': ['Misi dan Strategi Dakwah Nabi Muhammad SAW di Mekah', 'Kondisi Masyarakat Arab Pra-Islam'],
-        'Bahasa Arab': ['Perkenalan (Ta\'aruf)', 'Angka 1-50', 'Benda-benda di Sekolah dan Rumah (Al-Adawat al-Madrasiyah wal-Baitiyah)'],
+        'Bahasa Arab': ['Perkenalan (Ta\'aruf)', 'Angka 1-50', 'Benda-benda di Sekolah dan Rumah (Al-Adawat al-Madrasiyah wal-Baitiyah)', 'Pengenalan kosakata dasar (salam, angka, benda di kelas)'],
     },
     '2': {
         // SD Topics
@@ -153,7 +153,18 @@ function generateSubjectContent(school: SchoolType, grade: Grade, semester: Seme
     const schoolName = schoolTypeMap[school] || 'sekolah';
     const fase = getFase(grade);
 
-    const topicsForSemester = semesterTopics[semester][title] || semesterTopics[semester === '1' ? '2' : '1'][title] || ['Topik umum sesuai Kurikulum Merdeka'];
+    let topicsForSemester: string[] = [];
+    if (semesterTopics[semester] && semesterTopics[semester][title]) {
+        topicsForSemester = semesterTopics[semester][title];
+    } else {
+        const otherSemester = semester === '1' ? '2' : '1';
+        if (semesterTopics[otherSemester] && semesterTopics[otherSemester][title]) {
+            topicsForSemester = semesterTopics[otherSemester][title];
+        } else {
+            topicsForSemester = ['Topik umum sesuai Kurikulum Merdeka'];
+        }
+    }
+    
     const selectedTopics = topicsForSemester.slice(0, 3 + Math.floor(parseInt(grade, 10) / 3)); // More topics for higher grades
 
     return `Materi pelajaran "${title}" untuk Semester ${semester}, Fase ${fase} (Kelas ${grade}) di ${schoolName}, sesuai Kurikulum Merdeka 2025. Fokus utama mencakup: ${selectedTopics.join(', ')}. "Ayah Jenius" akan menggunakan ringkasan ini untuk membuat konten belajar yang lebih detail, dengan tingkat kesulitan yang disesuaikan untuk kelas ${grade}.`;
@@ -177,9 +188,8 @@ export function getSubjects(school: SchoolType, grade: Grade, semester: Semester
   if (['SDN', 'SMP', 'SMA'].includes(school)) {
     subjectList.push(religiousSubjects.sd_smp_sma);
   } else if (['SDIT'].includes(school)) {
-    subjectList.push(religiousSubjects.sd_smp_sma);
-    subjectList.push({ title: 'Bahasa Arab', icon: 'Speech' });
-    subjectList.push({ title: 'Al-Qur\'an Hadis', icon: 'BookCopy' });
+    subjectList.push(religiousSubjects.sd_smp_sma); // Tetap ada PAIBP umum
+    subjectList.push(...religiousSubjects.mi_mts_ma);
   } else if (['MI', 'MTs', 'MA'].includes(school)) {
     subjectList.push(...religiousSubjects.mi_mts_ma);
   }
@@ -204,3 +214,6 @@ export const getSubjectById = (school: SchoolType, grade: Grade, semester: Semes
 
 
 
+
+
+    
