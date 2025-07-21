@@ -111,6 +111,8 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
         'Matematika': ['Penjumlahan dan pengurangan bilangan cacah sampai 1.000 (termasuk soal cerita)', 'perkalian dan pembagian dasar (fakta dasar sampai 10x10).'],
         'Pendidikan Agama & Budi Pekerti': ['Bersyukur atas nikmat alam', 'menjaga kebersihan adalah sebagian dari iman', 'pentingnya menjaga lingkungan sebagai titipan Tuhan.'],
         'IPAS': ['Ciri-ciri Makhluk Hidup', 'Sistem Pencernaan Manusia secara Sederhana', 'Rangkaian Listrik Sederhana'],
+        'Seni Budaya dan Prakarya (SBDP)': ['Membuat karya seni dari bahan alam (tanah liat, daun kering)', 'menggambar pemandangan alam', 'membuat prakarya dari bahan daur ulang.'],
+        'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)': ['Gerakan menjaga keseimbangan', 'senam irama dengan variasi gerak.'],
 
         // --- KELAS 4 (FASE B) ---
         'Pendidikan Pancasila': ['Hak dan Kewajiban sebagai Warga Sekolah dan Masyarakat', 'Bentuk-bentuk Keragaman Suku, Agama, dan Budaya', 'Pentingnya Musyawarah Mufakat'],
