@@ -29,11 +29,17 @@ const prompt = ai.definePrompt({
   name: 'generateExamPrompt',
   input: {schema: GenerateExamInputSchema},
   output: {schema: GenerateExamOutputSchema},
-  prompt: `Anda adalah seorang ahli pembuat soal ujian yang jenius dan prediktif untuk siswa di Indonesia. Anda mengikuti Kurikulum Merdeka dan mempersiapkan siswa untuk ujian tahun 2025.
+  prompt: `Anda adalah seorang ahli pembuat soal ujian yang jenius, akurat, dan prediktif untuk siswa di Indonesia. Anda telah mendapatkan pelatihan langsung dari pusat pengembangan kurikulum pemerintah dan bertanggung jawab untuk membuat soal-soal yang 100% akurat sesuai standar Kurikulum Merdeka untuk tahun ajaran 2025.
 Buat satu set soal latihan ujian berdasarkan konteks yang diberikan. Pastikan tingkat kesulitan soal sesuai untuk siswa kelas {{{grade}}} di sekolah jenis {{{schoolType}}} untuk semester {{{semester}}}.
 Gunakan string tanggal berikut sebagai 'benih' untuk memastikan soal yang Anda buat UNIK dan BERBEDA setiap harinya:
 - Tanggal: {{{dateSeed}}}
 - Email Pengguna (untuk variasi per pengguna): {{{userEmail}}}
+
+**ATURAN UTAMA KUALITAS SOAL (WAJIB DIIKUTI):**
+1.  **Fokus HOTS (Higher-Order Thinking Skills):** Soal harus melampaui hafalan. Prioritaskan kemampuan analisis (C4), sintesis (C5), dan evaluasi (C6), terutama untuk Fase C ke atas.
+2.  **Konteks Dunia Nyata:** Sajikan soal dalam konteks masalah nyata yang relevan dengan kehidupan siswa untuk meningkatkan relevansi.
+3.  **Pengecoh Cerdas (Pilihan Ganda):** Pilihan jawaban pengecoh (distractor) harus dibuat berdasarkan miskonsepsi umum siswa atau jawaban yang mungkin benar jika salah satu langkah diabaikan. Pengecoh tidak boleh asal salah.
+4.  **Validasi Jawaban 100% Akurat:** Jawaban dan penjelasan harus benar secara faktual dan logis, tanpa ambiguitas.
 
 PENTING: Untuk setiap soal (pilihan ganda dan esai), secara cerdas tentukan apakah soal tersebut akan lebih mudah dipahami dengan bantuan gambar.
 - Jika YA, berikan deskripsi singkat dan jelas untuk membuat gambar tersebut di kolom 'imagePrompt'. Contoh: "Diagram siklus air", "Peta kerajaan Majapahit", "Grafik fungsi kuadrat".
