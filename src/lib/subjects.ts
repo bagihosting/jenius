@@ -100,7 +100,9 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
             'Nilai tempat (puluhan dan satuan)',
             'Penjumlahan dan pengurangan dua angka tanpa meminjam/meminjam',
             'Pengukuran panjang dengan satuan baku (cm, meter)',
-            'mengenal bangun datar dan bangun ruang sederhana (kubus, balok, bola)'
+            'mengenal bangun datar dan bangun ruang sederhana (kubus, balok, bola)',
+            'Menyelesaikan masalah sehari-hari yang berkaitan dengan penjumlahan dan pengurangan (maksimal tiga angka)',
+            'mengenal waktu (jam dan menit)'
         ],
         'IPAS': ['Rangka dan Panca Indra Manusia', 'Ciri-ciri Makhluk Hidup', 'Wujud Benda dan Perubahannya', 'Kenampakan Alam dan Buatan'],
         'Pendidikan Agama & Budi Pekerti': [
@@ -109,7 +111,9 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
             'mengenal sifat-sifat Allah yang Maha Pengasih dan Penyayang',
             'Adab berteman',
             'menghargai teman yang berbeda agama/suku',
-            'doa belajar'
+            'doa belajar',
+            'Mensyukuri nikmat Allah atas ciptaan-Nya (tumbuhan dan hewan)',
+            'menjaga kebersihan dan kelestarian alam'
         ],
         'Bahasa Inggris': ['Greetings and Introductions', 'Things in the Classroom', 'Family Members', 'Colors and Numbers'],
         'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)': [
@@ -123,7 +127,9 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
             'bernyanyi lagu tentang keluarga',
             'Membuat mading sederhana tentang sekolah',
             'menggambar lingkungan sekolah',
-            'membuat hiasan kelas'
+            'membuat hiasan kelas',
+            'Membuat diorama kebun binatang/pertanian',
+            'menggambar dan mewarnai jenis-jenis tumbuhan/hewan'
         ],
         'Bahasa Daerah': ['Menyimak cerita rakyat lokal', 'Kosakata tentang keluarga dan rumah', 'Unggah-ungguh basa (Sopan santun berbahasa)'],
         
@@ -263,4 +269,5 @@ export const getSubjectById = (school: SchoolType, grade: Grade, semester: Semes
     
 
     
+
 
