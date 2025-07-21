@@ -40,16 +40,21 @@ export default function DailyClaimPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [countdown, setCountdown] = useState<string>("00:00:00");
   const [awardedBonus, setAwardedBonus] = useState<number | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   const grade = searchParams.get('grade') as Grade;
   const semester = searchParams.get('semester');
   const backlink = `/dashboard?grade=${grade}&semester=${semester}`;
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (isClient && !loading && !isAuthenticated) {
       router.push('/login');
     }
-  }, [loading, isAuthenticated, router]);
+  }, [isClient, loading, isAuthenticated, router]);
 
   const checkClaimStatus = useCallback(() => {
     if (!user) return;
@@ -119,7 +124,7 @@ export default function DailyClaimPage() {
     }
   };
 
-  if (loading || !isAuthenticated) {
+  if (!isClient || loading || !isAuthenticated) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
