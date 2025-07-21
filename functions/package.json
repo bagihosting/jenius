@@ -1,6 +1,6 @@
 
 {
-  "name": "pintar-elementary-functions",
+  "name": "ayah-jenius-functions",
   "private": true,
   "scripts": {
     "build": "tsc",

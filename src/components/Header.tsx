@@ -34,7 +34,7 @@ export function Header() {
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-2 text-2xl font-bold text-gray-800 dark:text-gray-200 font-headline">
               <BookHeart className="h-8 w-8 text-primary" />
-              <span>Pintar Elementary</span>
+              <span>Ayah Jenius</span>
             </Link>
             <p className="text-sm text-muted-foreground hidden md:block">Your Fun Learning Partner</p>
           </div>

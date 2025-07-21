@@ -86,7 +86,7 @@ export default function RegisterPage() {
 
       await updateProfile(createdUser, { displayName: name });
       
-      const isAdmin = email.toLowerCase() === 'admin@pintarelementary.com';
+      const isAdmin = email.toLowerCase() === 'admin@ayahjenius.com';
       const userRole = isAdmin ? 'admin' : 'user';
 
       const userData = {
@@ -216,7 +216,7 @@ export default function RegisterPage() {
         <Card className="w-full max-w-md shadow-lg">
           <CardHeader className="text-center">
             <CardTitle className="text-3xl font-headline">Buat Akun Baru</CardTitle>
-            <CardDescription>Daftar gratis untuk mulai belajar dengan Pintar Elementary.</CardDescription>
+            <CardDescription>Daftar gratis untuk mulai belajar dengan Ayah Jenius.</CardDescription>
           </CardHeader>
           <CardContent>
             {renderContent()}
