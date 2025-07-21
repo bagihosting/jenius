@@ -38,6 +38,7 @@ Gunakan string berikut sebagai 'benih' untuk memastikan soal yang Anda buat UNIK
 
 PENTING: Untuk setiap pertanyaan, secara cerdas tentukan apakah pertanyaan tersebut akan lebih mudah dipahami dengan bantuan gambar.
 - Jika YA, berikan deskripsi singkat dan jelas untuk membuat gambar tersebut di kolom 'imagePrompt'. Contoh: "Ilustrasi rantai makanan di sawah", "Gambar bangun ruang kubus", "Grafik permintaan dan penawaran".
+- Jika teks pertanyaan secara eksplisit menyebutkan gambar (misal: "Perhatikan gambar berikut", "Gambar di bawah menunjukkan..."), maka Anda WAJIB memberikan deskripsi di 'imagePrompt'.
 - Jika TIDAK, jangan sertakan kolom 'imagePrompt'.
 
 PENTING: Sesuaikan kompleksitas soal dan bahasa dengan tingkatan kelas. Ini adalah aturan yang paling penting:

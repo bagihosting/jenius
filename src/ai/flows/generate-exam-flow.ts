@@ -37,6 +37,7 @@ Gunakan string tanggal berikut sebagai 'benih' untuk memastikan soal yang Anda b
 
 PENTING: Untuk setiap soal (pilihan ganda dan esai), secara cerdas tentukan apakah soal tersebut akan lebih mudah dipahami dengan bantuan gambar.
 - Jika YA, berikan deskripsi singkat dan jelas untuk membuat gambar tersebut di kolom 'imagePrompt'. Contoh: "Diagram siklus air", "Peta kerajaan Majapahit", "Grafik fungsi kuadrat".
+- Jika teks soal secara eksplisit menyebutkan gambar (misal: "Perhatikan gambar berikut", "Gambar di bawah menunjukkan..."), maka Anda WAJIB memberikan deskripsi di 'imagePrompt'.
 - Jika TIDAK, jangan sertakan kolom 'imagePrompt'.
 
 PENTING: Sesuaikan kompleksitas soal dan bahasa dengan tingkatan kelas. Ini adalah aturan yang paling penting:

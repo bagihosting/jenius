@@ -197,8 +197,8 @@ export default function ExamPracticePage() {
                                        <div className="my-3 relative w-full aspect-video max-w-sm mx-auto">
                                             <Image
                                                 src={q.imageUrl}
-                                                alt={`Ilustrasi untuk soal ${index + 1}`}
-                                                fill
+                                                alt={q.imagePrompt || `Ilustrasi untuk soal ${index + 1}`}
+                                                layout="fill"
                                                 className="rounded-lg object-contain"
                                             />
                                         </div>
@@ -234,8 +234,8 @@ export default function ExamPracticePage() {
                                        <div className="my-3 relative w-full aspect-video max-w-sm mx-auto">
                                             <Image
                                                 src={q.imageUrl}
-                                                alt={`Ilustrasi untuk soal esai ${index + 1}`}
-                                                fill
+                                                alt={q.imagePrompt || `Ilustrasi untuk soal esai ${index + 1}`}
+                                                layout="fill"
                                                 className="rounded-lg object-contain"
                                             />
                                         </div>

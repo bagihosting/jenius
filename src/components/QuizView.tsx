@@ -15,6 +15,8 @@ import { Progress } from './ui/progress';
 import { useProgress } from '@/hooks/use-progress';
 import { Confetti } from './Confetti';
 import { useAuth } from '@/context/AuthContext';
+import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 
 type QuizState = 'idle' | 'loading' | 'active' | 'finished';
 
@@ -173,12 +175,14 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
             <CardHeader>
                 <CardTitle>Kuis: Pertanyaan {currentQuestionIndex + 1}/{quiz!.quiz.length}</CardTitle>
                 <Progress value={((currentQuestionIndex + 1) / quiz!.quiz.length) * 100} className="mt-2" />
-                <CardDescription className="pt-4 text-lg text-foreground">{currentQuestion.question}</CardDescription>
+                <div className="pt-4 text-lg text-foreground prose prose-sm max-w-none dark:prose-invert">
+                  <ReactMarkdown rehypePlugins={[rehypeRaw]}>{currentQuestion.question}</ReactMarkdown>
+                </div>
                 {currentQuestion.imageUrl && (
                     <div className="mt-4 relative w-full aspect-video rounded-lg overflow-hidden border">
                         <Image
                             src={currentQuestion.imageUrl}
-                            alt={`Ilustrasi untuk pertanyaan ${currentQuestionIndex + 1}`}
+                            alt={currentQuestion.imagePrompt || `Ilustrasi untuk pertanyaan ${currentQuestionIndex + 1}`}
                             layout="fill"
                             objectFit="contain"
                             className="bg-gray-100"
@@ -225,6 +229,11 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
                         return (
                             <div key={index} className="border-b pb-2">
                                 <p className="font-semibold">{index + 1}. {q.question}</p>
+                                {q.imageUrl && (
+                                  <div className="mt-2 relative w-full aspect-video max-w-xs mx-auto">
+                                    <Image src={q.imageUrl} alt={q.imagePrompt || 'Ilustrasi soal'} layout="fill" objectFit="contain" className="rounded-md" />
+                                  </div>
+                                )}
                                 <div className="flex items-center gap-2 mt-1">
                                     {isCorrect ? (
                                         <CheckCircle2 className="text-green-500 w-4 h-4 shrink-0" />
