@@ -5,7 +5,7 @@
     ".write": false,
 
     "users": {
-      ".indexOn": ["role", "robloxUsername"],
+      ".indexOn": ["role", "robloxUsername", "bonusPoints"],
       ".read": "root.child('users').child(auth.uid).child('role').val() === 'admin'",
       "$uid": {
         ".read": "auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin'",
@@ -14,7 +14,8 @@
           ".write": "root.child('users').child(auth.uid).child('role').val() === 'admin'"
         },
         "bonusPoints": {
-           ".read": "auth.uid === $uid"
+           ".read": "auth.uid === $uid",
+           ".write": "auth.uid === $uid && newData.isNumber() && (!data.exists() || newData.val() >= data.val())"
         },
         "lastClaimedAt": {
            ".read": "auth.uid === $uid",
