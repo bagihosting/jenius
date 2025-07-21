@@ -78,38 +78,38 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
             'Aturan di rumah', 
             'Kerja sama dalam keluarga', 
             'Menghargai perbedaan anggota keluarga',
-            'Tata tertib di sekolah', 
-            'Perilaku baik (saling menolong, berbagi)', 
-            'Menjaga kebersihan lingkungan sekolah', 
-            'Menghargai perbedaan teman', 
-            'Antre', 
-            'Menyayangi makhluk hidup (tumbuhan dan hewan)', 
-            'Tanggung jawab merawat', 
-            'Sportivitas dalam bermain', 
+            'Tata tertib di sekolah',
+            'Perilaku baik (saling menolong, berbagi)',
+            'Menjaga kebersihan lingkungan sekolah',
+            'Menghargai perbedaan teman',
+            'Antre',
+            'Menyayangi makhluk hidup (tumbuhan dan hewan)',
+            'Tanggung jawab merawat',
+            'Sportivitas dalam bermain',
             'Kerja sama dalam kelompok',
         ],
         'Bahasa Indonesia': [
             'Menceritakan pengalaman bersama keluarga', 
             'Membaca dan menulis kalimat sederhana', 
             'Mengenali dan menuliskan kata kerja dan kata sifat',
-            'Memperkenalkan diri', 
-            'Menyebutkan nama anggota keluarga dan teman', 
-            'Mengenal huruf vokal dan konsonan dasar', 
-            'Membaca dan menulis kata sederhana (nama diri, benda)', 
-            'Menyebutkan benda-benda di sekolah', 'Membaca dan menulis suku kata', 
-            'Kalimat sederhana tentang kegiatan di sekolah', 'Menyebutkan nama-nama tumbuhan dan hewan', 
-            'Membaca dan menulis kalimat sederhana tentang ciri-ciri tumbuhan/hewan', 'Menceritakan pengalaman bermain', 
+            'Memperkenalkan diri',
+            'Menyebutkan nama anggota keluarga dan teman',
+            'Mengenal huruf vokal dan konsonan dasar',
+            'Membaca dan menulis kata sederhana (nama diri, benda)',
+            'Menyebutkan benda-benda di sekolah', 'Membaca dan menulis suku kata',
+            'Kalimat sederhana tentang kegiatan di sekolah', 'Menyebutkan nama-nama tumbuhan dan hewan',
+            'Membaca dan menulis kalimat sederhana tentang ciri-ciri tumbuhan/hewan', 'Menceritakan pengalaman bermain',
             'Membaca cerita pendek tentang permainan', 'Menulis kalimat ajakan'
         ],
         'Matematika': [
             'Mengenal bilangan cacah sampai 100', 
             'Nilai tempat (puluhan dan satuan)', 
             'Penjumlahan dan pengurangan dua angka tanpa meminjam/meminjam',
-            'Mengenal bilangan 1-10', 
-            'Membilang dan mengurutkan benda', 'Konsep lebih banyak/lebih sedikit', 
-            'Penjumlahan dan pengurangan bilangan 1-10 (dengan benda konkret)', 
-            'Mengenal bangun datar sederhana (lingkaran, persegi, segitiga)', 
-            'Mengenal pola bilangan', 'Mengukur panjang benda sederhana (tidak baku)', 
+            'Mengenal bilangan 1-10',
+            'Membilang dan mengurutkan benda', 'Konsep lebih banyak/lebih sedikit',
+            'Penjumlahan dan pengurangan bilangan 1-10 (dengan benda konkret)',
+            'Mengenal bangun datar sederhana (lingkaran, persegi, segitiga)',
+            'Mengenal pola bilangan', 'Mengukur panjang benda sederhana (tidak baku)',
             'Mengenal nilai tempat (puluhan, satuan) untuk bilangan 11-20', 'Membandingkan berat benda'
         ],
         'IPAS': ['Rangka dan Panca Indra Manusia', 'Ciri-ciri Makhluk Hidup', 'Wujud Benda dan Perubahannya', 'Kenampakan Alam dan Buatan'],
@@ -117,11 +117,11 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
             'Doa untuk orang tua', 
             'Pentingnya berbakti kepada orang tua', 
             'Mengenal sifat-sifat Allah yang Maha Pengasih dan Penyayang',
-            'Mengenal ciptaan Tuhan', 
-            'Bersyukur atas diri dan keluarga', 'Doa sebelum dan sesudah kegiatan sederhana', 
-            'Adab dan sopan santun di sekolah (hormat kepada guru, sayang pada teman)', 'Kebersihan diri dan lingkungan', 
-            'Kisah Nabi Adam A.S. dan Nabi Idris A.S.', 'Mengenal Asmaul Husna', 
-            'Tata Cara Wudhu dan Tayamum', 'Mengenal kebesaran Tuhan melalui ciptaan-Nya (tumbuhan dan hewan)', 
+            'Mengenal ciptaan Tuhan',
+            'Bersyukur atas diri dan keluarga', 'Doa sebelum dan sesudah kegiatan sederhana',
+            'Adab dan sopan santun di sekolah (hormat kepada guru, sayang pada teman)', 'Kebersihan diri dan lingkungan',
+            'Kisah Nabi Adam A.S. dan Nabi Idris A.S.', 'Mengenal Asmaul Husna',
+            'Tata Cara Wudhu dan Tayamum', 'Mengenal kebesaran Tuhan melalui ciptaan-Nya (tumbuhan dan hewan)',
             'Doa untuk kesehatan', 'Berbagi mainan', 'bersikap jujur'
         ],
         'Bahasa Inggris': ['Greetings and Introductions', 'Things in the Classroom', 'Family Members', 'Colors and Numbers'],
@@ -129,8 +129,8 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
             'Gerak dasar lokomotor (melompat, berlari)', 
             'Gerak dasar non-lokomotor (membungkuk, memutar)', 
             'Permainan sederhana yang menggabungkan gerak lokomotor dan non-lokomotor',
-            'Gerak dasar lempar dan tangkap bola', 
-            'Gerak menirukan hewan (melompat seperti katak, berjalan seperti bebek)', 
+            'Gerak dasar lempar dan tangkap bola',
+            'Gerak menirukan hewan (melompat seperti katak, berjalan seperti bebek)',
             'Permainan tradisional', 'senam irama sederhana'
         ],
         'Seni Budaya dan Prakarya (SBDP)': [
@@ -138,7 +138,7 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
             'Membuat kartu ucapan untuk keluarga', 
             'Bernyanyi lagu tentang keluarga',
             'Mewarnai gambar',
-            'Membuat prakarya dari bahan bekas (misal: bentuk bangunan sekolah)', 'meniru gerak tari sederhana', 
+            'Membuat prakarya dari bahan bekas (misal: bentuk bangunan sekolah)', 'meniru gerak tari sederhana',
             'Menggambar dan mewarnai tumbuhan/hewan', 'Membuat kolase', 'Membuat alat musik sederhana', 'bermain peran'
         ],
         'Bahasa Daerah': ['Menyimak cerita rakyat lokal', 'Kosakata tentang keluarga dan rumah', 'Unggah-ungguh basa (Sopan santun berbahasa)'],
@@ -275,5 +275,7 @@ export const getSubjectById = (school: SchoolType, grade: Grade, semester: Semes
 
 
 
+
+    
 
     
