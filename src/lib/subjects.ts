@@ -73,8 +73,8 @@ const schoolTypeMap: Record<SchoolType, string> = {
 const semesterTopics: Record<Semester, Record<string, string[]>> = {
     '1': {
         // SD Topics
-        'Pendidikan Pancasila': ['Mengenal anggota keluarga', 'Tata tertib di rumah dan sekolah', 'Perilaku baik (saling menolong, berbagi)', 'Makna dan Penerapan Sila Pancasila', 'Norma dan Aturan di Masyarakat', 'Gotong Royong'],
-        'Bahasa Indonesia': ['Memperkenalkan diri', 'Menyebutkan nama anggota keluarga dan teman', 'Mengenal huruf vokal dan konsonan dasar', 'Membaca dan menulis kata sederhana (nama diri, benda)', 'Membaca dan Memahami Teks Narasi', 'Mengidentifikasi Ide Pokok Paragraf'],
+        'Pendidikan Pancasila': ['Mengenal anggota keluarga', 'Tata tertib di rumah dan sekolah', 'Perilaku baik (saling menolong, berbagi)', 'Menjaga kebersihan lingkungan sekolah', 'Menghargai perbedaan teman', 'Antre', 'Makna dan Penerapan Sila Pancasila', 'Norma dan Aturan di Masyarakat', 'Gotong Royong'],
+        'Bahasa Indonesia': ['Memperkenalkan diri', 'Menyebutkan nama anggota keluarga dan teman', 'Mengenal huruf vokal dan konsonan dasar', 'Membaca dan menulis kata sederhana (nama diri, benda)', 'Menyebutkan benda-benda di sekolah', 'Membaca dan menulis suku kata', 'Kalimat sederhana tentang kegiatan di sekolah', 'Membaca dan Memahami Teks Narasi', 'Mengidentifikasi Ide Pokok Paragraf'],
         'Matematika': ['Mengenal bilangan 1-10', 'Membilang dan mengurutkan benda', 'Konsep lebih banyak/lebih sedikit', 'Bilangan Cacah hingga 10.000', 'Penjumlahan dan Pengurangan', 'Bentuk Geometri Dasar'],
         'IPAS': ['Rangka dan Panca Indra Manusia', 'Ciri-ciri Makhluk Hidup', 'Wujud Benda dan Perubahannya', 'Kenampakan Alam dan Buatan'],
         'Pendidikan Agama & Budi Pekerti': ['Mengenal ciptaan Tuhan', 'Bersyukur atas diri dan keluarga', 'Doa sebelum dan sesudah kegiatan sederhana', 'Kisah Nabi Adam A.S. dan Nabi Idris A.S.', 'Mengenal Asmaul Husna', 'Tata Cara Wudhu dan Tayamum'],
