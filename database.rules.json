@@ -5,7 +5,7 @@
     ".write": false,
 
     "users": {
-      ".indexOn": ["role", "robloxUsername"],
+      ".indexOn": ["role", "robloxUsername", "bonusPoints"],
       ".read": "root.child('users').child(auth.uid).child('role').val() === 'admin'",
       "$uid": {
         ".read": "auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin'",

@@ -43,7 +43,7 @@ export function LeaderboardCard() {
           }
         });
         // Sort in descending order and set state
-        setLeaderboard(usersData.sort((a, b) => (b.bonusPoints || 0) - (a.bonusPoints || 0)));
+        setLeaderboard(usersData.sort((a, b) => (b.bonusPoints || 0) - (a.bonusPoints || 0)).slice(0, 5));
         setIsLoading(false);
       }, (error) => {
           console.error("Firebase Leaderboard read failed:", error);
