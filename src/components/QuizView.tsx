@@ -97,7 +97,6 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
 
     let finalScore = 0;
     quiz.quiz.forEach((q, index) => {
-      // Because the action now guarantees `correctAnswer` is the exact option string, we can compare directly.
       if (q.correctAnswer === (userAnswers[index] || '')) {
         finalScore++;
       }
@@ -108,6 +107,7 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
     await updateSubjectProgress(subjectId, percentageScore);
     
     // Securely update quiz completions. The Cloud Function will handle the bonus logic.
+    // Ensure quizCompletions is a number, not undefined.
     const currentCompletions = user.quizCompletions || 0;
     await updateUser({ quizCompletions: currentCompletions + 1 });
     
@@ -188,7 +188,10 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
                 </RadioGroup>
             </CardContent>
             <CardFooter>
-                 <Button onClick={isLastQuestion ? handleSubmitQuiz : handleNextQuestion} disabled={!userAnswers[currentQuestionIndex]}>
+                 <Button 
+                    onClick={isLastQuestion ? handleSubmitQuiz : handleNextQuestion} 
+                    disabled={!userAnswers[currentQuestionIndex]}
+                 >
                     {isLastQuestion ? 'Selesai & Lihat Hasil' : 'Lanjut'}
                 </Button>
             </CardFooter>
