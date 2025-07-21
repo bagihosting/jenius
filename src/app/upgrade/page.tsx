@@ -4,12 +4,20 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, PartyPopper, CheckCircle, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Loader2, PartyPopper, CheckCircle, Banknote, Clock, Send } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
+import { db } from '@/lib/firebase';
+import { ref, onValue } from 'firebase/database';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { submitUpgradeRequestAction } from '@/app/actions';
+import { type UpgradeRequest } from '@/lib/types';
+
 
 export default function UpgradePage() {
   const router = useRouter();
@@ -17,8 +25,11 @@ export default function UpgradePage() {
   const { toast } = useToast();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [upgradeStatus, setUpgradeStatus] = useState<'not_submitted' | 'pending' | 'approved'>('not_submitted');
+  
+  const [universityName, setUniversityName] = useState('');
+  const [major, setMajor] = useState('');
 
   useEffect(() => {
     setIsClient(true);
@@ -28,33 +39,56 @@ export default function UpgradePage() {
     if (!loading && !isAuthenticated) {
       router.push('/login');
     }
+  }, [loading, isAuthenticated, router]);
+
+  useEffect(() => {
     if (user?.role === 'mahasiswa') {
-        setIsSuccess(true);
+      setUpgradeStatus('approved');
+    } else if (user && db) {
+      const requestRef = ref(db, `upgradeRequests/${user.uid}`);
+      const unsubscribe = onValue(requestRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const request: UpgradeRequest = snapshot.val();
+          if (request.status === 'pending') {
+            setUpgradeStatus('pending');
+          }
+        }
+      });
+      return () => unsubscribe();
     }
-  }, [loading, isAuthenticated, router, user]);
-  
-  const handleUpgradeRequest = () => {
+  }, [user, db]);
+
+  const handleSubmit = async () => {
     if (!user) return;
+    if (!universityName || !major) {
+        toast({
+            title: 'Form Tidak Lengkap',
+            description: 'Harap isi nama universitas dan jurusan.',
+            variant: 'destructive',
+        });
+        return;
+    }
+
     setIsSubmitting(true);
-
-    const adminPhoneNumber = '6285156125329';
-    const message = encodeURIComponent(
-        `Halo Admin Ayah Jenius,\n\nSaya ingin mengajukan permintaan upgrade akun ke Mahasiswa.\n\nNama: ${user.name}\nEmail: ${user.email}\nUsername: ${user.username}\n\nMohon informasinya untuk proses donasi. Terima kasih!`
-    );
+    const result = await submitUpgradeRequestAction(user, { universityName, major });
     
-    const whatsappUrl = `https://wa.me/${adminPhoneNumber}?text=${message}`;
+    if (result.success) {
+        toast({
+            title: 'Pengajuan Terkirim!',
+            description: 'Pengajuan Anda sedang ditinjau oleh admin.',
+        });
+        setUpgradeStatus('pending');
+    } else {
+        toast({
+            title: 'Gagal Mengirim Pengajuan',
+            description: result.error,
+            variant: 'destructive',
+        });
+    }
 
-    // Redirect to WhatsApp
-    window.location.href = whatsappUrl;
-    
-    toast({
-        title: 'Mengarahkan ke WhatsApp',
-        description: 'Anda akan diarahkan ke WhatsApp untuk mengirim permintaan upgrade kepada admin.',
-    });
-
-    // We don't need to set isSubmitting to false, as the user is leaving the page.
+    setIsSubmitting(false);
   };
-
+  
   if (!isClient || loading || !isAuthenticated) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
@@ -63,6 +97,78 @@ export default function UpgradePage() {
     );
   }
   
+  const renderContent = () => {
+    switch (upgradeStatus) {
+        case 'approved':
+            return (
+                <CardContent className="text-center space-y-4">
+                    <p>Selamat! Akun Anda sudah berstatus Mahasiswa. Anda kini dapat menggunakan fitur Asisten Akademik AI.</p>
+                    <Button asChild size="lg">
+                        <Link href="/mahasiswa/dashboard">Lanjutkan ke Dasbor Mahasiswa</Link>
+                    </Button>
+                </CardContent>
+            );
+        case 'pending':
+            return (
+                 <CardContent className="text-center space-y-4">
+                    <Clock className="h-16 w-16 text-yellow-500 mx-auto" />
+                    <h3 className="text-xl font-bold">Pengajuan Sedang Ditinjau</h3>
+                    <p className="text-muted-foreground">Terima kasih! Pengajuan upgrade Anda telah kami terima dan akan segera diperiksa oleh admin setelah donasi dikonfirmasi. Anda akan diarahkan ke dasbor mahasiswa setelah disetujui.</p>
+                </CardContent>
+            )
+        default: // 'not_submitted'
+            return (
+                <>
+                    <CardContent className="space-y-6">
+                        <div>
+                            <h3 className="font-bold text-xl">Apa yang Anda Dapatkan?</h3>
+                            <ul className="list-disc list-inside mt-2 text-muted-foreground space-y-1">
+                                <li>Akses ke **Asisten Akademik AI** untuk semua jurusan.</li>
+                                <li>Bantuan untuk tugas, materi, dan persiapan ujian tingkat universitas.</li>
+                                <li>Fitur-fitur baru yang akan datang khusus untuk mahasiswa.</li>
+                            </ul>
+                        </div>
+                        <Alert>
+                            <Banknote className="h-4 w-4" />
+                            <AlertTitle>Instruksi Donasi</AlertTitle>
+                            <AlertDescription>
+                                <p>Silakan lakukan donasi satu kali sebesar **Rp 100.000** untuk mendukung pengembangan Ayah Jenius ke rekening berikut:</p>
+                                <p className="font-mono font-bold text-base my-2 text-primary">BCA: 1234-5678-90 (a.n. Ayah Jenius Cendekia)</p>
+                                <p>Setelah melakukan transfer, silakan isi dan kirim formulir di bawah ini. Akun akan diaktifkan oleh admin setelah pembayaran diverifikasi.</p>
+                            </AlertDescription>
+                        </Alert>
+                         <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="universityName">Nama Universitas</Label>
+                                <Input id="universityName" value={universityName} onChange={(e) => setUniversityName(e.target.value)} placeholder="Contoh: Universitas Gadjah Mada" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="major">Jurusan</Label>
+                                <Input id="major" value={major} onChange={(e) => setMajor(e.target.value)} placeholder="Contoh: Teknik Informatika" />
+                            </div>
+                         </div>
+                    </CardContent>
+                    <CardFooter>
+                      <Button className="w-full" size="lg" onClick={handleSubmit} disabled={isSubmitting}>
+                        {isSubmitting ? (
+                            <>
+                                <Loader2 className="animate-spin mr-2"/> 
+                                Mengirim...
+                            </>
+                        ) : (
+                            <>
+                                <Send className="mr-2" />
+                                Kirim Pengajuan Upgrade
+                            </>
+                        )}
+                      </Button>
+                    </CardFooter>
+                </>
+            )
+    }
+  }
+
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -75,54 +181,14 @@ export default function UpgradePage() {
           <Card>
             <CardHeader className="text-center">
               <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
-                  {isSuccess ? <CheckCircle className="h-12 w-12 text-green-500" /> : <PartyPopper className="h-12 w-12 text-primary" />}
+                  {upgradeStatus === 'approved' ? <CheckCircle className="h-12 w-12 text-green-500" /> : <PartyPopper className="h-12 w-12 text-primary" />}
               </div>
-              <CardTitle className="text-3xl font-headline">{isSuccess ? 'Akun Anda Sudah Mahasiswa!' : 'Upgrade ke Akun Mahasiswa'}</CardTitle>
+              <CardTitle className="text-3xl font-headline">{upgradeStatus === 'approved' ? 'Akun Anda Sudah Mahasiswa!' : 'Upgrade ke Akun Mahasiswa'}</CardTitle>
               <CardDescription className="text-lg">
-                {isSuccess ? 'Anda sudah dapat menggunakan fitur Asisten Akademik AI.' : 'Buka akses ke fitur canggih untuk jenjang kuliah dengan berdonasi.'}
+                {upgradeStatus === 'approved' ? 'Anda sudah dapat menggunakan fitur Asisten Akademik AI.' : 'Buka akses ke fitur canggih untuk jenjang kuliah dengan berdonasi.'}
               </CardDescription>
             </CardHeader>
-            {isSuccess ? (
-                <CardContent className="text-center space-y-4">
-                    <p>Selamat datang di tingkat selanjutnya! Lanjutkan ke dasbor untuk mulai menggunakan fitur eksklusif Anda.</p>
-                    <Button asChild size="lg">
-                        <Link href="/mahasiswa/dashboard">Lanjutkan ke Dasbor Mahasiswa</Link>
-                    </Button>
-                </CardContent>
-            ) : (
-                <CardContent className="space-y-6">
-                    <div>
-                        <h3 className="font-bold text-xl">Apa yang Anda Dapatkan?</h3>
-                        <ul className="list-disc list-inside mt-2 text-muted-foreground space-y-1">
-                            <li>Akses ke **Asisten Akademik AI** untuk semua jurusan.</li>
-                            <li>Bantuan untuk tugas, materi, dan persiapan ujian tingkat universitas.</li>
-                            <li>Penjelasan konsep kompleks yang dibuat sederhana dan cerdas.</li>
-                            <li>Fitur-fitur baru yang akan datang khusus untuk mahasiswa.</li>
-                        </ul>
-                    </div>
-                    <div className="text-center p-4 bg-secondary rounded-lg">
-                        <p className="text-muted-foreground">Donasi Satu Kali untuk Pengembangan</p>
-                        <p className="text-4xl font-bold text-primary">Rp 100.000</p>
-                    </div>
-                </CardContent>
-            )}
-            {!isSuccess && (
-                <CardFooter>
-                  <Button className="w-full" size="lg" onClick={handleUpgradeRequest} disabled={isSubmitting}>
-                    {isSubmitting ? (
-                        <>
-                            <Loader2 className="animate-spin mr-2"/> 
-                            Mempersiapkan...
-                        </>
-                    ) : (
-                        <>
-                            <MessageSquare className="mr-2" />
-                            Ajukan Upgrade via WhatsApp
-                        </>
-                    )}
-                  </Button>
-                </CardFooter>
-            )}
+            {renderContent()}
           </Card>
         </div>
       </main>

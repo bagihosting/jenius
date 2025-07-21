@@ -148,3 +148,16 @@ export const AcademicAssistantOutputSchema = z.object({
   imageUrl: z.string().optional().describe("URL of the generated image, if any."),
 });
 export type AcademicAssistantOutput = z.infer<typeof AcademicAssistantOutputSchema>;
+
+
+//========= UPGRADE REQUEST TYPE =========//
+export interface UpgradeRequest {
+  uid: string;
+  name: string;
+  username: string;
+  email: string;
+  universityName: string;
+  major: string;
+  status: 'pending' | 'approved' | 'rejected';
+  requestedAt: string | object; // Can be ISO string or Firebase ServerValue
+}

@@ -6,7 +6,9 @@ import { answerHomework as answerHomeworkFlow } from '@/ai/flows/homework-helper
 import { generateDailyExam as generateDailyExamFlow } from '@/ai/flows/generate-exam-flow';
 import { academicAssistant as academicAssistantFlow } from '@/ai/flows/academic-assistant-flow';
 
-import { type GenerateQuizOutput, type ExamData, type GenerateQuizInput, type HomeworkHelpInput, type HomeworkHelpOutput, type GenerateExamInput, type AcademicAssistantInput, type AcademicAssistantOutput, type Question, type MultipleChoiceQuestion } from '@/lib/types';
+import { type GenerateQuizOutput, type ExamData, type GenerateQuizInput, type HomeworkHelpInput, type HomeworkHelpOutput, type GenerateExamInput, type AcademicAssistantInput, type AcademicAssistantOutput, type Question, type MultipleChoiceQuestion, type UpgradeRequest, type User } from '@/lib/types';
+import { db } from '@/lib/firebase';
+import { ref, set, serverTimestamp } from 'firebase/database';
 
 // Helper function to remove prefixes (A., B., etc.) and normalize string for comparison
 const normalize = (str: string): string => {
@@ -147,4 +149,37 @@ export async function academicAssistantAction(
             error: `Maaf, terjadi kesalahan saat memproses permintaan Anda: ${errorMessage}`,
         };
     }
+}
+
+
+export async function submitUpgradeRequestAction(
+  user: User,
+  formData: { universityName: string; major: string }
+): Promise<{ success?: boolean; error?: string }> {
+  if (!db || !user) {
+    return { error: 'Koneksi database atau pengguna tidak ditemukan.' };
+  }
+  
+  const requestData: Omit<UpgradeRequest, 'requestedAt'> = {
+    uid: user.uid,
+    name: user.name,
+    email: user.email,
+    username: user.username,
+    universityName: formData.universityName,
+    major: formData.major,
+    status: 'pending',
+  };
+
+  try {
+    const requestRef = ref(db, `upgradeRequests/${user.uid}`);
+    await set(requestRef, {
+        ...requestData,
+        requestedAt: serverTimestamp(),
+    });
+    return { success: true };
+  } catch (e) {
+    const errorMessage = e instanceof Error ? e.message : 'Terjadi kesalahan tidak dikenal.';
+    console.error('submitUpgradeRequestAction failed:', e);
+    return { error: `Gagal mengirim pengajuan: ${errorMessage}` };
+  }
 }
