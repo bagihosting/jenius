@@ -75,12 +75,12 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
         // SD Topics
         'Pendidikan Pancasila': ['Mengenal anggota keluarga', 'Tata tertib di rumah dan sekolah', 'Perilaku baik (saling menolong, berbagi)', 'Menjaga kebersihan lingkungan sekolah', 'Menghargai perbedaan teman', 'Antre', 'Makna dan Penerapan Sila Pancasila', 'Norma dan Aturan di Masyarakat', 'Gotong Royong'],
         'Bahasa Indonesia': ['Memperkenalkan diri', 'Menyebutkan nama anggota keluarga dan teman', 'Mengenal huruf vokal dan konsonan dasar', 'Membaca dan menulis kata sederhana (nama diri, benda)', 'Menyebutkan benda-benda di sekolah', 'Membaca dan menulis suku kata', 'Kalimat sederhana tentang kegiatan di sekolah', 'Membaca dan Memahami Teks Narasi', 'Mengidentifikasi Ide Pokok Paragraf'],
-        'Matematika': ['Mengenal bilangan 1-10', 'Membilang dan mengurutkan benda', 'Konsep lebih banyak/lebih sedikit', 'Bilangan Cacah hingga 10.000', 'Penjumlahan dan Pengurangan', 'Bentuk Geometri Dasar'],
+        'Matematika': ['Mengenal bilangan 1-10', 'Membilang dan mengurutkan benda', 'Konsep lebih banyak/lebih sedikit', 'Penjumlahan dan pengurangan bilangan 1-10 (dengan benda konkret)', 'mengenal bangun datar sederhana (lingkaran, persegi, segitiga)', 'Bilangan Cacah hingga 10.000', 'Penjumlahan dan Pengurangan', 'Bentuk Geometri Dasar'],
         'IPAS': ['Rangka dan Panca Indra Manusia', 'Ciri-ciri Makhluk Hidup', 'Wujud Benda dan Perubahannya', 'Kenampakan Alam dan Buatan'],
-        'Pendidikan Agama & Budi Pekerti': ['Mengenal ciptaan Tuhan', 'Bersyukur atas diri dan keluarga', 'Doa sebelum dan sesudah kegiatan sederhana', 'Kisah Nabi Adam A.S. dan Nabi Idris A.S.', 'Mengenal Asmaul Husna', 'Tata Cara Wudhu dan Tayamum'],
+        'Pendidikan Agama & Budi Pekerti': ['Mengenal ciptaan Tuhan', 'Bersyukur atas diri dan keluarga', 'Doa sebelum dan sesudah kegiatan sederhana', 'Adab dan sopan santun di sekolah (hormat kepada guru, sayang pada teman)', 'kebersihan diri dan lingkungan', 'Kisah Nabi Adam A.S. dan Nabi Idris A.S.', 'Mengenal Asmaul Husna', 'Tata Cara Wudhu dan Tayamum'],
         'Bahasa Inggris': ['Greetings and Introductions', 'Things in the Classroom', 'Family Members', 'Colors and Numbers'],
-        'PJOK': ['Gerak dasar lokomotor (berjalan, berlari)', 'Gerak dasar non-lokomotor (membungkuk, mengayun)', 'Permainan Bola Besar (Sepak Bola, Voli)'],
-        'Seni Budaya dan Prakarya (SBDP)': ['Menggambar anggota keluarga', 'Mewarnai gambar', 'Bernyanyi lagu anak-anak tentang diri dan keluarga', 'Lagu Wajib Nasional', 'Membuat Kerajinan dari Bahan Alam'],
+        'PJOK': ['Gerak dasar lokomotor (berjalan, berlari)', 'Gerak dasar non-lokomotor (membungkuk, mengayun)', 'Gerak dasar lempar dan tangkap bola', 'permainan sederhana', 'Permainan Bola Besar (Sepak Bola, Voli)'],
+        'Seni Budaya dan Prakarya (SBDP)': ['Menggambar anggota keluarga', 'Mewarnai gambar', 'Bernyanyi lagu anak-anak tentang diri dan keluarga', 'Membuat prakarya dari bahan bekas (misal: bentuk bangunan sekolah)', 'meniru gerak tari sederhana', 'Lagu Wajib Nasional', 'Membuat Kerajinan dari Bahan Alam'],
         'Bahasa Daerah': ['Menyimak cerita rakyat lokal', 'Kosakata tentang keluarga dan rumah', 'Unggah-ungguh basa (Sopan santun berbahasa)'],
         
         // SMP & MTs Topics (Fase D)
