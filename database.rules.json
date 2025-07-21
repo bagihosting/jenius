@@ -7,7 +7,6 @@
       "$uid": {
         ".read": "auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin'",
         ".write": "auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin'",
-        // Prevent users from changing their own role
         "role": {
           ".write": "auth.uid != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
         }
@@ -24,6 +23,13 @@
       "$uid": {
         ".write": "auth.uid === $uid"
       }
+    },
+    "appSettings": {
+      "upgradeInfo": {
+        ".read": "auth.uid != null",
+        ".write": "auth.uid != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+      }
     }
   }
 }
+
