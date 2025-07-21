@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -8,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, BrainCircuit, PartyPopper, RotateCw, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, BrainCircuit, PartyPopper, RotateCw, CheckCircle2, XCircle, Gift } from 'lucide-react';
 import type { GenerateQuizOutput, SchoolInfo, User } from '@/lib/types';
 import { Progress } from './ui/progress';
 import { useProgress } from '@/hooks/use-progress';
@@ -16,6 +17,7 @@ import { Confetti } from './Confetti';
 import { useAuth } from '@/context/AuthContext';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
 type QuizState = 'idle' | 'loading' | 'active' | 'finished';
 
@@ -25,11 +27,6 @@ interface QuizViewProps {
   schoolInfo: SchoolInfo;
 }
 
-const normalizeAnswer = (answer: string): string => {
-  if (typeof answer !== 'string') return '';
-  return answer.replace(/^[A-D]\.\s*/, '').trim().toLowerCase();
-};
-
 export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProps) {
   const { user, updateUser } = useAuth();
   const [quizState, setQuizState] = useState<QuizState>('idle');
@@ -37,6 +34,7 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<string[]>([]);
   const [score, setScore] = useState(0);
+  const [bonusAwarded, setBonusAwarded] = useState(false);
   const { toast } = useToast();
   const { updateSubjectProgress } = useProgress();
 
@@ -51,6 +49,7 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
     }
 
     setQuizState('loading');
+    setBonusAwarded(false); // Reset bonus status on new quiz
     const dateSeed = new Date().toISOString().split('T')[0];
     
     const result = await generateQuizAction({
@@ -95,22 +94,13 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
     }
   };
 
-  const updateBonus = async (user: User, bonusAmount: number): Promise<boolean> => {
-    if (!user) return false;
-    const currentPoints = user.bonusPoints || 0;
-    const newPoints = currentPoints + bonusAmount;
-    await updateUser({ bonusPoints: newPoints });
-    return true;
-  };
-
   const handleSubmitQuiz = async () => {
     if (!user || !quiz) return;
 
     let finalScore = 0;
     quiz.quiz.forEach((q, index) => {
-      const userAnswer = userAnswers[index] || '';
       // Because the action now guarantees `correctAnswer` is the exact option string, we can compare directly.
-      if (q.correctAnswer === userAnswer) {
+      if (q.correctAnswer === (userAnswers[index] || '')) {
         finalScore++;
       }
     });
@@ -119,20 +109,18 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
     setScore(percentageScore);
     await updateSubjectProgress(subjectId, percentageScore);
     
+    // Securely update quiz completions. The Cloud Function will handle the bonus logic.
     const currentCompletions = user.quizCompletions || 0;
     await updateUser({ quizCompletions: currentCompletions + 1 });
     
+    // Check if user is eligible to see the bonus message
     const gradeNum = parseInt(user.grade || '99', 10);
-    const BONUS_PER_QUIZ = 0.0010;
-
     if (percentageScore >= 60 && gradeNum <= 6) {
-        const bonusGiven = await updateBonus(user, BONUS_PER_QUIZ);
-        if(bonusGiven) {
-            toast({
-                title: "Selamat, Kamu Dapat Bonus!",
-                description: `Kamu mendapatkan ${BONUS_PER_QUIZ.toFixed(4)} Poin Bonus karena nilaimu hebat! Terus tingkatkan!`,
-            });
-        }
+        setBonusAwarded(true);
+        toast({
+            title: "Selamat, Kamu Dapat Bonus!",
+            description: `Kamu mendapatkan 0.0010 Poin Bonus karena nilaimu hebat! Poin akan ditambahkan ke akunmu.`,
+        });
     }
 
     setQuizState('finished');
@@ -183,7 +171,7 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
                         <Image
                             src={currentQuestion.imageUrl}
                             alt={currentQuestion.imagePrompt || `Ilustrasi untuk pertanyaan ${currentQuestionIndex + 1}`}
-                            layout="fill"
+                            fill
                             objectFit="contain"
                             className="bg-gray-100"
                         />
@@ -221,8 +209,17 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
                 <CardDescription className="text-lg">Skor Akhir Kamu</CardDescription>
                 <p className="text-5xl font-bold text-primary">{score}</p>
             </CardHeader>
-            <CardContent>
-                <p className="text-muted-foreground mb-4">Berikut adalah ringkasan jawabanmu:</p>
+            <CardContent className="space-y-4">
+                {bonusAwarded && (
+                  <Alert variant="default" className="bg-yellow-50 border-yellow-200 text-yellow-800">
+                    <Gift className="h-4 w-4 text-yellow-600" />
+                    <AlertTitle className="font-bold">Bonus Poin Didapatkan!</AlertTitle>
+                    <AlertDescription>
+                      Selamat! Kamu mendapatkan 0.0010 Poin Bonus. Teruslah belajar untuk mengumpulkan lebih banyak poin!
+                    </AlertDescription>
+                  </Alert>
+                )}
+                <p className="text-muted-foreground">Berikut adalah ringkasan jawabanmu:</p>
                  <div className="text-left space-y-4 max-h-60 overflow-y-auto p-2 rounded-md bg-secondary/50">
                     {quiz?.quiz.map((q, index) => {
                         const isCorrect = q.correctAnswer === (userAnswers[index] || '');
@@ -231,7 +228,7 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
                                 <p className="font-semibold">{index + 1}. {q.question}</p>
                                 {q.imageUrl && (
                                   <div className="mt-2 relative w-full aspect-video max-w-xs mx-auto">
-                                    <Image src={q.imageUrl} alt={q.imagePrompt || 'Ilustrasi soal'} layout="fill" objectFit="contain" className="rounded-md" />
+                                    <Image src={q.imageUrl} alt={q.imagePrompt || 'Ilustrasi soal'} fill objectFit="contain" className="rounded-md" />
                                   </div>
                                 )}
                                 <div className="flex items-center gap-2 mt-1">
