@@ -89,8 +89,6 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
   const handleNextQuestion = () => {
     if (quiz && currentQuestionIndex < quiz.quiz.length - 1) {
         setCurrentQuestionIndex(prev => prev + 1);
-    } else {
-        handleSubmitQuiz();
     }
   };
 
@@ -158,6 +156,7 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
   }
 
   if (quizState === 'active' && currentQuestion) {
+    const isLastQuestion = currentQuestionIndex === quiz!.quiz.length - 1;
     return (
         <Card>
             <CardHeader>
@@ -189,8 +188,8 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
                 </RadioGroup>
             </CardContent>
             <CardFooter>
-                 <Button onClick={handleNextQuestion} disabled={!userAnswers[currentQuestionIndex]}>
-                    {currentQuestionIndex < quiz!.quiz.length - 1 ? 'Lanjut' : 'Selesai & Lihat Hasil'}
+                 <Button onClick={isLastQuestion ? handleSubmitQuiz : handleNextQuestion} disabled={!userAnswers[currentQuestionIndex]}>
+                    {isLastQuestion ? 'Selesai & Lihat Hasil' : 'Lanjut'}
                 </Button>
             </CardFooter>
         </Card>
@@ -215,7 +214,7 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
                     <Gift className="h-4 w-4 text-yellow-600" />
                     <AlertTitle className="font-bold">Bonus Poin Didapatkan!</AlertTitle>
                     <AlertDescription>
-                      Selamat! Kamu mendapatkan 0.0010 Poin Bonus. Teruslah belajar untuk mengumpulkan lebih banyak poin!
+                      Selamat! Kamu mendapatkan 0.0010 Poin Bonus karena nilaimu hebat! Poin akan ditambahkan ke akunmu.
                     </AlertDescription>
                   </Alert>
                 )}
