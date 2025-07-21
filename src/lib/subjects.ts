@@ -119,7 +119,9 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
         'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)': [
             'Gerak dasar lokomotor (melompat, berlari) dan non-lokomotor (membungkuk, memutar) dalam permainan sederhana',
             'Permainan tradisional yang melibatkan kerjasama',
-            'senam irama dengan iringan musik'
+            'senam irama dengan iringan musik',
+            'Gerak menirukan gerakan hewan',
+            'menjaga kebugaran tubuh dengan gerakan sederhana'
         ],
         'Seni Budaya dan Prakarya (SBDP)': [
             'Menggambar kegiatan keluarga',
@@ -269,5 +271,6 @@ export const getSubjectById = (school: SchoolType, grade: Grade, semester: Semes
     
 
     
+
 
 
