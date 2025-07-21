@@ -77,10 +77,10 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
         'Bahasa Indonesia': ['Memperkenalkan diri', 'Menyebutkan nama anggota keluarga dan teman', 'Mengenal huruf vokal dan konsonan dasar', 'Membaca dan menulis kata sederhana (nama diri, benda)', 'Membaca dan Memahami Teks Narasi', 'Mengidentifikasi Ide Pokok Paragraf'],
         'Matematika': ['Mengenal bilangan 1-10', 'Membilang dan mengurutkan benda', 'Konsep lebih banyak/lebih sedikit', 'Bilangan Cacah hingga 10.000', 'Penjumlahan dan Pengurangan', 'Bentuk Geometri Dasar'],
         'IPAS': ['Rangka dan Panca Indra Manusia', 'Ciri-ciri Makhluk Hidup', 'Wujud Benda dan Perubahannya', 'Kenampakan Alam dan Buatan'],
-        'Pendidikan Agama & Budi Pekerti': ['Kisah Nabi Adam A.S. dan Nabi Idris A.S.', 'Mengenal Asmaul Husna', 'Tata Cara Wudhu dan Tayamum'],
+        'Pendidikan Agama & Budi Pekerti': ['Mengenal ciptaan Tuhan', 'Bersyukur atas diri dan keluarga', 'Doa sebelum dan sesudah kegiatan sederhana', 'Kisah Nabi Adam A.S. dan Nabi Idris A.S.', 'Mengenal Asmaul Husna', 'Tata Cara Wudhu dan Tayamum'],
         'Bahasa Inggris': ['Greetings and Introductions', 'Things in the Classroom', 'Family Members', 'Colors and Numbers'],
-        'PJOK': ['Gerak Dasar Lokomotor (Jalan, Lari, Lompat)', 'Permainan Bola Besar (Sepak Bola, Voli)'],
-        'Seni Budaya dan Prakarya (SBDP)': ['Menggambar Ilustrasi dan Dekoratif', 'Lagu Wajib Nasional', 'Membuat Kerajinan dari Bahan Alam'],
+        'PJOK': ['Gerak dasar lokomotor (berjalan, berlari)', 'Gerak dasar non-lokomotor (membungkuk, mengayun)', 'Permainan Bola Besar (Sepak Bola, Voli)'],
+        'Seni Budaya dan Prakarya (SBDP)': ['Menggambar anggota keluarga', 'Mewarnai gambar', 'Bernyanyi lagu anak-anak tentang diri dan keluarga', 'Lagu Wajib Nasional', 'Membuat Kerajinan dari Bahan Alam'],
         'Bahasa Daerah': ['Menyimak cerita rakyat lokal', 'Kosakata tentang keluarga dan rumah', 'Unggah-ungguh basa (Sopan santun berbahasa)'],
         
         // SMP & MTs Topics (Fase D)
