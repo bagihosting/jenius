@@ -141,6 +141,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         );
     }
     
+    // Explicitly return null if not authorized to prevent child components from rendering
+    // and making unauthorized database calls before the router can redirect.
     if (!isAuthorized) {
         return null;
     }
