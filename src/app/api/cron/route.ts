@@ -1,9 +1,17 @@
+// IMPORTANT: This code is moved here to resolve build issues.
+// The trigger mechanism needs to be re-evaluated for a Next.js environment.
+// For now, this code is not actively running but is kept for its logic.
 
+/*
 import * as admin from "firebase-admin";
 import { onValueUpdated } from "firebase-functions/v2/database";
 import * as logger from "firebase-functions/logger";
 
-admin.initializeApp();
+// Initialize admin only if not already initialized
+if (admin.apps.length === 0) {
+    admin.initializeApp();
+}
+
 const db = admin.database();
 
 const BONUS_PER_QUIZ = 0.0010;
@@ -51,4 +59,10 @@ export const onUserUpdateAwardBonus = onValueUpdated("users/{uid}", async (event
         }
     }
 });
+*/
 
+import { NextResponse } from 'next/server';
+
+export async function GET() {
+  return NextResponse.json({ message: 'Cron job endpoint. Logic is currently commented out to prevent build errors.' });
+}
