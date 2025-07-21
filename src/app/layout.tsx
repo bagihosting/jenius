@@ -13,9 +13,9 @@ const ptSans = PT_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Pintar Elementary: Your Fun Learning Partner',
-  description: 'Interactive quizzes, offline access, and AI-powered learning for Grade 5 students. Master subjects with Pintar Elementary!',
-  keywords: ['Pintar Elementary', 'e-learning for kids', 'grade 5', 'interactive quiz', 'offline learning', 'AI education'],
+  title: 'Bocoran Soal HOTS & Guru AI Jenius: Cara Anak Ranking 1',
+  description: 'Rahasia anak ranking 1 terbongkar! Dapatkan bocoran soal HOTS harian, bantuan PR dari guru AI jenius, dan latihan soal ujian sesuai Kurikulum Merdeka. Bukan bimbel biasa, ini cara cerdas taklukkan sekolah.',
+  keywords: ['bocoran soal hots', 'latihan soal ujian harian', 'guru ai pribadi', 'bantuan pr cerdas', 'cara anak ranking 1', 'aplikasi belajar kurikulum merdeka', 'kunci jawaban ai'],
 };
 
 export default function RootLayout({
@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={ptSans.variable}>
+    <html lang="id" suppressHydrationWarning className={ptSans.variable}>
       <head>
       </head>
       <body className="font-body antialiased" suppressHydrationWarning>

@@ -1,12 +1,11 @@
 
-
 'use client';
 
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, BookCheck, BrainCircuit, Edit, ShieldCheck, UserPlus } from 'lucide-react';
+import { ArrowRight, BookCheck, BrainCircuit, Edit, ShieldCheck, UserPlus, Check, Star, MessageSquareQuote } from 'lucide-react';
 
 export default function Home() {
   const router = useRouter();
@@ -14,18 +13,18 @@ export default function Home() {
   const features = [
     {
       icon: <BrainCircuit className="h-10 w-10 text-primary" />,
-      title: 'AI-Powered Quizzes',
-      description: 'Generate adaptive quizzes that adjust in difficulty based on your performance, making learning more effective.',
+      title: 'Guru AI Jenius 24/7',
+      description: 'Dapatkan bantuan PR dan penjelasan materi kapan saja. AI kami dilatih dengan Kurikulum Merdeka terbaru.',
     },
     {
       icon: <Edit className="h-10 w-10 text-primary" />,
-      title: 'Interactive Exercises',
-      description: 'Engage with hands-on exercises for each subject, designed to make learning fun and impactful.',
+      title: 'Latihan Soal Harian',
+      description: 'Ribuan soal HOTS (High Order Thinking Skills) baru setiap hari untuk semua mata pelajaran, lengkap dengan pembahasan cerdas.',
     },
     {
       icon: <BookCheck className="h-10 w-10 text-primary" />,
-      title: 'Offline Learning',
-      description: 'Download your learning materials and access them anytime, anywhere, even without an internet connection.',
+      title: 'Kuis Adaptif & Peringkat',
+      description: 'Uji kemampuan dengan kuis yang tingkat kesulitannya menyesuaikan. Bersaing di papan peringkat nasional!',
     },
   ];
 
@@ -37,21 +36,19 @@ export default function Home() {
       <main className="flex-grow">
         <section className="container mx-auto px-4 py-16 sm:py-24 md:py-32 text-center">
           <div className="max-w-4xl mx-auto">
+             <ShieldCheck className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold font-headline tracking-tight">
-              Unlock Your Child's Potential with <span className="text-primary">Pintar Elementary</span>
+              Anak Anda Bisa <span className="text-primary">Ranking 1</span>. Kami Bocorkan Caranya.
             </h1>
             <p className="mt-6 text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-              An AI learning partner that understands the curriculum, simplifies homework, and helps your child achieve top grades.
+              Lupakan bimbel mahal. Ayah Jenius adalah guru AI pribadi yang memberikan <span className="font-bold">latihan soal harian & bantuan PR cerdas</span>, sesuai Kurikulum Merdeka.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button size="lg" className="h-12 text-lg px-8 w-full sm:w-auto" onClick={() => router.push('/login')}>
-                Start Learning <ArrowRight className="ml-2" />
-              </Button>
-               <Button size="lg" variant="outline" className="h-12 text-lg px-8 w-full sm:w-auto" onClick={() => router.push('/register')}>
-                <UserPlus className="mr-2"/>
-                Sign Up Free
+              <Button size="lg" className="h-12 text-lg px-8 w-full sm:w-auto shadow-lg shadow-primary/30" onClick={() => router.push('/register')}>
+                Coba Gratis Sekarang <ArrowRight className="ml-2" />
               </Button>
             </div>
+             <p className="mt-4 text-xs text-muted-foreground">Tanpa kartu kredit. 100% gratis untuk memulai.</p>
           </div>
         </section>
 
@@ -59,9 +56,9 @@ export default function Home() {
         <section id="features" className="bg-secondary/50 py-16 sm:py-24">
           <div className="container mx-auto px-4">
             <div className="text-center max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-bold font-headline">Everything You Need to Excel</h2>
+              <h2 className="text-3xl md:text-4xl font-bold font-headline">Ini Bukan Aplikasi Belajar Biasa</h2>
               <p className="mt-4 text-muted-foreground text-base sm:text-lg">
-                From homework help to exam prep, we provide the right tools for every academic challenge.
+                Ayah Jenius dirancang untuk satu tujuan: membuat anak Anda menguasai setiap pelajaran dengan cara yang tidak akan pernah mereka dapatkan di sekolah.
               </p>
             </div>
             <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -82,77 +79,74 @@ export default function Home() {
           </div>
         </section>
 
-        {/* How It Works Section */}
-         <section className="py-16 sm:py-24">
+         {/* Testimonial Section */}
+        <section className="py-16 sm:py-24">
             <div className="container mx-auto px-4">
                 <div className="text-center max-w-3xl mx-auto">
-                    <h2 className="text-3xl md:text-4xl font-bold font-headline">Start in 3 Easy Steps</h2>
+                     <div className="flex justify-center gap-1 mb-4">
+                        <Star className="w-8 h-8 text-yellow-400 fill-yellow-400" />
+                        <Star className="w-8 h-8 text-yellow-400 fill-yellow-400" />
+                        <Star className="w-8 h-8 text-yellow-400 fill-yellow-400" />
+                        <Star className="w-8 h-8 text-yellow-400 fill-yellow-400" />
+                        <Star className="w-8 h-8 text-yellow-400 fill-yellow-400" />
+                    </div>
+                    <h2 className="text-3xl md:text-4xl font-bold font-headline">"Nilai Anak Saya Melejit!"</h2>
                 </div>
-                <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 text-center relative">
-                    {/* Dashed line for desktop */}
-                    <div className="hidden md:block absolute top-1/2 left-0 w-full h-px -translate-y-8">
-                        <svg width="100%" height="2">
-                            <line x1="0" y1="1" x2="100%" y2="1" stroke="hsl(var(--border))" strokeWidth="2" strokeDasharray="8 8" />
-                        </svg>
-                    </div>
-                    <div className="flex flex-col items-center z-10">
-                        <div className="bg-background p-2 border-2 border-dashed border-primary rounded-full">
-                           <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold">1</div>
-                        </div>
-                        <h3 className="mt-4 text-xl font-semibold font-headline">Create an Account</h3>
-                        <p className="mt-2 text-muted-foreground">Sign up for a new account in seconds.</p>
-                    </div>
-                     <div className="flex flex-col items-center z-10">
-                        <div className="bg-background p-2 border-2 border-dashed border-primary rounded-full">
-                           <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold">2</div>
-                        </div>
-                        <h3 className="mt-4 text-xl font-semibold font-headline">Choose Your Grade</h3>
-                        <p className="mt-2 text-muted-foreground">Select the grade level and semester you are currently in.</p>
-                    </div>
-                     <div className="flex flex-col items-center z-10">
-                        <div className="bg-background p-2 border-2 border-dashed border-primary rounded-full">
-                           <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold">3</div>
-                        </div>
-                        <h3 className="mt-4 text-xl font-semibold font-headline">Start Learning</h3>
-                        <p className="mt-2 text-muted-foreground">Access all materials, practice questions, and homework help!</p>
-                    </div>
+                <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                   <Card className="bg-card">
+                        <CardContent className="p-6">
+                            <div className="flex items-start gap-4">
+                                <AvatarImage src="https://placehold.co/40x40.png" data-ai-hint="indonesian mother" className="w-12 h-12 rounded-full border-2 border-primary" />
+                                <div>
+                                    <blockquote className="text-foreground/80 italic">"Awalnya saya ragu, tapi fitur Bantuan PR-nya luar biasa. Penjelasannya lebih mudah dimengerti daripada guru les. Anak saya jadi percaya diri dan nilainya naik drastis."</blockquote>
+                                    <p className="mt-4 font-semibold">- Ibu Rina, Orang Tua Siswa Kelas 5 SD</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card className="bg-card">
+                        <CardContent className="p-6">
+                            <div className="flex items-start gap-4">
+                                 <AvatarImage src="https://placehold.co/40x40.png" data-ai-hint="indonesian father" className="w-12 h-12 rounded-full border-2 border-primary" />
+                                <div>
+                                    <blockquote className="text-foreground/80 italic">"Latihan soal HOTS-nya benar-benar 'daging'. Mirip seperti soal ujian sesungguhnya. Fitur ini saja sudah lebih berharga dari bimbel manapun."</blockquote>
+                                    <p className="mt-4 font-semibold">- Bapak Adi, Orang Tua Siswa Kelas 8 SMP</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
         </section>
 
-        {/* Testimonial Section */}
+        {/* Pricing/CTA Section */}
         <section className="bg-secondary/50 py-16 sm:py-24">
-            <div className="container mx-auto px-4">
-                <div className="max-w-3xl mx-auto text-center">
-                    <ShieldCheck className="w-16 h-16 text-accent mx-auto" />
-                    <blockquote className="mt-6 text-xl md:text-2xl font-semibold italic text-foreground/80">
-                        "Since using Pintar Elementary, my child's grades have improved dramatically! The explanations are much easier to understand than private tutoring. Highly recommended!"
-                    </blockquote>
-                    <p className="mt-4 font-semibold text-muted-foreground">- Jane Doe, Parent of a Grade 4 Student</p>
-                </div>
-            </div>
-        </section>
-
-        {/* Final CTA Section */}
-        <section className="container mx-auto px-4 py-16 sm:py-24 text-center">
-             <div className="max-w-3xl mx-auto">
-                <h2 className="text-3xl md:text-4xl font-bold font-headline">Ready to Change How Your Child Learns?</h2>
-                <p className="mt-4 text-muted-foreground text-base sm:text-lg">
-                    Sign up for free now and access all our smart features.
-                </p>
+            <div className="container mx-auto px-4 text-center">
+                 <h2 className="text-3xl md:text-4xl font-bold font-headline">Satu Langkah Lagi Menuju Prestasi Puncak</h2>
+                 <p className="mt-4 text-muted-foreground text-lg max-w-2xl mx-auto">Jangan biarkan anak Anda ketinggalan. Berikan mereka keunggulan yang tidak dimiliki teman-temannya.</p>
                 <div className="mt-8">
-                     <Button size="lg" className="h-12 text-lg px-8" onClick={() => router.push('/register')}>
-                        Sign Up for Free
+                     <Button size="lg" className="h-14 text-xl px-10 shadow-lg shadow-primary/40" onClick={() => router.push('/register')}>
+                        Jadikan Anak Saya Juara
                      </Button>
                 </div>
+                <p className="mt-4 text-sm text-muted-foreground">Pendaftaran gratis, manfaatnya tak ternilai.</p>
             </div>
         </section>
-
       </main>
 
       <footer className="text-center p-6 bg-card text-muted-foreground text-sm border-t">
-        © {new Date().getFullYear()} Pintar Elementary. All rights reserved.
+        © {new Date().getFullYear()} Ayah Jenius. Hak Cipta Dilindungi.
       </footer>
     </div>
   );
 }
+
+
+function AvatarImage({ src, className, ...props }: { src: string, className?: string, "data-ai-hint"?: string }) {
+  return (
+    <div className={`relative ${className}`} {...props}>
+      <img src={src} className="rounded-full w-full h-full object-cover" alt="User Avatar" />
+    </div>
+  );
+}
+
