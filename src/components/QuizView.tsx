@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -110,7 +109,8 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
     let finalScore = 0;
     quiz.quiz.forEach((q, index) => {
       const userAnswer = userAnswers[index] || '';
-      if (normalizeAnswer(q.correctAnswer) === normalizeAnswer(userAnswer)) {
+      // Because the action now guarantees `correctAnswer` is the exact option string, we can compare directly.
+      if (q.correctAnswer === userAnswer) {
         finalScore++;
       }
     });
@@ -225,7 +225,7 @@ export function QuizView({ subjectId, subjectContent, schoolInfo }: QuizViewProp
                 <p className="text-muted-foreground mb-4">Berikut adalah ringkasan jawabanmu:</p>
                  <div className="text-left space-y-4 max-h-60 overflow-y-auto p-2 rounded-md bg-secondary/50">
                     {quiz?.quiz.map((q, index) => {
-                        const isCorrect = normalizeAnswer(userAnswers[index] || '') === normalizeAnswer(q.correctAnswer);
+                        const isCorrect = q.correctAnswer === (userAnswers[index] || '');
                         return (
                             <div key={index} className="border-b pb-2">
                                 <p className="font-semibold">{index + 1}. {q.question}</p>

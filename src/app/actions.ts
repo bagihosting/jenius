@@ -1,4 +1,3 @@
-
 'use server';
 
 import { generateQuiz as generateQuizFlow } from '@/ai/flows/generate-quiz';
