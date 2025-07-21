@@ -8,7 +8,7 @@ import { SubjectCard } from '@/components/SubjectCard';
 import { getSubjects } from '@/lib/subjects';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Edit, MessageSquareQuote, Loader2, Gift } from 'lucide-react';
+import { ArrowLeft, Edit, MessageSquareQuote, Loader2, Gift, Gem } from 'lucide-react';
 import Link from 'next/link';
 import type { Grade, Semester } from '@/lib/types';
 import { useAuth } from '@/context/AuthContext';
@@ -89,13 +89,32 @@ function DashboardContent({ grade, semester }: DashboardContentProps) {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                     <Card className="md:col-span-1 row-span-2 flex flex-col bg-gradient-to-br from-primary/90 to-blue-600 text-primary-foreground">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-2xl">
+                                <Gem/>
+                                Bonus Harian!
+                            </CardTitle>
+                             <CardDescription className="text-primary-foreground/80">Jangan lewatkan kesempatan untuk mendapatkan poin bonus tambahan setiap hari!</CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex-grow flex items-center justify-center">
+                           <p className="text-5xl font-bold">Klaim Sekarang</p>
+                        </CardContent>
+                        <CardContent>
+                             <Button asChild variant="secondary" className="w-full text-lg h-12">
+                                <Link href={`/daily-claim?grade=${grade}&semester=${semester}`}>
+                                    Ambil Bonus
+                                </Link>
+                            </Button>
+                        </CardContent>
+                    </Card>
                     <Card className="bg-secondary/50">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <MessageSquareQuote/>
                                 Bantuan PR Cerdas
                             </CardTitle>
-                            <CardDescription>Punya PR yang bikin pusing? Tanyakan di sini dan dapatkan penjelasan langkah demi langkah dari Ayah Jenius.</CardDescription>
+                            <CardDescription>Punya PR yang bikin pusing? Tanyakan di sini dan dapatkan penjelasan dari Ayah Jenius.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <Button asChild>
@@ -121,19 +140,20 @@ function DashboardContent({ grade, semester }: DashboardContentProps) {
                             </Button>
                         </CardContent>
                     </Card>
+                   
                     {isBonusFeatureActive && (
-                        <Card className="bg-accent/20 border-accent/50">
+                        <Card className="bg-accent/20 border-accent/50 md:col-span-2">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-accent-foreground">
                                     <Gift className="text-accent" />
-                                    Bonus Robux
+                                    Program Bonus Robux
                                 </CardTitle>
-                                <CardDescription>Selesaikan kuis untuk mengumpulkan Poin Bonus dan tukarkan dengan Robux!</CardDescription>
+                                <CardDescription>Selesaikan kuis untuk mengumpulkan Poin Bonus dan tukarkan dengan Robux! Semakin banyak kuis, semakin banyak poin.</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <Button asChild variant="secondary">
                                         <Link href={`/bonus?grade=${grade}&semester=${semester}`}>
-                                        Lihat Bonus
+                                        Lihat Program Bonus
                                     </Link>
                                 </Button>
                             </CardContent>

@@ -112,6 +112,7 @@ export interface User {
   quizCompletions?: number;
   bonusPoints?: number;
   progress?: { [subjectId: string]: number };
+  lastClaimedAt?: string; // ISO string date for daily bonus
 }
 
 //========= ROBLOX USER TYPE =========//

@@ -8,7 +8,7 @@ import { academicAssistant as academicAssistantFlow } from '@/ai/flows/academic-
 
 import { type GenerateQuizOutput, type ExamData, type GenerateQuizInput, type HomeworkHelpInput, type HomeworkHelpOutput, type GenerateExamInput, type AcademicAssistantInput, type AcademicAssistantOutput, type Question, type MultipleChoiceQuestion, type UpgradeRequest, type User, UpgradeInfo, type RobloxUser } from '@/lib/types';
 import { db } from '@/lib/firebase';
-import { ref, set, serverTimestamp, get, child } from 'firebase/database';
+import { ref, set, serverTimestamp, get, child, update } from 'firebase/database';
 
 // Helper function to remove prefixes (A., B., etc.) and normalize string for comparison
 const normalize = (str: string): string => {
@@ -258,5 +258,51 @@ export async function checkRobloxUsernameAction(
     } catch (error) {
         console.error("Terjadi kesalahan saat memeriksa username Roblox:", error);
         return { exists: false, error: "Gagal terhubung ke server. Silakan coba lagi nanti." };
+    }
+}
+
+export async function claimDailyBonusAction(uid: string): Promise<{ success: boolean; error?: string; bonus?: number; nextClaim?: string }> {
+    if (!db) {
+        return { success: false, error: 'Koneksi database gagal.' };
+    }
+
+    const userRef = ref(db, `users/${uid}`);
+    const now = new Date();
+    const COOL_DOWN_HOURS = 23; // 23 jam cooldown
+
+    try {
+        const snapshot = await get(userRef);
+        if (!snapshot.exists()) {
+            return { success: false, error: 'Pengguna tidak ditemukan.' };
+        }
+        const user: User = snapshot.val();
+        
+        const lastClaimedAt = user.lastClaimedAt ? new Date(user.lastClaimedAt) : null;
+        
+        if (lastClaimedAt) {
+            const nextClaimTime = new Date(lastClaimedAt.getTime() + COOL_DOWN_HOURS * 60 * 60 * 1000);
+            if (now < nextClaimTime) {
+                return { success: false, error: 'Anda baru bisa mengklaim bonus lagi nanti.', nextClaim: nextClaimTime.toISOString() };
+            }
+        }
+
+        const currentBonus = user.bonusPoints || 0;
+        // Memberikan bonus acak antara 0.0010 dan 0.0050
+        const awardedBonus = parseFloat((Math.random() * (0.0050 - 0.0010) + 0.0010).toFixed(4));
+        const newBonus = currentBonus + awardedBonus;
+        
+        const updates: Partial<User> = {
+            bonusPoints: newBonus,
+            lastClaimedAt: now.toISOString(),
+        };
+
+        await update(userRef, updates);
+
+        return { success: true, bonus: awardedBonus };
+
+    } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : 'Terjadi kesalahan tidak dikenal.';
+        console.error('claimDailyBonusAction failed:', e);
+        return { success: false, error: `Gagal mengklaim bonus: ${errorMessage}` };
     }
 }
