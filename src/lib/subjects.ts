@@ -49,7 +49,13 @@ const seniorHighSubjects: Omit<Subject, 'content' | 'id'>[] = [
 // Subjects that vary by school type
 const religiousSubjects = {
   sd_smp_sma: { title: 'Pendidikan Agama & Budi Pekerti', icon: 'HeartHandshake' },
-  mi_mts_ma: [
+  sdit_mi: [
+    { title: 'Tahsin/Tahfidz', icon: 'BookCopy' },
+    { title: 'Fiqh', icon: 'Scale' },
+    { title: 'Aqidah Akhlak', icon: 'HeartHandshake' },
+    { title: 'Bahasa Arab', icon: 'Speech' },
+  ],
+  mts_ma: [
     { title: 'Al-Qur\'an Hadis', icon: 'BookCopy' },
     { title: 'Akidah Akhlak', icon: 'HeartHandshake' },
     { title: 'Fikih', icon: 'Scale' },
@@ -82,16 +88,25 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
         'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)': ['Gerak Dasar Lokomotor (Berjalan, Berlari, Melompat)', 'Permainan Sederhana Tanpa Alat', 'Menjaga Kebersihan Tubuh'],
         'Seni Budaya dan Prakarya (SBDP)': ['Menggambar Ekspresif', 'Mengenal Bunyi dan Irama', 'Membuat Karya dari Bahan Alam'],
         'Bahasa Daerah': ['Menyimak Dongeng Lokal', 'Menyebutkan Nama Anggota Keluarga dalam Bahasa Daerah', 'Ungkapan Sapaan Sederhana'],
+        'Tahsin/Tahfidz': ['Pengenalan Huruf Hijaiyah dan Harakat Dasar (Fathah, Kasrah, Dhammah)', 'Hafalan Surat An-Nas dan Al-Falaq', 'Doa Sebelum dan Sesudah Belajar'],
+        'Fiqh': ['Pengenalan Rukun Islam secara sederhana', 'Tata Cara Bersuci (Istinja)', 'Praktik Gerakan Shalat Fardu'],
+        'Aqidah Akhlak': ['Pengenalan Dua Kalimat Syahadat', 'Sifat Allah: Maha Pencipta (Al-Khaliq)', 'Akhlak Terpuji: Jujur dan Berterima Kasih'],
 
         // --- KELAS 2 (FASE A) ---
-        'Pendidikan Pancasila': [ 'Hak dan kewajiban di rumah dan sekolah', 'Aturan dan tata tertib', 'Kerja sama dan gotong royong', 'Menghargai perbedaan teman', 'Musyawarah sederhana'],
-        'Bahasa Indonesia': [ 'Membaca lancar teks pendek', 'Menulis kalimat sederhana dengan huruf tegak bersambung', 'Menggunakan kata tanya (apa, siapa, di mana)', 'Menceritakan kembali isi dongeng'],
-        'Matematika': [ 'Bilangan cacah sampai 500', 'Nilai tempat ratusan, puluhan, satuan', 'Penjumlahan dan pengurangan (dengan/tanpa meminjam)', 'Pengukuran waktu (jam, hari) dan panjang (cm, m)'],
+        'Pendidikan Pancasila': ['Unit 1: Hak dan kewajiban di rumah, kerja sama dalam keluarga', 'Unit 2: Tata tertib di sekolah, musyawarah untuk keputusan bersama', 'Unit 3: Peduli terhadap lingkungan, tanggung jawab merawat makhluk hidup', 'Unit 4: Pentingnya menjaga kebersihan diri dan lingkungan, gotong royong'],
+        'Bahasa Indonesia': ['Unit 1: Menceritakan pengalaman bersama keluarga, menulis kalimat sederhana', 'Unit 2: Memberi petunjuk arah di sekolah, menulis paragraf pendek tentang teman', 'Unit 3: Menulis laporan singkat hasil pengamatan tumbuhan/hewan', 'Unit 4: Menulis daftar kegiatan menjaga kebersihan, membaca poster kesehatan'],
+        'Matematika': ['Unit 1: Bilangan cacah sampai 100, nilai tempat (puluhan, satuan), penjumlahan dan pengurangan', 'Unit 2: Pengukuran panjang (cm, meter), mengenal bangun datar dan ruang sederhana', 'Unit 3: Menyelesaikan soal cerita penjumlahan/pengurangan, mengenal waktu (jam, menit)', 'Unit 4: Mengenal pola bilangan, soal cerita sederhana tentang uang (rupiah)'],
         'IPAS': ['Wujud Benda (Padat, Cair, Gas)', 'Perubahan Wujud Benda (Mencair, Membeku)', 'Siklus Hidup Hewan (Kupu-kupu, Ayam)', 'Sumber Energi dan Kegunaannya'],
-        'Pendidikan Agama & Budi Pekerti': [ 'Asmaul Husna (Ar-Rahman, Ar-Rahim)', 'Kisah Nabi Nuh A.S.', 'Belajar Wudu dengan Benar'],
-
+        'Pendidikan Agama & Budi Pekerti': ['Unit 1: Doa untuk orang tua, pentingnya berbakti', 'Unit 2: Adab berteman, doa belajar', 'Unit 3: Mensyukuri nikmat Allah atas ciptaan-Nya', 'Unit 4: Pentingnya wudu dan salat, kebersihan sebagian dari iman'],
+        'Seni Budaya dan Prakarya (SBDP)': ['Unit 1: Menggambar kegiatan keluarga, membuat kartu ucapan', 'Unit 2: Membuat mading sederhana, menggambar lingkungan sekolah', 'Unit 3: Membuat diorama kebun binatang/pertanian', 'Unit 4: Membuat poster kesehatan, karya dari bahan daur ulang'],
+        'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)': ['Unit 1: Gerak dasar lokomotor dan non-lokomotor dalam permainan', 'Unit 2: Permainan tradisional yang melibatkan kerjasama, senam irama', 'Unit 3: Gerak menirukan gerakan hewan', 'Unit 4: Gerakan senam lantai dasar, pentingnya makanan sehat'],
+        'Tahsin/Tahfidz': ['Peningkatan kelancaran membaca (Iqra/Utsmani)', 'Hafalan surat-surat pendek (Al-Ikhlas, Al-Lahab, An-Nasr)', 'Doa untuk kedua orang tua'],
+        'Bahasa Arab': ['Pengenalan kosakata benda-benda di sekolah', 'Pengenalan kosakata kegiatan sehari-hari', 'Percakapan sederhana (sapaan, menanyakan kabar)'],
+        'Fiqh': ['Pengenalan rukun iman secara sederhana', 'Tata cara bersuci (wudu)', 'Praktik bacaan dan gerakan shalat fardu yang benar'],
+        'Aqidah Akhlak': ['Pengenalan sifat wajib Allah (Wujud, Qidam, Baqa)', 'Kisah keteladanan Nabi Nuh A.S.', 'Akhlak terpuji (disiplin, mandiri, berani)'],
+        
         // --- KELAS 3 (FASE B) ---
-        'Pendidikan Pancasila': ['Makna Simbol Sila-Sila Pancasila', 'Norma dan Aturan di Masyarakat', 'Pentingnya Persatuan dalam Keberagaman'],
+        'Pendidikan Pancasila': ['Unit 1: Hak dan kewajiban terhadap lingkungan, gotong royong menjaga kebersihan lingkungan, pentingnya menjaga kelestarian alam.'],
         'Bahasa Indonesia': ['Mengidentifikasi Informasi dari Teks Narasi', 'Menulis Paragraf Sederhana', 'Menggunakan Tanda Baca (Titik, Koma)'],
         'Matematika': ['Bilangan Cacah sampai 1.000', 'Operasi Perkalian dan Pembagian Dasar', 'Satuan Baku (Berat: gram, kg; Waktu: menit, jam)'],
         'IPAS': ['Ciri-ciri Makhluk Hidup', 'Sistem Pencernaan Manusia secara Sederhana', 'Rangkaian Listrik Sederhana'],
@@ -118,6 +133,11 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
         'Ilmu Pengetahuan Alam (IPA)': ['Hakikat Ilmu Sains dan Metode Ilmiah', 'Zat dan Perubahannya (Unsur, Senyawa, Campuran)', 'Suhu, Kalor, dan Pemuaian', 'Gerak Lurus dan Gaya'],
         'Ilmu Pengetahuan Sosial (IPS)': ['Keruangan dan Interaksi Antarruang', 'Interaksi Sosial dan Lembaga Sosial', 'Kegiatan Ekonomi (Produksi, Distribusi, Konsumsi)'],
         'Prakarya': ['Kerajinan Serat dan Tekstil', 'Rekayasa Teknologi Konstruksi Miniatur Rumah', 'Budidaya Tanaman Sayuran'],
+        'Al-Qur\'an Hadis': ['Membaca dan Menulis Huruf Hijaiyah', 'Hafalan Surat-surat Pendek (Al-Fatihah, An-Nas, Al-Falaq, Al-Ikhlas)', 'Hadis tentang Kebersihan'],
+        'Akidah Akhlak': ['Dua Kalimat Syahadat', 'Asmaul Husna (Ar-Rahman, Ar-Rahim)', 'Akhlak Terpuji (Jujur, Disiplin)'],
+        'Fikih': ['Rukun Islam', 'Bersuci (Istinja dan Wudu)', 'Praktik Gerakan dan Bacaan Salat'],
+        'Sejarah Kebudayaan Islam': ['Masa Kanak-kanak Nabi Muhammad SAW', 'Peristiwa Sebelum Kenabian (Tahun Gajah)'],
+        'Bahasa Arab': ['Perkenalan (Taaruf)', 'Angka 1-10 dalam Bahasa Arab', 'Benda-benda di Kelas'],
 
         // --- KELAS 10 (FASE E) - SMA/MA ---
         'Fisika': ['Besaran, Satuan, dan Pengukuran', 'Analisis Vektor', 'Kinematika Gerak Lurus (GLB, GLBB)', 'Dinamika Partikel (Hukum Newton)'],
@@ -127,13 +147,6 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
         'Geografi': ['Hakikat Ilmu Geografi', 'Dinamika Litosfer dan Dampaknya terhadap Kehidupan', 'Dinamika Atmosfer dan Dampaknya'],
         'Sosiologi': ['Fungsi Sosiologi sebagai Ilmu Mengkaji Gejala Sosial', 'Individu, Kelompok, dan Hubungan Sosial', 'Rancangan Penelitian Sosial Sederhana'],
         'Sejarah Indonesia': ['Pengantar Ilmu Sejarah', 'Asal-usul Nenek Moyang dan Jalur Rempah di Indonesia', 'Kerajaan Hindu-Buddha di Indonesia'],
-
-        // --- Religious Subjects for MI, MTs, MA, SDIT ---
-        'Al-Qur\'an Hadis': ['Membaca dan Menulis Huruf Hijaiyah', 'Hafalan Surat-surat Pendek (Al-Fatihah, An-Nas, Al-Falaq, Al-Ikhlas)', 'Hadis tentang Kebersihan'],
-        'Akidah Akhlak': ['Dua Kalimat Syahadat', 'Asmaul Husna (Ar-Rahman, Ar-Rahim)', 'Akhlak Terpuji (Jujur, Disiplin)'],
-        'Fikih': ['Rukun Islam', 'Bersuci (Istinja dan Wudu)', 'Praktik Gerakan dan Bacaan Salat'],
-        'Sejarah Kebudayaan Islam': ['Masa Kanak-kanak Nabi Muhammad SAW', 'Peristiwa Sebelum Kenabian (Tahun Gajah)'],
-        'Bahasa Arab': ['Perkenalan (Taaruf)', 'Angka 1-10 dalam Bahasa Arab', 'Benda-benda di Kelas'],
     },
     '2': {
         // --- KELAS 1 (FASE A) ---
@@ -146,13 +159,20 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
         'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)': ['Gerak Dasar Non-Lokomotor (Memutar, Mengayun)', 'Permainan dengan Bola', 'Manfaat Istirahat dan Tidur'],
         'Seni Budaya dan Prakarya (SBDP)': ['Mewarnai Gambar', 'Menyanyikan Lagu Anak-anak Nasional', 'Membentuk dari Plastisin/Tanah Liat'],
         'Bahasa Daerah': ['Menyebutkan Nama-nama Hewan dalam Bahasa Daerah', 'Percakapan Singkat Jual Beli di Pasar'],
-        
+        'Tahsin/Tahfidz': ['Membaca kata dengan harakat sukun dan tasydid', 'Hafalan Surat Al-Kafirun dan Al-Kautsar', 'Doa Masuk dan Keluar Rumah'],
+        'Fiqh': ['Pengenalan Adzan dan Iqamah', 'Niat dan Syarat Sah Shalat', 'Praktek Dzikir setelah Shalat'],
+        'Aqidah Akhlak': ['Sifat Allah: Maha Pengasih (Ar-Rahman) dan Penyayang (Ar-Rahim)', 'Kisah keteladanan Nabi Adam A.S.', 'Akhlak Terpuji: Hormat kepada Orang Tua dan Guru'],
+
         // --- KELAS 2 (FASE A) ---
         'Pendidikan Pancasila': ['Lambang Negara Garuda Pancasila', 'Bhinneka Tunggal Ika', 'Menjaga Kebersihan Lingkungan', 'Contoh Perilaku Sesuai Sila Pancasila'],
         'Bahasa Indonesia': ['Menggunakan Huruf Kapital di Awal Kalimat dan Nama Diri', 'Menulis Cerita Pendek Berdasarkan Gambar', 'Membaca Puisi dengan Intonasi yang Tepat'],
         'Matematika': ['Perkalian dan Pembagian Bilangan sampai 100', 'Mengenal Satuan Berat (gram, ons, kg)', 'Mengenal Bangun Ruang (Kubus, Balok, Tabung, Bola)'],
         'IPAS': ['Bagian-bagian Tumbuhan dan Fungsinya', 'Kenampakan Alam (Gunung, Pantai, Sungai)', 'Pentingnya Air, Tanah, dan Matahari bagi Kehidupan'],
         'Pendidikan Agama & Budi Pekerti': ['Iman kepada Malaikat Allah', 'Kisah Nabi Ibrahim A.S.', 'Adab kepada Orang Tua dan Guru'],
+        'Tahsin/Tahfidz': ['Pengenalan hukum bacaan dasar (Iqlab, Idgham)', 'Hafalan surat-surat pendek (Al-Maun, Al-Quraisy, Al-Fil)', 'Doa ketika hujan'],
+        'Bahasa Arab': ['Angka 11-20 dalam Bahasa Arab', 'Warna-warna', 'Anggota tubuh'],
+        'Fiqh': ['Hal-hal yang Membatalkan Wudu dan Shalat', 'Shalat Berjamaah', 'Pengenalan Puasa Ramadhan'],
+        'Aqidah Akhlak': ['Pengenalan Iman kepada Kitab-kitab Allah', 'Kisah keteladanan Nabi Ibrahim A.S.', 'Menghindari Akhlak Tercela (berbohong, malas)'],
 
         // --- KELAS 3 (FASE B) ---
         'Pendidikan Pancasila': ['Lambang dan Simbol Negara (Bendera, Bahasa, Lagu Kebangsaan)', 'Menghargai Jasa Pahlawan', 'Kerja Kelompok dan Tanggung Jawab'],
@@ -182,6 +202,11 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
         'Ilmu Pengetahuan Alam (IPA)': ['Sistem Organisasi Kehidupan dan Sistem Organ pada Manusia', 'Ekologi dan Interaksi Makhluk Hidup dengan Lingkungannya', 'Sistem Tata Surya dan Bumi sebagai Ruang Kehidupan', 'Getaran, Gelombang, dan Bunyi'],
         'Ilmu Pengetahuan Sosial (IPS)': ['Perubahan Sosial Budaya akibat Globalisasi', 'Sejarah Pergerakan Nasional menuju Kemerdekaan', 'Lembaga Keuangan dan Perdagangan Internasional'],
         'Prakarya': ['Pengolahan Bahan Pangan Setengah Jadi', 'Rekayasa Teknologi Alat Penjernih Air', 'Budidaya Ikan Konsumsi'],
+        'Al-Qur\'an Hadis': ['Hukum Bacaan Mad Thabi\'i dan Mad Far\'i', 'Hafalan dan Pemahaman Surat-surat Pendek (Al-Insyirah s/d Al-Alaq)', 'Hadis tentang Menuntut Ilmu'],
+        'Akidah Akhlak': ['Iman kepada Rasul dan Hari Akhir', 'Akhlak Terpuji (Sabar, Syukur, Tawakal)', 'Menghindari Akhlak Tercela (Riya, Sombong, Hasad)'],
+        'Fikih': ['Puasa (Wajib dan Sunnah)', 'Zakat (Fitrah dan Mal)', 'Shalat Sunnah Rawatib dan Shalat Id'],
+        'Sejarah Kebudayaan Islam': ['Peristiwa Hijrah Nabi Muhammad SAW ke Madinah', 'Membangun Masyarakat melalui Piagam Madinah', 'Sejarah Khulafaur Rasyidin'],
+        'Bahasa Arab': ['Warna-warna dan Sifat', 'Profesi dan Cita-cita', 'Aktivitas Sehari-hari (Al-Ansyithah al-Yaumiyah)'],
 
         // --- KELAS 10 (FASE E) - SMA/MA ---
         'Fisika': ['Gerak Melingkar Beraturan', 'Hukum Gravitasi Newton', 'Usaha dan Energi', 'Impuls dan Momentum Linier'],
@@ -191,13 +216,6 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
         'Geografi': ['Dinamika Hidrosfer dan Dampaknya', 'Dinamika Kependudukan di Indonesia', 'Keragaman Budaya dan Pembangunan Nasional', 'Mitigasi Bencana Alam'],
         'Sosiologi': ['Ragam Gejala Sosial dalam Masyarakat', 'Metode Penelitian Sosial', 'Konflik, Kekerasan, dan Perdamaian', 'Integrasi dan Reintegrasi Sosial'],
         'Sejarah Indonesia': ['Kerajaan Islam di Indonesia', 'Proses Masuk dan Berkembangnya Penjajahan Bangsa Eropa', 'Perlawanan Bangsa Indonesia terhadap Kolonialisme'],
-        
-        // --- Religious Subjects for MI, MTs, MA ---
-        'Al-Qur\'an Hadis': ['Hukum Bacaan Mad Thabi\'i dan Mad Far\'i', 'Hafalan dan Pemahaman Surat-surat Pendek (Al-Insyirah s/d Al-Alaq)', 'Hadis tentang Menuntut Ilmu'],
-        'Akidah Akhlak': ['Iman kepada Rasul dan Hari Akhir', 'Akhlak Terpuji (Sabar, Syukur, Tawakal)', 'Menghindari Akhlak Tercela (Riya, Sombong, Hasad)'],
-        'Fikih': ['Puasa (Wajib dan Sunnah)', 'Zakat (Fitrah dan Mal)', 'Shalat Sunnah Rawatib dan Shalat Id'],
-        'Sejarah Kebudayaan Islam': ['Peristiwa Hijrah Nabi Muhammad SAW ke Madinah', 'Membangun Masyarakat melalui Piagam Madinah', 'Sejarah Khulafaur Rasyidin'],
-        'Bahasa Arab': ['Warna-warna dan Sifat', 'Profesi dan Cita-cita', 'Aktivitas Sehari-hari (Al-Ansyithah al-Yaumiyah)'],
     }
 };
 
@@ -249,10 +267,14 @@ export function getSubjects(school: SchoolType, grade: Grade, semester: Semester
   // Add religious subjects based on school type
   if (['SDN', 'SMP', 'SMA'].includes(school)) {
     subjectList.push(religiousSubjects.sd_smp_sma);
-  } else if (['SDIT', 'MI', 'MTs', 'MA'].includes(school)) {
-    // For Islamic schools, replace the general PAI with specific subjects.
+  } else if (['SDIT', 'MI'].includes(school)) {
+    // For Islamic elementary schools
     subjectList = subjectList.filter(s => s.title !== 'Pendidikan Agama & Budi Pekerti');
-    subjectList.push(...religiousSubjects.mi_mts_ma);
+    subjectList.push(...religiousSubjects.sdit_mi);
+  } else if (['MTs', 'MA'].includes(school)) {
+     // For Islamic secondary/high schools
+    subjectList = subjectList.filter(s => s.title !== 'Pendidikan Agama & Budi Pekerti');
+    subjectList.push(...religiousSubjects.mts_ma);
   }
   
   return subjectList
