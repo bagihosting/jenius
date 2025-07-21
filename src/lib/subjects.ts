@@ -50,9 +50,9 @@ const seniorHighSubjects: Omit<Subject, 'content' | 'id'>[] = [
 const religiousSubjects = {
   sd_smp_sma: { title: 'Pendidikan Agama & Budi Pekerti', icon: 'HeartHandshake' },
   mi_mts_ma: [
-    { title: 'Al-Qur\'an Hadis', icon: 'BookCopy' },
-    { title: 'Akidah Akhlak', icon: 'HeartHandshake' },
-    { title: 'Fikih', icon: 'Scale' },
+    { title: 'Tahsin/Tahfidz', icon: 'BookCopy' },
+    { title: 'Aqidah Akhlak', icon: 'HeartHandshake' },
+    { title: 'Fiqh', icon: 'Scale' },
     { title: 'Sejarah Kebudayaan Islam', icon: 'Landmark' },
     { title: 'Bahasa Arab', icon: 'Speech' },
   ]
@@ -74,78 +74,42 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
     '1': {
         // SD Topics
         'Pendidikan Pancasila': [
-            'Hak dan kewajiban di rumah',
-            'Aturan di rumah',
-            'Kerja sama dalam keluarga',
-            'Menghargai perbedaan anggota keluarga',
-            'Tata tertib di sekolah',
-            'musyawarah untuk keputusan bersama',
-            'sikap tolong menolong dan berbagi antar teman',
-            'Peduli terhadap lingkungan hidup',
-            'tanggung jawab merawat makhluk hidup',
-            'menjaga kelestarian alam',
-            'Pentingnya menjaga kebersihan diri dan lingkungan',
-            'bahaya kuman',
-            'gotong royong membersihkan lingkungan'
+            'Hak dan kewajiban di rumah', 'Aturan di rumah', 'Kerja sama dalam keluarga', 'Menghargai perbedaan anggota keluarga',
+            'Tata tertib di sekolah', 'musyawarah untuk keputusan bersama', 'sikap tolong menolong dan berbagi antar teman',
+            'Peduli terhadap lingkungan hidup', 'tanggung jawab merawat makhluk hidup', 'menjaga kelestarian alam',
+            'Pentingnya menjaga kebersihan diri dan lingkungan', 'bahaya kuman', 'gotong royong membersihkan lingkungan'
         ],
         'Bahasa Indonesia': [
-            'Menceritakan pengalaman bersama keluarga',
-            'membaca dan menulis kalimat sederhana',
-            'mengenali dan menuliskan kata kerja dan kata sifat',
-            'Memberi petunjuk arah atau lokasi di sekolah',
-            'menulis paragraf pendek tentang teman atau lingkungan sekolah',
-            'membaca teks pendek',
-            'Menulis laporan singkat tentang hasil pengamatan tumbuhan/hewan',
-            'membaca informasi dari teks sederhana tentang tumbuhan/hewan',
-            'Menulis daftar kegiatan menjaga kebersihan',
-            'membaca petunjuk penggunaan barang (misal: sabun)',
-            'poster kesehatan'
+            'Menceritakan pengalaman bersama keluarga', 'membaca dan menulis kalimat sederhana', 'mengenali dan menuliskan kata kerja dan kata sifat',
+            'Memberi petunjuk arah atau lokasi di sekolah', 'menulis paragraf pendek tentang teman atau lingkungan sekolah', 'membaca teks pendek',
+            'Menulis laporan singkat tentang hasil pengamatan tumbuhan/hewan', 'membaca informasi dari teks sederhana tentang tumbuhan/hewan',
+            'Menulis daftar kegiatan menjaga kebersihan', 'membaca petunjuk penggunaan barang (misal: sabun)', 'poster kesehatan'
         ],
         'Matematika': [
-            'Mengenal bilangan cacah sampai 100',
-            'Nilai tempat (puluhan dan satuan)',
-            'Penjumlahan dan pengurangan dua angka tanpa meminjam/meminjam',
-            'Pengukuran panjang dengan satuan baku (cm, meter)',
-            'mengenal bangun datar dan bangun ruang sederhana (kubus, balok, bola)',
-            'Menyelesaikan masalah sehari-hari yang berkaitan dengan penjumlahan dan pengurangan (maksimal tiga angka)',
-            'mengenal waktu (jam dan menit)',
-            'Mengenal pola bilangan',
-            'menyelesaikan soal cerita sederhana yang melibatkan uang (rupiah)'
+            'Mengenal bilangan cacah sampai 100', 'Nilai tempat (puluhan dan satuan)', 'Penjumlahan dan pengurangan dua angka tanpa meminjam/meminjam',
+            'Pengukuran panjang dengan satuan baku (cm, meter)', 'mengenal bangun datar dan bangun ruang sederhana (kubus, balok, bola)',
+            'Menyelesaikan masalah sehari-hari yang berkaitan dengan penjumlahan dan pengurangan (maksimal tiga angka)', 'mengenal waktu (jam dan menit)',
+            'Mengenal pola bilangan', 'menyelesaikan soal cerita sederhana yang melibatkan uang (rupiah)'
         ],
         'IPAS': ['Rangka dan Panca Indra Manusia', 'Ciri-ciri Makhluk Hidup', 'Wujud Benda dan Perubahannya', 'Kenampakan Alam dan Buatan'],
         'Pendidikan Agama & Budi Pekerti': [
-            'Doa untuk orang tua',
-            'pentingnya berbakti kepada orang tua',
-            'mengenal sifat-sifat Allah yang Maha Pengasih dan Penyayang',
-            'Adab berteman',
-            'menghargai teman yang berbeda agama/suku',
-            'doa belajar',
-            'Mensyukuri nikmat Allah atas ciptaan-Nya (tumbuhan dan hewan)',
-            'menjaga kebersihan dan kelestarian alam',
-            'Pentingnya wudu dan salat sebagai bentuk kebersihan spiritual',
-            'menjaga kebersihan adalah sebagian dari iman'
+            'Doa untuk orang tua', 'pentingnya berbakti kepada orang tua', 'mengenal sifat-sifat Allah yang Maha Pengasih dan Penyayang',
+            'Adab berteman', 'menghargai teman yang berbeda agama/suku', 'doa belajar',
+            'Mensyukuri nikmat Allah atas ciptaan-Nya (tumbuhan dan hewan)', 'menjaga kebersihan dan kelestarian alam',
+            'Pentingnya wudu dan salat sebagai bentuk kebersihan spiritual', 'menjaga kebersihan adalah sebagian dari iman'
         ],
         'Bahasa Inggris': ['Greetings and Introductions', 'Things in the Classroom', 'Family Members', 'Colors and Numbers'],
         'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)': [
             'Gerak dasar lokomotor (melompat, berlari) dan non-lokomotor (membungkuk, memutar) dalam permainan sederhana',
-            'Permainan tradisional yang melibatkan kerjasama',
-            'senam irama dengan iringan musik',
-            'Gerak menirukan gerakan hewan',
-            'menjaga kebugaran tubuh dengan gerakan sederhana',
-            'Gerakan senam lantai dasar (misal: guling depan sederhana)',
-            'pentingnya makanan sehat dan istirahat cukup'
+            'Permainan tradisional yang melibatkan kerjasama', 'senam irama dengan iringan musik',
+            'Gerak menirukan gerakan hewan', 'menjaga kebugaran tubuh dengan gerakan sederhana',
+            'Gerakan senam lantai dasar (misal: guling depan sederhana)', 'pentingnya makanan sehat dan istirahat cukup'
         ],
         'Seni Budaya dan Prakarya (SBDP)': [
-            'Menggambar kegiatan keluarga',
-            'membuat kartu ucapan untuk keluarga',
-            'bernyanyi lagu tentang keluarga',
-            'Membuat mading sederhana tentang sekolah',
-            'menggambar lingkungan sekolah',
-            'membuat hiasan kelas',
-            'Membuat diorama kebun binatang/pertanian',
-            'menggambar dan mewarnai jenis-jenis tumbuhan/hewan',
-            'Membuat poster kesehatan',
-            'membuat karya seni dari bahan daur ulang'
+            'Menggambar kegiatan keluarga', 'membuat kartu ucapan untuk keluarga', 'bernyanyi lagu tentang keluarga',
+            'Membuat mading sederhana tentang sekolah', 'menggambar lingkungan sekolah', 'membuat hiasan kelas',
+            'Membuat diorama kebun binatang/pertanian', 'menggambar dan mewarnai jenis-jenis tumbuhan/hewan',
+            'Membuat poster kesehatan', 'membuat karya seni dari bahan daur ulang'
         ],
         'Bahasa Daerah': ['Menyimak cerita rakyat lokal', 'Kosakata tentang keluarga dan rumah', 'Unggah-ungguh basa (Sopan santun berbahasa)'],
         
@@ -163,12 +127,12 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
         'Sosiologi': ['Fungsi Sosiologi sebagai Ilmu Mengkaji Gejala Sosial', 'Individu, Kelompok, dan Hubungan Sosial', 'Rancangan Penelitian Sosial Sederhana'],
         'Sejarah Indonesia': ['Pengantar Ilmu Sejarah', 'Asal-usul Nenek Moyang dan Jalur Rempah di Indonesia', 'Kerajaan Hindu-Buddha di Indonesia'],
 
-        // Religious Subjects for MI, MTs, MA
-        'Al-Qur\'an Hadis': ['Hukum Bacaan Nun Sukun/Tanwin dan Mim Sukun', 'Hafalan dan Pemahaman Surat-surat Pendek (An-Nas s/d Ad-Dhuha)', 'Hadis tentang Niat dan Ikhlas'],
-        'Akidah Akhlak': ['Dasar dan Tujuan Akidah Islam', 'Asmaul Husna (Al-Alim, Al-Khabir, As-Sami, Al-Basir)', 'Sifat Wajib, Mustahil, dan Jaiz bagi Allah', 'Pengenalan Asmaul Husna', 'kisah nabi-nabi sederhana', 'akhlak terpuji (jujur, sabar, disiplin)'],
-        'Fikih': ['Thaharah (Bersuci dari Hadas dan Najis)', 'Salat Fardhu dan Berjamaah', 'Azan dan Iqamah', 'Pengenalan rukun Islam (syahadat, salat, puasa, zakat, haji) secara sederhana'],
+        // Religious Subjects for MI, MTs, MA, SDIT
+        'Tahsin/Tahfidz': ['Peningkatan kemampuan membaca Al-Qur\'an (Iqra\'/Utsmani)', 'Hafalan surat-surat pendek Juz Amma', 'Doa harian'],
+        'Aqidah Akhlak': ['Pengenalan sifat wajib Allah', 'kisah keteladanan para Nabi dan Sahabat', 'akhlak terpuji (disiplin, mandiri, berani)'],
+        'Fiqh': ['Pengenalan rukun iman secara sederhana', 'tata cara bersuci (istinja, wudu)', 'praktik salat fardu'],
         'Sejarah Kebudayaan Islam': ['Misi dan Strategi Dakwah Nabi Muhammad SAW di Mekah', 'Kondisi Masyarakat Arab Pra-Islam'],
-        'Bahasa Arab': ['Perkenalan (Ta\'aruf)', 'Angka 1-50', 'Benda-benda di Sekolah dan Rumah (Al-Adawat al-Madrasiyah wal-Baitiyah)', 'Pengenalan kosakata dasar (salam, angka, benda di kelas)'],
+        'Bahasa Arab': ['Pengenalan kosakata benda-benda di sekolah', 'kegiatan sehari-hari', 'percakapan sederhana'],
     },
     '2': {
         // SD Topics
@@ -199,7 +163,7 @@ const semesterTopics: Record<Semester, Record<string, string[]>> = {
         // Religious Subjects for MI, MTs, MA
         'Al-Qur\'an Hadis': ['Hukum Bacaan Mad Thabi\'i dan Mad Far\'i', 'Hafalan dan Pemahaman Surat-surat Pendek (Al-Insyirah s/d Al-Alaq)', 'Hadis tentang Kebersihan dan Menuntut Ilmu'],
         'Akidah Akhlak': ['Iman kepada Rasul dan Hari Akhir', 'Akhlak Terpuji (Sabar, Syukur, Tawakal)', 'Menghindari Akhlak Tercela (Riya, Sombong, Hasad)'],
-        'Fikih': ['Puasa (Wajib dan Sunnah)', 'Zakat (Fitrah dan Mal)', 'Shalat Sunnah Rawatib dan Shalat Id'],
+        'Fiqh': ['Puasa (Wajib dan Sunnah)', 'Zakat (Fitrah dan Mal)', 'Shalat Sunnah Rawatib dan Shalat Id'],
         'Sejarah Kebudayaan Islam': ['Peristiwa Hijrah Nabi Muhammad SAW ke Madinah', 'Membangun Masyarakat melalui Piagam Madinah', 'Sejarah Khulafaur Rasyidin'],
         'Bahasa Arab': ['Warna-warna dan Sifat', 'Profesi dan Cita-cita', 'Aktivitas Sehari-hari (Al-Ansyithah al-Yaumiyah)'],
     }
@@ -253,10 +217,9 @@ export function getSubjects(school: SchoolType, grade: Grade, semester: Semester
   // Add religious subjects based on school type
   if (['SDN', 'SMP', 'SMA'].includes(school)) {
     subjectList.push(religiousSubjects.sd_smp_sma);
-  } else if (['SDIT'].includes(school)) {
-    subjectList.push(religiousSubjects.sd_smp_sma); // Tetap ada PAIBP umum
-    subjectList.push(...religiousSubjects.mi_mts_ma);
-  } else if (['MI', 'MTs', 'MA'].includes(school)) {
+  } else if (['SDIT', 'MI', 'MTs', 'MA'].includes(school)) {
+    // For Islamic schools, replace the general PAI with specific subjects.
+    // At elementary level (SDIT/MI), we might use a slightly different set.
     subjectList.push(...religiousSubjects.mi_mts_ma);
   }
   
