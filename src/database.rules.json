@@ -6,6 +6,7 @@
 
     "users": {
       ".indexOn": ["role", "robloxUsername", "bonusPoints"],
+      ".read": "root.child('users').child(auth.uid).child('role').val() === 'admin'",
       "$uid": {
         ".read": "auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin'",
         ".write": "auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin'",
@@ -13,11 +14,13 @@
           ".write": "root.child('users').child(auth.uid).child('role').val() === 'admin'"
         },
         "bonusPoints": {
-           // Validasi: hanya bisa bertambah atau tetap, dan harus angka.
+           ".read": "auth.uid === $uid",
+           ".write": "auth.uid === $uid",
            ".validate": "newData.isNumber() && (!data.exists() || newData.val() >= data.val())"
         },
         "lastClaimedAt": {
-           // Validasi: Waktu baru harus lebih besar dari waktu lama jika sudah ada.
+           ".read": "auth.uid === $uid",
+           ".write": "auth.uid === $uid",
            ".validate": "newData.isNumber() && (!data.exists() || newData.val() > data.val()) && newData.val() <= now + 1000"
         }
       }
@@ -25,23 +28,19 @@
     "usernames": {
       ".read": "auth.uid != null",
       "$username": {
-        // Allow write only if the username doesn't exist and the UID matches the authenticated user.
         ".write": "!data.exists() && newData.child('uid').val() === auth.uid"
       }
     },
     "robloxUsernames": {
       ".read": "auth.uid != null",
       "$username": {
-        // Allow write if the username doesn't exist or if it already belongs to the current user.
         ".write": "auth.uid != null && (!data.exists() || data.val() === auth.uid)"
       }
     },
     "upgradeRequests": {
       ".read": "root.child('users').child(auth.uid).child('role').val() === 'admin'",
       "$uid": {
-        // Allow user to create a request, but not to overwrite an approved one.
         ".write": "auth.uid === $uid && (!data.exists() || data.child('status').val() !== 'approved')",
-        // User can read their own request, admin can read any.
         ".read": "auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin'"
       }
     },
@@ -51,8 +50,7 @@
     },
     "leaderboard": {
       ".read": "auth.uid != null",
-      // Leaderboard is only written to by a trusted server process (simulated).
-      ".write": false, 
+      ".write": false,
       ".indexOn": "bonusPoints"
     }
   }

@@ -28,16 +28,17 @@ export function LeaderboardCard() {
           return;
       }
       
-      const usersRef = ref(db, 'users');
+      // Change from 'users' to the public 'leaderboard' node
+      const leaderboardRef = ref(db, 'leaderboard'); 
       // Query to get top 5 users by bonusPoints
-      const topUsersQuery = query(usersRef, orderByChild('bonusPoints'), limitToLast(5));
+      const topUsersQuery = query(leaderboardRef, orderByChild('bonusPoints'), limitToLast(5));
       
       const unsubscribe = onValue(topUsersQuery, (snapshot) => {
         const usersData: User[] = [];
         if (snapshot.exists()) {
           snapshot.forEach((childSnapshot) => {
-            // Only add users who have some points to the leaderboard
             const user = childSnapshot.val();
+            // Only add users who have some points to the leaderboard
             if (user.bonusPoints > 0) {
                usersData.push({ uid: childSnapshot.key!, ...user });
             }
