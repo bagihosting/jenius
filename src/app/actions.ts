@@ -261,14 +261,14 @@ export async function checkRobloxUsernameAction(
     }
 }
 
-export async function claimDailyBonusAction(uid: string): Promise<{ success: boolean; error?: string; bonus?: number; nextClaim?: string }> {
+export async function claimDailyBonusAction(uid: string): Promise<{ success: boolean; error?: string; bonus?: number; nextClaim?: number }> {
     if (!db) {
         return { success: false, error: 'Koneksi database gagal.' };
     }
 
     const userRef = ref(db, `users/${uid}`);
-    const now = new Date();
-    const COOL_DOWN_HOURS = 23; // 23 jam cooldown
+    const now = Date.now();
+    const COOL_DOWN_HOURS = 23; 
 
     try {
         const snapshot = await get(userRef);
@@ -277,12 +277,12 @@ export async function claimDailyBonusAction(uid: string): Promise<{ success: boo
         }
         const user: User = snapshot.val();
         
-        const lastClaimedAt = user.lastClaimedAt ? new Date(user.lastClaimedAt) : null;
+        const lastClaimedAt = user.lastClaimedAt ? new Date(user.lastClaimedAt as string).getTime() : null;
         
         if (lastClaimedAt) {
-            const nextClaimTime = new Date(lastClaimedAt.getTime() + COOL_DOWN_HOURS * 60 * 60 * 1000);
+            const nextClaimTime = lastClaimedAt + COOL_DOWN_HOURS * 60 * 60 * 1000;
             if (now < nextClaimTime) {
-                return { success: false, error: 'Anda baru bisa mengklaim bonus lagi nanti.', nextClaim: nextClaimTime.toISOString() };
+                return { success: false, error: 'Anda baru bisa mengklaim bonus lagi nanti.', nextClaim: nextClaimTime };
             }
         }
 
@@ -291,12 +291,11 @@ export async function claimDailyBonusAction(uid: string): Promise<{ success: boo
         const awardedBonus = parseFloat((Math.random() * (0.0050 - 0.0010) + 0.0010).toFixed(4));
         const newBonus = currentBonus + awardedBonus;
         
-        const updates: Partial<User> = {
-            bonusPoints: newBonus,
-            lastClaimedAt: now.toISOString(),
-        };
+        const updates: { [key: string]: any } = {};
+        updates[`users/${uid}/bonusPoints`] = newBonus;
+        updates[`users/${uid}/lastClaimedAt`] = serverTimestamp();
 
-        await update(userRef, updates);
+        await update(ref(db), updates);
 
         return { success: true, bonus: awardedBonus };
 

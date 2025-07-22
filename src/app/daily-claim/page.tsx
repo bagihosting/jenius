@@ -50,31 +50,25 @@ export default function DailyClaimPage() {
     setIsClient(true);
   }, []);
 
-  useEffect(() => {
-    if (isClient && !loading && !isAuthenticated) {
-      router.push('/login');
-    }
-  }, [isClient, loading, isAuthenticated, router]);
+  const checkClaimStatus = useCallback((lastClaimTime?: number | null) => {
+    const lastClaimedAt = lastClaimTime;
+    if (lastClaimedAt === undefined) return; // Still waiting for user data
 
-  const checkClaimStatus = useCallback(() => {
-    if (!user) return;
-
-    const lastClaimedAt = user.lastClaimedAt ? new Date(user.lastClaimedAt) : null;
     if (!lastClaimedAt) {
       setClaimStatus('ready');
       return;
     }
     
     // 23 hour cooldown
-    const nextClaimTime = new Date(lastClaimedAt.getTime() + 23 * 60 * 60 * 1000);
-    const now = new Date();
+    const nextClaimTime = lastClaimedAt + 23 * 60 * 60 * 1000;
+    const now = Date.now();
 
     if (now >= nextClaimTime) {
       setClaimStatus('ready');
     } else {
       setClaimStatus('cooldown');
       const interval = setInterval(() => {
-        const remainingTime = nextClaimTime.getTime() - new Date().getTime();
+        const remainingTime = nextClaimTime - Date.now();
         if (remainingTime <= 0) {
           setCountdown("00:00:00");
           setClaimStatus('ready');
@@ -86,11 +80,20 @@ export default function DailyClaimPage() {
 
       return () => clearInterval(interval);
     }
-  }, [user]);
+  }, []);
+
+  useEffect(() => {
+    if (isClient && !loading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [isClient, loading, isAuthenticated, router]);
+
 
   useEffect(() => {
     if (user) {
-      checkClaimStatus();
+      // Pass the timestamp (as a number) to the check function
+      const lastClaimTimestamp = user.lastClaimedAt ? new Date(user.lastClaimedAt).getTime() : null;
+      checkClaimStatus(lastClaimTimestamp);
     }
   }, [user, checkClaimStatus]);
 
@@ -109,6 +112,7 @@ export default function DailyClaimPage() {
       setClaimStatus('claimed');
       setAwardedBonus(result.bonus);
       // Manually update user context to reflect new points and claim time
+      // This provides instant UI feedback while waiting for DB to sync
       const updatedBonus = (user.bonusPoints || 0) + result.bonus;
       const updatedClaimTime = new Date().toISOString();
       updateUser({ bonusPoints: updatedBonus, lastClaimedAt: updatedClaimTime });
@@ -119,7 +123,7 @@ export default function DailyClaimPage() {
         variant: "destructive",
       });
       if (result.nextClaim) {
-          checkClaimStatus(); // Re-check status if server provides cooldown info
+          checkClaimStatus(result.nextClaim); // Re-check status if server provides cooldown info
       }
     }
   };
@@ -146,7 +150,7 @@ export default function DailyClaimPage() {
              <p className="text-muted-foreground">Kamu mendapatkan</p>
              <p className="text-5xl font-bold text-primary">{awardedBonus?.toFixed(4)}</p>
              <p className="text-muted-foreground">Poin Bonus!</p>
-             <Button onClick={checkClaimStatus}>Selesai</Button>
+             <Button onClick={() => checkClaimStatus(Date.now())}>Selesai</Button>
           </div>
         );
 

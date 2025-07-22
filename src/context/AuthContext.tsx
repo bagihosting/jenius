@@ -96,7 +96,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { uid } = user;
     const currentUser = auth.currentUser;
   
-    // Data for Firebase Auth profile update
     const authUpdateData: { displayName?: string; photoURL?: string } = {};
     if (userData.name) authUpdateData.displayName = userData.name;
     if (userData.photoUrl) authUpdateData.photoURL = userData.photoUrl;
@@ -104,32 +103,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
         const updates: { [key: string]: any } = {};
         
-        // Build the update object for the user profile, ensuring no undefined values.
-        // This is the core fix for the 'undefined property' error.
-        const userProfilePath = `users/${uid}`;
-        const userProfileUpdate: any = { ...userData };
-
-        // We must merge with existing data, but filter out undefined values before sending.
-        const mergedUser = { ...user, ...userData };
-        Object.keys(mergedUser).forEach(key => {
+        // This is the robust way to build the update object.
+        // It avoids sending `undefined` values to Firebase.
+        const dbUpdateData: Partial<User> = { ...userData };
+        Object.keys(dbUpdateData).forEach(key => {
             const typedKey = key as keyof User;
-            if (mergedUser[typedKey] === undefined) {
-                delete mergedUser[typedKey];
+            if (dbUpdateData[typedKey] === undefined) {
+                delete dbUpdateData[typedKey];
             }
         });
-        
-        updates[userProfilePath] = mergedUser;
 
+        // If there's anything to update in the DB, add it to the multi-path update.
+        if (Object.keys(dbUpdateData).length > 0) {
+            updates[`users/${uid}`] = {
+                ...(await get(ref(db, `users/${uid}`))).val(), // Get existing data
+                ...dbUpdateData // Overwrite with new, valid data
+            };
+        }
 
         // Handle Roblox username uniqueness
         if (userData.robloxUsername !== undefined) {
             const oldUsername = user.robloxUsername?.toLowerCase();
             const newUsername = userData.robloxUsername?.toLowerCase();
             
-            // If username has changed, update the unique index
             if (oldUsername !== newUsername) {
                 if (oldUsername) {
-                    updates[`robloxUsernames/${oldUsername}`] = null; // Remove old username lock
+                    updates[`robloxUsernames/${oldUsername}`] = null;
                 }
                 if (newUsername) {
                     const newUsernameRef = ref(db, `robloxUsernames/${newUsername}`);
@@ -137,26 +136,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                     if (snapshot.exists() && snapshot.val() !== uid) {
                         throw new Error("Username Roblox ini sudah digunakan oleh pengguna lain.");
                     }
-                    updates[`robloxUsernames/${newUsername}`] = uid; // Set new username lock
+                    updates[`robloxUsernames/${newUsername}`] = uid;
                 }
             }
         }
 
-        // Update DB and Auth Profile concurrently
-        await update(ref(db), updates);
+        // Only perform update if there are changes
+        if (Object.keys(updates).length > 0) {
+             await update(ref(db), updates);
+        }
 
         if (Object.keys(authUpdateData).length > 0) {
             await updateProfile(currentUser, authUpdateData);
         }
         
-        // On success, update the local state with the new data
         setUser(prevUser => {
             if (!prevUser) return null;
-            // Create a new merged user object to trigger re-render
-            const updatedUser = { ...prevUser, ...userData };
-            if (authUpdateData.displayName) updatedUser.name = authUpdateData.displayName;
-            if (authUpdateData.photoURL) updatedUser.photoUrl = authUpdateData.photoURL;
-            return updatedUser;
+            return { ...prevUser, ...userData };
         });
   
     } catch (error) {

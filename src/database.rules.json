@@ -15,11 +15,11 @@
         },
         "bonusPoints": {
            ".read": "auth.uid === $uid",
-           ".write": "auth.uid === $uid && newData.isNumber()"
+           ".write": "auth.uid === $uid && newData.isNumber() && (!data.exists() || newData.val() >= data.val())"
         },
         "lastClaimedAt": {
            ".read": "auth.uid === $uid",
-           ".write": "auth.uid === $uid && newData.isNumber() && newData.val() > data.val() && newData.val() <= now + 1000"
+           ".write": "auth.uid === $uid && newData.hasChildren(['.sv']) && (!data.exists() || newData.val() > data.val())"
         }
       }
     },
