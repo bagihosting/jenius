@@ -19,7 +19,7 @@
         },
         "lastClaimedAt": {
            ".read": "auth.uid === $uid",
-           ".write": "auth.uid === $uid && newData.hasChildren(['.sv']) && (!data.exists() || newData.val() > data.val())"
+           ".write": "auth.uid === $uid && (!data.exists() || newData.val() > data.val())"
         }
       }
     },
