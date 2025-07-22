@@ -99,51 +99,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const authUpdateData: { displayName?: string; photoURL?: string } = {};
     if (userData.name) authUpdateData.displayName = userData.name;
     if (userData.photoUrl) authUpdateData.photoURL = userData.photoUrl;
-  
+
     try {
-        const updates: { [key: string]: any } = {};
-        
-        // This is the robust way to build the update object.
-        // It avoids sending `undefined` values to Firebase.
-        const dbUpdateData: Partial<User> = { ...userData };
-        Object.keys(dbUpdateData).forEach(key => {
+        const dbUpdateData: { [key: string]: any } = {};
+
+        // Build the update object with only defined, non-null properties
+        Object.keys(userData).forEach(key => {
             const typedKey = key as keyof User;
-            if (dbUpdateData[typedKey] === undefined) {
-                delete dbUpdateData[typedKey];
+            const value = userData[typedKey];
+            if (value !== undefined) {
+                 dbUpdateData[`/users/${uid}/${typedKey}`] = value;
             }
         });
 
-        // If there's anything to update in the DB, add it to the multi-path update.
-        if (Object.keys(dbUpdateData).length > 0) {
-            updates[`users/${uid}`] = {
-                ...(await get(ref(db, `users/${uid}`))).val(), // Get existing data
-                ...dbUpdateData // Overwrite with new, valid data
-            };
-        }
+        // Handle Roblox username uniqueness logic
+        if (userData.robloxUsername !== undefined && userData.robloxUsername !== user.robloxUsername) {
+            const oldUsernameKey = user.robloxUsername?.toLowerCase();
+            const newUsernameKey = userData.robloxUsername?.toLowerCase();
 
-        // Handle Roblox username uniqueness
-        if (userData.robloxUsername !== undefined) {
-            const oldUsername = user.robloxUsername?.toLowerCase();
-            const newUsername = userData.robloxUsername?.toLowerCase();
-            
-            if (oldUsername !== newUsername) {
-                if (oldUsername) {
-                    updates[`robloxUsernames/${oldUsername}`] = null;
-                }
-                if (newUsername) {
-                    const newUsernameRef = ref(db, `robloxUsernames/${newUsername}`);
-                    const snapshot = await get(newUsernameRef);
-                    if (snapshot.exists() && snapshot.val() !== uid) {
-                        throw new Error("Username Roblox ini sudah digunakan oleh pengguna lain.");
-                    }
-                    updates[`robloxUsernames/${newUsername}`] = uid;
-                }
+            if (oldUsernameKey) {
+                dbUpdateData[`/robloxUsernames/${oldUsernameKey}`] = null; // Remove old username
+            }
+            if (newUsernameKey) {
+                 const newUsernameRef = ref(db, `robloxUsernames/${newUsernameKey}`);
+                 const snapshot = await get(newUsernameRef);
+                 if (snapshot.exists() && snapshot.val() !== uid) {
+                     throw new Error("Username Roblox ini sudah digunakan oleh pengguna lain.");
+                 }
+                dbUpdateData[`/robloxUsernames/${newUsernameKey}`] = uid; // Claim new one
             }
         }
-
+        
         // Only perform update if there are changes
-        if (Object.keys(updates).length > 0) {
-             await update(ref(db), updates);
+        if (Object.keys(dbUpdateData).length > 0) {
+             await update(ref(db), dbUpdateData);
         }
 
         if (Object.keys(authUpdateData).length > 0) {
@@ -152,7 +141,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         setUser(prevUser => {
             if (!prevUser) return null;
-            return { ...prevUser, ...userData };
+            const updatedUser = { ...prevUser, ...userData };
+            // Ensure properties set to null or undefined in userData are handled
+            Object.keys(userData).forEach(key => {
+                const typedKey = key as keyof User;
+                if(userData[typedKey] === null || userData[typedKey] === undefined) {
+                    delete updatedUser[typedKey];
+                }
+            });
+            return updatedUser;
         });
   
     } catch (error) {

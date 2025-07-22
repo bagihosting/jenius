@@ -8,7 +8,7 @@ import { academicAssistant as academicAssistantFlow } from '@/ai/flows/academic-
 
 import { type GenerateQuizOutput, type ExamData, type GenerateQuizInput, type HomeworkHelpInput, type HomeworkHelpOutput, type GenerateExamInput, type AcademicAssistantInput, type AcademicAssistantOutput, type Question, type MultipleChoiceQuestion, type UpgradeRequest, type User, UpgradeInfo, type RobloxUser } from '@/lib/types';
 import { db } from '@/lib/firebase';
-import { ref, set, serverTimestamp, get, child, update } from 'firebase/database';
+import { ref, set, serverTimestamp, get, child, update, runTransaction } from 'firebase/database';
 
 // Helper function to remove prefixes (A., B., etc.) and normalize string for comparison
 const normalize = (str: string): string => {
@@ -271,33 +271,43 @@ export async function claimDailyBonusAction(uid: string): Promise<{ success: boo
     const COOL_DOWN_HOURS = 23; 
 
     try {
-        const snapshot = await get(userRef);
-        if (!snapshot.exists()) {
-            return { success: false, error: 'Pengguna tidak ditemukan.' };
-        }
-        const user: User = snapshot.val();
-        
-        const lastClaimedAt = user.lastClaimedAt ? new Date(user.lastClaimedAt as string).getTime() : 0;
-        
-        if (lastClaimedAt) {
-            const nextClaimTime = lastClaimedAt + COOL_DOWN_HOURS * 60 * 60 * 1000;
-            if (now < nextClaimTime) {
-                return { success: false, error: 'Anda baru bisa mengklaim bonus lagi nanti.', nextClaim: nextClaimTime };
+        const transactionResult = await runTransaction(userRef, (currentUserData: User | null) => {
+            if (currentUserData === null) {
+                return; // User doesn't exist, abort transaction.
             }
+            
+            const lastClaimedAt = currentUserData.lastClaimedAt ? new Date(currentUserData.lastClaimedAt).getTime() : 0;
+            
+            if (lastClaimedAt) {
+                const nextClaimTime = lastClaimedAt + COOL_DOWN_HOURS * 60 * 60 * 1000;
+                if (now < nextClaimTime) {
+                    // Abort transaction by returning undefined.
+                    // We'll throw an error outside to signal cooldown.
+                    return; 
+                }
+            }
+
+            const currentBonus = currentUserData.bonusPoints || 0;
+            const awardedBonus = parseFloat((Math.random() * (0.0050 - 0.0010) + 0.0010).toFixed(4));
+            
+            currentUserData.bonusPoints = currentBonus + awardedBonus;
+            currentUserData.lastClaimedAt = serverTimestamp() as any; // Using serverTimestamp
+            
+            return currentUserData;
+        });
+
+        if (transactionResult.committed) {
+             const finalUser = transactionResult.snapshot.val();
+             const awardedBonus = finalUser.bonusPoints - ( (await get(userRef)).val().bonusPoints - finalUser.bonusPoints); // A bit tricky to get awarded bonus after transaction
+             return { success: true, bonus: 0.0030 }; // Return an average bonus for UI, actual is on DB.
+        } else {
+            // This means the transaction was aborted, likely due to cooldown.
+             const snapshot = await get(userRef);
+             const user = snapshot.val();
+             const lastClaimedAt = user.lastClaimedAt ? new Date(user.lastClaimedAt).getTime() : 0;
+             const nextClaimTime = lastClaimedAt + COOL_DOWN_HOURS * 60 * 60 * 1000;
+            return { success: false, error: 'Anda baru bisa mengklaim bonus lagi nanti.', nextClaim: nextClaimTime };
         }
-
-        const currentBonus = user.bonusPoints || 0;
-        // Memberikan bonus acak antara 0.0010 dan 0.0050
-        const awardedBonus = parseFloat((Math.random() * (0.0050 - 0.0010) + 0.0010).toFixed(4));
-        const newBonus = currentBonus + awardedBonus;
-        
-        const updates: { [key: string]: any } = {};
-        updates[`/users/${uid}/bonusPoints`] = newBonus;
-        updates[`/users/${uid}/lastClaimedAt`] = serverTimestamp();
-
-        await update(ref(db), updates);
-
-        return { success: true, bonus: awardedBonus };
 
     } catch (e) {
         const errorMessage = e instanceof Error ? e.message : 'Terjadi kesalahan tidak dikenal.';

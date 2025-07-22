@@ -13,15 +13,12 @@
           ".write": "root.child('users').child(auth.uid).child('role').val() === 'admin'"
         },
         "bonusPoints": {
-           ".read": "auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin'",
-           ".write": "auth.uid === $uid && newData.isNumber() && (!data.exists() || newData.val() >= data.val())"
+           // Validasi: hanya bisa bertambah atau tetap, dan harus angka.
+           ".validate": "newData.isNumber() && (!data.exists() || newData.val() >= data.val())"
         },
         "lastClaimedAt": {
-           ".read": "auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin'",
-           // Allow write if it's the first time (!data.exists()) OR if the new time is later than the old one.
-           // This prevents spoofing past timestamps but allows the very first claim.
-           // The now + 1000 check allows for a small clock skew between client and server.
-           ".write": "auth.uid === $uid && (!data.exists() || newData.val() > data.val()) && newData.val() <= now + 1000"
+           // Validasi: Waktu baru harus lebih besar dari waktu lama jika sudah ada.
+           ".validate": "newData.isNumber() && (!data.exists() || newData.val() > data.val()) && newData.val() <= now + 1000"
         }
       }
     },
@@ -49,7 +46,7 @@
       }
     },
     "appSettings": {
-      ".read": "root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.uid != null",
+      ".read": "auth.uid != null",
       ".write": "root.child('users').child(auth.uid).child('role').val() === 'admin'"
     },
     "leaderboard": {

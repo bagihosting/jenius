@@ -14,7 +14,7 @@ import { useAuth } from '@/context/AuthContext';
 export function LeaderboardCard() {
   const [leaderboard, setLeaderboard] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { loading: authLoading } = useAuth();
+  const { loading: authLoading, isAuthenticated } = useAuth();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -22,21 +22,25 @@ export function LeaderboardCard() {
   }, []);
 
   useEffect(() => {
-    if (isClient && !authLoading) {
+    if (isClient && !authLoading && isAuthenticated) {
       if (!db) {
           setIsLoading(false);
           return;
       }
       
-      const leaderboardRef = ref(db, 'leaderboard');
-      // Query to get top 5 users by bonusPoints from the public leaderboard node
-      const topUsersQuery = query(leaderboardRef, orderByChild('bonusPoints'), limitToLast(5));
+      const usersRef = ref(db, 'users');
+      // Query to get top 5 users by bonusPoints
+      const topUsersQuery = query(usersRef, orderByChild('bonusPoints'), limitToLast(5));
       
       const unsubscribe = onValue(topUsersQuery, (snapshot) => {
         const usersData: User[] = [];
         if (snapshot.exists()) {
           snapshot.forEach((childSnapshot) => {
-            usersData.push({ uid: childSnapshot.key!, ...childSnapshot.val() });
+            // Only add users who have some points to the leaderboard
+            const user = childSnapshot.val();
+            if (user.bonusPoints > 0) {
+               usersData.push({ uid: childSnapshot.key!, ...user });
+            }
           });
         }
         // Sort in descending order and set state
@@ -49,8 +53,11 @@ export function LeaderboardCard() {
 
       // Cleanup subscription on component unmount
       return () => unsubscribe();
+    } else if (isClient && !authLoading && !isAuthenticated) {
+        // If user is not authenticated, don't try to load leaderboard
+        setIsLoading(false);
     }
-  }, [isClient, authLoading]);
+  }, [isClient, authLoading, isAuthenticated]);
   
   return (
     <Card>
