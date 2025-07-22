@@ -51,16 +51,19 @@ export default function DailyClaimPage() {
   }, []);
 
   const checkClaimStatus = useCallback((lastClaimTime?: number | null) => {
-    const lastClaimedAt = lastClaimTime;
-    if (lastClaimedAt === undefined) return; // Still waiting for user data
+    // A lastClaimTime of undefined means user data is still loading
+    if (lastClaimTime === undefined) {
+      setClaimStatus('loading');
+      return;
+    }
 
-    if (!lastClaimedAt) {
+    if (!lastClaimTime) {
       setClaimStatus('ready');
       return;
     }
     
     // 23 hour cooldown
-    const nextClaimTime = lastClaimedAt + 23 * 60 * 60 * 1000;
+    const nextClaimTime = lastClaimTime + 23 * 60 * 60 * 1000;
     const now = Date.now();
 
     if (now >= nextClaimTime) {
@@ -90,12 +93,15 @@ export default function DailyClaimPage() {
 
 
   useEffect(() => {
-    if (user) {
+    if (isClient && user) {
       // Pass the timestamp (as a number) to the check function
       const lastClaimTimestamp = user.lastClaimedAt ? new Date(user.lastClaimedAt).getTime() : null;
       checkClaimStatus(lastClaimTimestamp);
+    } else if (isClient && !loading) {
+      // Handle case where user is loaded but null
+      checkClaimStatus(null);
     }
-  }, [user, checkClaimStatus]);
+  }, [isClient, user, loading, checkClaimStatus]);
 
   const handleClaim = async () => {
     if (!user || claimStatus !== 'ready') return;
@@ -114,6 +120,8 @@ export default function DailyClaimPage() {
       // Manually update user context to reflect new points and claim time
       // This provides instant UI feedback while waiting for DB to sync
       const updatedBonus = (user.bonusPoints || 0) + result.bonus;
+      // We use a new Date().toISOString() here for immediate client-side reflection.
+      // The server uses serverTimestamp(), which is the source of truth.
       const updatedClaimTime = new Date().toISOString();
       updateUser({ bonusPoints: updatedBonus, lastClaimedAt: updatedClaimTime });
     } else {
@@ -122,8 +130,14 @@ export default function DailyClaimPage() {
         description: result.error || "Terjadi kesalahan. Coba lagi nanti.",
         variant: "destructive",
       });
+      // Re-check status if server provides cooldown info, which might happen
+      // if client and server clocks are slightly out of sync.
       if (result.nextClaim) {
-          checkClaimStatus(result.nextClaim); // Re-check status if server provides cooldown info
+          checkClaimStatus(new Date(result.nextClaim).getTime());
+      } else {
+          // If claim failed for other reasons, just re-evaluate current state
+          const lastClaimTimestamp = user.lastClaimedAt ? new Date(user.lastClaimedAt).getTime() : null;
+          checkClaimStatus(lastClaimTimestamp);
       }
     }
   };

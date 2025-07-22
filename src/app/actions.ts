@@ -277,7 +277,7 @@ export async function claimDailyBonusAction(uid: string): Promise<{ success: boo
         }
         const user: User = snapshot.val();
         
-        const lastClaimedAt = user.lastClaimedAt ? new Date(user.lastClaimedAt as string).getTime() : null;
+        const lastClaimedAt = user.lastClaimedAt ? new Date(user.lastClaimedAt as string).getTime() : 0;
         
         if (lastClaimedAt) {
             const nextClaimTime = lastClaimedAt + COOL_DOWN_HOURS * 60 * 60 * 1000;
@@ -292,8 +292,8 @@ export async function claimDailyBonusAction(uid: string): Promise<{ success: boo
         const newBonus = currentBonus + awardedBonus;
         
         const updates: { [key: string]: any } = {};
-        updates[`users/${uid}/bonusPoints`] = newBonus;
-        updates[`users/${uid}/lastClaimedAt`] = serverTimestamp();
+        updates[`/users/${uid}/bonusPoints`] = newBonus;
+        updates[`/users/${uid}/lastClaimedAt`] = serverTimestamp();
 
         await update(ref(db), updates);
 

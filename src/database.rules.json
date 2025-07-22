@@ -6,7 +6,6 @@
 
     "users": {
       ".indexOn": ["role", "robloxUsername", "bonusPoints"],
-      ".read": "root.child('users').child(auth.uid).child('role').val() === 'admin'",
       "$uid": {
         ".read": "auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin'",
         ".write": "auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin'",
@@ -14,41 +13,49 @@
           ".write": "root.child('users').child(auth.uid).child('role').val() === 'admin'"
         },
         "bonusPoints": {
-           ".read": "auth.uid === $uid",
+           ".read": "auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin'",
            ".write": "auth.uid === $uid && newData.isNumber() && (!data.exists() || newData.val() >= data.val())"
         },
         "lastClaimedAt": {
-           ".read": "auth.uid === $uid",
-           ".write": "auth.uid === $uid && (!data.exists() || newData.val() > data.val())"
+           ".read": "auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin'",
+           // Allow write if it's the first time (!data.exists()) OR if the new time is later than the old one.
+           // This prevents spoofing past timestamps but allows the very first claim.
+           // The now + 1000 check allows for a small clock skew between client and server.
+           ".write": "auth.uid === $uid && (!data.exists() || newData.val() > data.val()) && newData.val() <= now + 1000"
         }
       }
     },
     "usernames": {
       ".read": "auth.uid != null",
       "$username": {
+        // Allow write only if the username doesn't exist and the UID matches the authenticated user.
         ".write": "!data.exists() && newData.child('uid').val() === auth.uid"
       }
     },
     "robloxUsernames": {
       ".read": "auth.uid != null",
       "$username": {
+        // Allow write if the username doesn't exist or if it already belongs to the current user.
         ".write": "auth.uid != null && (!data.exists() || data.val() === auth.uid)"
       }
     },
     "upgradeRequests": {
       ".read": "root.child('users').child(auth.uid).child('role').val() === 'admin'",
       "$uid": {
+        // Allow user to create a request, but not to overwrite an approved one.
         ".write": "auth.uid === $uid && (!data.exists() || data.child('status').val() !== 'approved')",
+        // User can read their own request, admin can read any.
         ".read": "auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin'"
       }
     },
     "appSettings": {
-      ".read": "root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".read": "root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.uid != null",
       ".write": "root.child('users').child(auth.uid).child('role').val() === 'admin'"
     },
     "leaderboard": {
       ".read": "auth.uid != null",
-      ".write": false,
+      // Leaderboard is only written to by a trusted server process (simulated).
+      ".write": false, 
       ".indexOn": "bonusPoints"
     }
   }
