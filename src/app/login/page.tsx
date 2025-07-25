@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -12,14 +11,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, AlertCircle } from 'lucide-react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth, db, isFirebaseConfigured } from '@/lib/firebase';
-import { doc, getDoc } from "firebase/firestore";
+import { useAuth } from '@/context/AuthContext';
+import { isFirebaseConfigured } from '@/lib/firebase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { user, login, isAuthenticated, loading: authLoading } = useAuth();
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -29,11 +29,25 @@ export default function LoginPage() {
     setIsClient(true);
   }, []);
 
+  // Effect to handle redirection after user state is confirmed
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && user) {
+        let redirectPath = '/belajar';
+        if (user.role === 'admin') {
+          redirectPath = '/admin/dashboard';
+        } else if (user.role === 'mahasiswa') {
+            redirectPath = '/mahasiswa/dashboard';
+        }
+        router.push(redirectPath);
+    }
+  }, [user, isAuthenticated, authLoading, router]);
+
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    if (!isFirebaseConfigured || !auth || !db) {
+    if (!isFirebaseConfigured) {
         toast({
             title: "Konfigurasi Tidak Lengkap",
             description: "Aplikasi belum terhubung ke server. Silakan periksa file .env Anda.",
@@ -44,32 +58,13 @@ export default function LoginPage() {
     }
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      const userRef = doc(db, 'users', user.uid);
-      const docSnap = await getDoc(userRef);
-      
-      let redirectPath = '/belajar';
-      
-      if (docSnap.exists()) {
-        const userData = docSnap.data();
-        if (userData.role === 'admin') {
-          redirectPath = '/admin/dashboard';
-        } else if (userData.role === 'mahasiswa') {
-            redirectPath = '/mahasiswa/dashboard';
-        }
-      } else {
-        console.warn(`User with UID ${user.uid} is in Auth but not in Firestore.`);
-      }
-      
+      await login(email, password);
+      // Let the useEffect handle the redirection
       toast({
           title: "Login Berhasil",
           description: `Selamat datang kembali! Mengarahkan ke dasbor...`,
       });
       
-      router.push(redirectPath);
-
     } catch (error: any) {
       console.error("Login error:", error);
       let errorMessage = "Terjadi kesalahan saat login.";
@@ -98,7 +93,7 @@ export default function LoginPage() {
   };
 
   const renderContent = () => {
-    if (!isClient) {
+    if (!isClient || authLoading) {
       return <div className="flex justify-center items-center h-24"><Loader2 className="animate-spin" /></div>;
     }
     

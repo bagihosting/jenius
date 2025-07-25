@@ -4,17 +4,18 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import type { User } from '@/lib/types';
-import { onAuthStateChanged, signOut, updatePassword as updateAuthPassword, updateProfile } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { onAuthStateChanged, signOut, updatePassword as updateAuthPassword, updateProfile, signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { auth, db, isFirebaseConfigured } from '@/lib/firebase';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
+  loading: boolean;
+  login: (email: string, pass: string) => Promise<void>;
   logout: () => void;
   updateUser: (userData: Partial<User>) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
-  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -45,9 +46,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
             if (docSnap.exists()) {
                 const dbUser = docSnap.data();
-                // --- SYNCHRONIZATION LOGIC ---
-                // Prioritize Firebase Auth data for name and photoUrl as the source of truth,
-                // then fall back to Firestore data.
                 setUser({
                     ...dbUser,
                     uid: firebaseUser.uid,
@@ -56,34 +54,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                     photoUrl: firebaseUser.photoURL || dbUser.photoUrl,
                 } as User);
             } else {
-                 // This case should be rare if registration is safeguarded.
                 setUser(null);
                 console.warn(`User data not found in DB for UID: ${firebaseUser.uid}. Logging out.`);
                 await signOut(auth);
             }
         } catch (error) {
             console.error("Firestore read failed:", error);
-            setUser(null); // On error, ensure user is logged out state-wise
+            setUser(null);
         } finally {
             setLoading(false);
         }
 
       } else {
-        // User is signed out.
         setUser(null);
         setLoading(false);
       }
     });
 
-    // Cleanup the auth listener on component unmount.
     return () => unsubscribeAuth();
-  }, [router]);
+  }, []);
 
+
+  const login = async (email: string, pass: string) => {
+    if (!auth) throw new Error("Firebase not configured");
+    await signInWithEmailAndPassword(auth, email, pass);
+    // onAuthStateChanged will handle setting the user state and loading state.
+  };
 
   const logout = async () => {
     if (!auth) return;
     await signOut(auth);
-    setUser(null); // Explicitly set user to null
+    setUser(null);
     router.push('/login');
   };
 
@@ -98,7 +99,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const authUpdateData: { displayName?: string; photoURL?: string } = {};
     const dbUpdateData: { [key: string]: any } = {};
 
-    // Build update objects, ensuring no undefined values are sent
     if (userData.name !== undefined) {
         authUpdateData.displayName = userData.name;
         dbUpdateData.name = userData.name;
@@ -107,41 +107,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         authUpdateData.photoURL = userData.photoUrl;
         dbUpdateData.photoUrl = userData.photoUrl;
     }
-     if (userData.robloxUsername !== undefined) {
-        dbUpdateData.robloxUsername = userData.robloxUsername;
-    }
-     if (userData.quizCompletions !== undefined) {
-        dbUpdateData.quizCompletions = userData.quizCompletions;
-    }
-     if (userData.bonusPoints !== undefined) {
-        dbUpdateData.bonusPoints = userData.bonusPoints;
-    }
-     if (userData.lastClaimedAt !== undefined) {
-        dbUpdateData.lastClaimedAt = userData.lastClaimedAt;
-    }
-     if (userData.major !== undefined) {
-        dbUpdateData.major = userData.major;
-    }
-     if (userData.grade !== undefined) {
-        dbUpdateData.grade = userData.grade;
-    }
+    
+    // Non-auth profile fields
+    const otherFields: (keyof User)[] = ['robloxUsername', 'quizCompletions', 'bonusPoints', 'lastClaimedAt', 'major', 'grade', 'schoolName', 'schoolType'];
+    otherFields.forEach(field => {
+        if (userData[field] !== undefined) {
+            dbUpdateData[field] = userData[field];
+        }
+    });
 
     try {
-        // --- SYNCHRONIZATION LOGIC ---
-        // 1. Update Firestore first.
         if (Object.keys(dbUpdateData).length > 0) {
             const userRef = doc(db, 'users', uid);
-            // Use setDoc with merge: true to handle both creation and update.
-            // This prevents "No document to update" errors if the document doesn't exist yet.
-            await setDoc(userRef, dbUpdateData, { merge: true });
+            // Using updateDoc because user document must exist if they are being updated.
+            // setDoc with merge is better for "create or update" scenarios.
+            await updateDoc(userRef, dbUpdateData);
         }
         
-        // 2. Then, update Firebase Auth profile.
         if (Object.keys(authUpdateData).length > 0) {
             await updateProfile(currentUser, authUpdateData);
         }
         
-        // 3. Finally, update local state for immediate UI feedback.
         setUser(prevUser => {
             if (!prevUser) return null;
             return { ...prevUser, ...userData };
@@ -165,7 +151,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const isAuthenticated = !!user;
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, logout, updateUser, updatePassword, loading }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, loading, login, logout, updateUser, updatePassword }}>
       {children}
     </AuthContext.Provider>
   );
