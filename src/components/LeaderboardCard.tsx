@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Trophy, Loader2, Crown } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { db } from '@/lib/firebase';
-import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, limit, onSnapshot, where } from 'firebase/firestore';
 import type { User } from '@/lib/types';
 import { useAuth } from '@/context/AuthContext';
 
@@ -29,16 +29,20 @@ export function LeaderboardCard() {
       }
       
       const usersRef = collection(db, 'users'); 
-      const topUsersQuery = query(usersRef, orderBy('bonusPoints', 'desc'), limit(5));
+      // Query users with bonusPoints > 0, order by points desc, limit to top 5
+      const topUsersQuery = query(
+        usersRef, 
+        where('bonusPoints', '>', 0),
+        orderBy('bonusPoints', 'desc'), 
+        limit(5)
+      );
       
       const unsubscribe = onSnapshot(topUsersQuery, (querySnapshot) => {
         const usersData: User[] = [];
         if (!querySnapshot.empty) {
             querySnapshot.forEach((doc) => {
                 const user = doc.data();
-                if (user.bonusPoints > 0) {
-                   usersData.push({ uid: doc.id, ...user } as User);
-                }
+                usersData.push({ uid: doc.id, ...user } as User);
             });
         }
         setLeaderboard(usersData);

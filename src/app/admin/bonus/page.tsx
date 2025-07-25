@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { collection, onSnapshot, doc, updateDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, query, orderBy } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
 import type { User } from '@/lib/types';
@@ -33,7 +33,10 @@ export default function BonusManagementPage() {
 
     setIsLoading(true);
     const usersRef = collection(db, 'users');
-    const unsubscribe = onSnapshot(usersRef, (querySnapshot) => {
+    // Order by name for consistent, alphabetical listing
+    const q = query(usersRef, orderBy('name'));
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
         const usersList: User[] = [];
         querySnapshot.forEach((doc) => {
             usersList.push({ ...doc.data(), uid: doc.id } as User);

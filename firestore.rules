@@ -3,7 +3,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // --- Helper Functions ---
+    // Helper Functions
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -11,87 +11,70 @@ service cloud.firestore {
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
-
+    
     function isAdmin() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
     
-    // --- Collection: users ---
+    // Collection: users
     match /users/{userId} {
-      
-      // CREATE: User can create their own account.
-      // - Must be authenticated.
-      // - role must be 'user'.
-      // - bonusPoints must be 0.
-      // - School info must be present.
-      allow create: if isAuthenticated() && isOwner(userId)
-                      && request.resource.data.role == 'user'
-                      // Validasi saat pendaftaran
-                      && request.resource.data.bonusPoints == 0
-                      && request.resource.data.name is string
-                      && request.resource.data.username is string
-                      && request.resource.data.schoolType is string
-                      && request.resource.data.schoolName is string;
-                      
-      // GET (Read single doc): User can read their own data, Admins can read anyone's data.
+      // --- READ ---
+      // Allow admin to read any user document.
+      // Allow authenticated users to read their own document.
       allow get: if isAuthenticated() && (isOwner(userId) || isAdmin());
       
-      // LIST (Query): Only authenticated users can list users for the leaderboard.
-      // - Must be ordered by bonusPoints.
-      // - Limited to top 5.
-      allow list: if isAuthenticated() && request.query.orderBy == "bonusPoints" && request.query.limit <= 5;
+      // --- LIST (for Leaderboard) ---
+      // Allow authenticated users to list users ONLY for the leaderboard query.
+      // The query MUST be ordered by bonusPoints and limited to 5.
+      allow list: if isAuthenticated()
+                  && request.query.orderBy[0].field == 'bonusPoints'
+                  && request.query.orderBy[0].direction == 'desc'
+                  && request.query.limit <= 5;
 
-      // UPDATE: User can update their own data, Admins can update anyone's.
-      // - User cannot change их role or bonusPoints.
-      allow update: if isAuthenticated() && 
-                    (
-                      ( // Admin update rules
-                        isAdmin() &&
-                        ( // Validate school info if role is user
-                          (request.resource.data.role == 'user' && request.resource.data.schoolName is string && request.resource.data.schoolName != "" && request.resource.data.schoolType is string) ||
-                          // Validate major if role is mahasiswa
-                          (request.resource.data.role == 'mahasiswa' && request.resource.data.major is string && request.resource.data.major != "") ||
-                          // Allow if role is admin
-                          (request.resource.data.role == 'admin')
-                        )
-                      ) || 
-                      ( // Owner update rules
-                        isOwner(userId) &&
-                        // User cannot change their role or bonusPoints directly
-                        request.resource.data.role == resource.data.role &&
-                        request.resource.data.bonusPoints == resource.data.bonusPoints
-                      )
-                    ) &&
-                    // Bonus points can never be negative
-                    request.resource.data.bonusPoints >= 0;
-
-      // DELETE: Only admins can delete users.
+      // --- CREATE (Registration) ---
+      // Allow anyone to create a user document IF:
+      // 1. They are creating a document for themselves.
+      // 2. The role is explicitly 'user'.
+      // 3. bonusPoints is 0.
+      // 4. They provide all required fields.
+      allow create: if isOwner(userId)
+                    && request.resource.data.role == 'user'
+                    && request.resource.data.bonusPoints == 0
+                    && 'name' in request.resource.data
+                    && 'username' in request.resource.data
+                    && 'email' in request.resource.data
+                    && 'schoolType' in request.resource.data
+                    && 'schoolName' in request.resource.data;
+                   
+      // --- UPDATE ---
+      // Allow admin to update any user.
+      // Allow user to update their own document with restrictions.
+      allow update: if isAdmin() || (isOwner(userId)
+                    // Users cannot change their own role or bonus points.
+                    && !('role' in request.resource.data)
+                    && !('bonusPoints' in request.resource.data)
+                    // Users can only set their grade if it doesn't exist yet. It's locked after that.
+                    && (!('grade' in request.resource.data) || !('grade' in resource.data)));
+                    
+      // --- DELETE ---
+      // Only admin can delete user documents.
       allow delete: if isAdmin();
     }
     
-    // --- Collection: upgradeRequests ---
+    // Collection: upgradeRequests
     match /upgradeRequests/{userId} {
-      // User can create their own request.
-      allow create: if isAuthenticated() && isOwner(userId)
-                    && request.resource.data.status == 'pending';
-                    
-      // User can read their own request, admin can read any.
       allow get: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow list: if isAuthenticated() && isAdmin();
       
-      // Admins can list all pending requests.
-      allow list: if isAdmin() && request.query.where[0][2] == 'pending';
-      
-      // Only admins can update the status or delete a request.
-      allow update, delete: if isAdmin();
+      // User can create their own request. Admin can create/update any.
+      allow create: if isAuthenticated() && isOwner(userId);
+      allow update, delete: if isAuthenticated() && isAdmin();
     }
     
-    // --- Collection: appSettings ---
+    // Collection: appSettings
     match /appSettings/{docId} {
-       // Authenticated users can read settings (e.g., for upgrade info).
-       allow get: if isAuthenticated();
-       
-       // Only admins can change settings.
-       allow write: if isAdmin();
+      allow get: if isAuthenticated();
+      allow list, write: if isAuthenticated() && isAdmin();
     }
   }
 }

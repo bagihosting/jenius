@@ -33,7 +33,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Edit, Trash2 } from 'lucide-react';
 import type { User } from '@/lib/types';
 import { db } from '@/lib/firebase';
-import { collection, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { UserForm, userSchema } from '@/components/UserForm';
 import { useAuth } from '@/context/AuthContext';
@@ -74,7 +74,9 @@ export default function UsersPage() {
 
     setIsLoading(true);
     const usersRef = collection(db, 'users');
-    const unsubscribe = onSnapshot(usersRef, (querySnapshot) => {
+    const q = query(usersRef, orderBy('name'));
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
         const userList: User[] = [];
         querySnapshot.forEach((doc) => {
             userList.push({ uid: doc.id, ...doc.data() } as User);
@@ -145,6 +147,14 @@ export default function UsersPage() {
       }
   };
 
+  const handleSheetOpenChange = (open: boolean) => {
+    setIsSheetOpen(open);
+    if (!open) {
+      setEditingUser(null);
+      form.reset(); // Reset form when sheet is closed
+    }
+  };
+
   return (
     <>
       <div className="flex items-center justify-between mb-6">
@@ -187,12 +197,7 @@ export default function UsersPage() {
                     <TableCell>{user.schoolName || user.major || 'N/A'}</TableCell>
                     <TableCell>{(user.bonusPoints || 0).toFixed(4)}</TableCell>
                     <TableCell className="text-right">
-                      <Sheet open={isSheetOpen && editingUser?.uid === user.uid} onOpenChange={(open) => {
-                          if (!open) {
-                              setIsSheetOpen(false);
-                              setEditingUser(null);
-                          }
-                      }}>
+                      <Sheet open={isSheetOpen && editingUser?.uid === user.uid} onOpenChange={handleSheetOpenChange}>
                         <SheetTrigger asChild>
                            <Button variant="ghost" size="icon" onClick={() => handleEdit(user)}>
                               <Edit className="h-4 w-4" />
