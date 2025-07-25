@@ -87,7 +87,9 @@ export default function RegisterPage() {
 
       await updateProfile(createdUser, { displayName: name });
       
-      const isAdmin = email.toLowerCase() === 'admin@ayahjenius.com' || email.toLowerCase() === 'rahmantirta99@gmail.com';
+      // --- Admin Check Logic ---
+      const adminEmails = ['admin@ayahjenius.com', 'rahmantirta99@gmail.com'];
+      const isAdmin = adminEmails.includes(email.toLowerCase());
       const userRole = isAdmin ? 'admin' : 'user';
 
       const userData = {
