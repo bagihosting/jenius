@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { useRouter } from 'next/navigation';
 import type { User } from '@/lib/types';
 import { onAuthStateChanged, signOut, updatePassword as updateAuthPassword, updateProfile } from 'firebase/auth';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { auth, db, isFirebaseConfigured } from '@/lib/firebase';
 
 interface AuthContextType {
@@ -130,7 +130,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
         if (Object.keys(dbUpdateData).length > 0) {
             const userRef = doc(db, 'users', uid);
-            await updateDoc(userRef, dbUpdateData);
+            // Use setDoc with merge: true to handle both creation and update.
+            // This prevents "No document to update" errors if the document doesn't exist yet.
+            await setDoc(userRef, dbUpdateData, { merge: true });
         }
 
         if (Object.keys(authUpdateData).length > 0) {
