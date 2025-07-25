@@ -3,7 +3,7 @@
 
 import { useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { ref, set, get } from 'firebase/database';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 export const useProgress = () => {
@@ -12,13 +12,18 @@ export const useProgress = () => {
   const updateSubjectProgress = useCallback(async (subjectId: string, score: number) => {
     if (!user || !db) return;
 
-    const progressRef = ref(db, `users/${user.uid}/progress/${subjectId}`);
+    const userRef = doc(db, `users`, user.uid);
     
     try {
-        const snapshot = await get(progressRef);
-        const currentBest = snapshot.val() || 0;
-        if (score > currentBest) {
-            await set(progressRef, score);
+        const docSnap = await getDoc(userRef);
+        if (docSnap.exists()) {
+            const currentProgress = docSnap.data().progress || {};
+            const currentBest = currentProgress[subjectId] || 0;
+            if (score > currentBest) {
+                await updateDoc(userRef, {
+                    [`progress.${subjectId}`]: score
+                });
+            }
         }
     } catch (error) {
         console.error("Failed to update progress:", error);

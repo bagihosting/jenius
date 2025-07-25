@@ -1,5 +1,6 @@
 
 import { z } from 'genkit';
+import { Timestamp } from 'firebase/firestore';
 
 export type SchoolType = 'SDN' | 'SDIT' | 'MI' | 'SMP' | 'MTs' | 'SMA' | 'MA' | 'AKADEMI' | 'UNIVERSITAS';
 export type Grade = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | '11' | '12';
@@ -112,7 +113,7 @@ export interface User {
   quizCompletions?: number;
   bonusPoints?: number;
   progress?: { [subjectId: string]: number };
-  lastClaimedAt?: string; // ISO string date for daily bonus
+  lastClaimedAt?: Timestamp | Date; // Firestore Timestamp or Date object
 }
 
 //========= ROBLOX USER TYPE =========//
@@ -168,7 +169,7 @@ export interface UpgradeRequest {
   universityName: string;
   major: string;
   status: 'pending' | 'approved' | 'rejected';
-  requestedAt: string | object; // Can be ISO string or Firebase ServerValue
+  requestedAt: Timestamp | Date; // Can be Timestamp or Date object
 }
 
 //========= APP SETTINGS TYPES =========//

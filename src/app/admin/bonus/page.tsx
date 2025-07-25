@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { onValue, ref, update } from 'firebase/database';
+import { collection, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
 import type { User } from '@/lib/types';
@@ -32,18 +32,13 @@ export default function BonusManagementPage() {
     }
 
     setIsLoading(true);
-    const usersRef = ref(db, 'users');
-    const unsubscribe = onValue(usersRef, (snapshot) => {
-        if (snapshot.exists()) {
-            const usersData = snapshot.val();
-            const usersList: User[] = Object.keys(usersData).map(key => ({
-                ...usersData[key],
-                uid: key
-            }));
-            setUsers(usersList);
-        } else {
-            setUsers([]);
-        }
+    const usersRef = collection(db, 'users');
+    const unsubscribe = onSnapshot(usersRef, (querySnapshot) => {
+        const usersList: User[] = [];
+        querySnapshot.forEach((doc) => {
+            usersList.push({ ...doc.data(), uid: doc.id } as User);
+        });
+        setUsers(usersList);
         setIsLoading(false);
     }, (error) => {
         console.error("Firebase bonus management read failed:", error);
@@ -70,10 +65,10 @@ export default function BonusManagementPage() {
     if (!userToUpdate || !db) return;
 
     try {
-      const userRef = ref(db, `users/${uid}`);
+      const userRef = doc(db, `users`, uid);
       // Ensure that we save a number, defaulting to 0 if it's undefined or NaN
       const pointsToSave = Number.isNaN(Number(userToUpdate.bonusPoints)) ? 0 : Number(userToUpdate.bonusPoints) || 0;
-      await update(userRef, { bonusPoints: pointsToSave });
+      await updateDoc(userRef, { bonusPoints: pointsToSave });
       toast({
         title: 'Berhasil!',
         description: `Poin bonus untuk ${userToUpdate.name} telah diperbarui.`,

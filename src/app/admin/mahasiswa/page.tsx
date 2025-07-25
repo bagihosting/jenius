@@ -20,7 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Loader2, CheckCircle, XCircle, GraduationCap } from 'lucide-react';
 import { db } from '@/lib/firebase';
-import { ref, onValue, update, remove } from 'firebase/database';
+import { collection, query, where, onSnapshot, doc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { type UpgradeRequest } from '@/lib/types';
@@ -45,17 +45,18 @@ export default function MahasiswaManagementPage() {
     }
 
     setIsLoading(true);
-    const requestsRef = ref(db, 'upgradeRequests');
-    const unsubscribe = onValue(requestsRef, (snapshot) => {
-        if (snapshot.exists()) {
-            const data = snapshot.val();
-            const requestList: UpgradeRequest[] = Object.keys(data)
-                .map((key) => ({ ...data[key], uid: key, }))
-                .filter(req => req.status === 'pending'); // Only show pending requests
-            setRequests(requestList.sort((a,b) => new Date(b.requestedAt as string).getTime() - new Date(a.requestedAt as string).getTime()));
-        } else {
-            setRequests([]);
-        }
+    const requestsRef = collection(db, 'upgradeRequests');
+    const q = query(requestsRef, where('status', '==', 'pending'));
+    
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const requestList: UpgradeRequest[] = [];
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            // Convert Firestore Timestamp to Date, then to string for sorting
+            const requestedAt = data.requestedAt?.toDate ? data.requestedAt.toDate() : new Date();
+            requestList.push({ ...data, uid: doc.id, requestedAt: requestedAt.toISOString() } as UpgradeRequest);
+        });
+        setRequests(requestList.sort((a,b) => new Date(b.requestedAt as string).getTime() - new Date(a.requestedAt as string).getTime()));
         setIsLoading(false);
     }, (error) => {
         console.error("Firebase requests read failed:", error);
@@ -71,15 +72,21 @@ export default function MahasiswaManagementPage() {
   const handleApprove = async (request: UpgradeRequest) => {
     if (!db) return;
     try {
-      const updates: { [key: string]: any } = {};
-      updates[`/users/${request.uid}/role`] = 'mahasiswa';
-      updates[`/users/${request.uid}/major`] = request.major; // Save major to user profile
-      updates[`/upgradeRequests/${request.uid}/status`] = 'approved';
+      const batch = writeBatch(db);
+      
+      const userRef = doc(db, 'users', request.uid);
+      batch.update(userRef, {
+          role: 'mahasiswa',
+          major: request.major
+      });
 
-      await update(ref(db), updates);
+      const requestRef = doc(db, 'upgradeRequests', request.uid);
+      batch.update(requestRef, { status: 'approved' });
+      
+      await batch.commit();
       
       toast({ title: 'Pengguna Disetujui!', description: `${request.name} sekarang adalah Mahasiswa.` });
-      // No need to update state manually, onValue listener will do it.
+      // No need to update state manually, onSnapshot listener will do it.
     } catch (error: any) {
         toast({ title: "Operasi Gagal", description: error.message, variant: 'destructive' });
     }
@@ -89,9 +96,9 @@ export default function MahasiswaManagementPage() {
      if (!db) return;
      if (window.confirm("Apakah Anda yakin ingin menolak dan menghapus pengajuan ini?")) {
         try {
-            await remove(ref(db, `upgradeRequests/${uid}`));
+            await deleteDoc(doc(db, `upgradeRequests`, uid));
             toast({ title: 'Pengajuan ditolak dan dihapus' });
-            // No need to update state manually, onValue listener will do it.
+            // No need to update state manually, onSnapshot listener will do it.
         } catch (error: any) {
             toast({ title: 'Gagal menolak pengajuan', description: error.message, variant: 'destructive' });
         }

@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { useRouter } from 'next/navigation';
 import type { User } from '@/lib/types';
 import { onAuthStateChanged, signOut, updatePassword as updateAuthPassword, updateProfile } from 'firebase/auth';
-import { ref, update, get } from 'firebase/database';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db, isFirebaseConfigured } from '@/lib/firebase';
 
 interface AuthContextType {
@@ -40,18 +40,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         try {
-            const userRef = ref(db, `users/${firebaseUser.uid}`);
-            const snapshot = await get(userRef);
+            const userRef = doc(db, `users`, firebaseUser.uid);
+            const docSnap = await getDoc(userRef);
 
-            if (snapshot.exists()) {
-                const dbUser = snapshot.val();
+            if (docSnap.exists()) {
+                const dbUser = docSnap.data();
                 setUser({
                     ...dbUser,
                     uid: firebaseUser.uid,
                     email: firebaseUser.email || '',
                     name: firebaseUser.displayName || dbUser.name || 'User',
                     photoUrl: firebaseUser.photoURL || dbUser.photoUrl,
-                });
+                } as User);
             } else {
                 setUser({
                     uid: firebaseUser.uid,
@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 console.warn(`User data not found in DB for UID: ${firebaseUser.uid}.`);
             }
         } catch (error) {
-            console.error("Firebase DB read failed:", error);
+            console.error("Firestore read failed:", error);
             setUser(null); // On error, ensure user is logged out state-wise
         } finally {
             setLoading(false);
@@ -97,42 +97,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const currentUser = auth.currentUser;
   
     const authUpdateData: { displayName?: string; photoURL?: string } = {};
-    if (userData.name) authUpdateData.displayName = userData.name;
-    if (userData.photoUrl) authUpdateData.photoURL = userData.photoUrl;
+    const dbUpdateData: { [key: string]: any } = {};
+
+    // Build update objects, ensuring no undefined values are sent
+    if (userData.name !== undefined) {
+        authUpdateData.displayName = userData.name;
+        dbUpdateData.name = userData.name;
+    }
+    if (userData.photoUrl !== undefined) {
+        authUpdateData.photoURL = userData.photoUrl;
+        dbUpdateData.photoUrl = userData.photoUrl;
+    }
+     if (userData.robloxUsername !== undefined) {
+        dbUpdateData.robloxUsername = userData.robloxUsername;
+    }
+     if (userData.quizCompletions !== undefined) {
+        dbUpdateData.quizCompletions = userData.quizCompletions;
+    }
+     if (userData.bonusPoints !== undefined) {
+        dbUpdateData.bonusPoints = userData.bonusPoints;
+    }
+     if (userData.lastClaimedAt !== undefined) {
+        dbUpdateData.lastClaimedAt = userData.lastClaimedAt;
+    }
+     if (userData.major !== undefined) {
+        dbUpdateData.major = userData.major;
+    }
+     if (userData.grade !== undefined) {
+        dbUpdateData.grade = userData.grade;
+    }
 
     try {
-        const dbUpdateData: { [key: string]: any } = {};
-
-        // Build the update object with only defined, non-null properties
-        Object.keys(userData).forEach(key => {
-            const typedKey = key as keyof User;
-            const value = userData[typedKey];
-            if (value !== undefined) {
-                 dbUpdateData[`/users/${uid}/${typedKey}`] = value;
-            }
-        });
-
-        // Handle Roblox username uniqueness logic
-        if (userData.robloxUsername !== undefined && userData.robloxUsername !== user.robloxUsername) {
-            const oldUsernameKey = user.robloxUsername?.toLowerCase();
-            const newUsernameKey = userData.robloxUsername?.toLowerCase();
-
-            if (oldUsernameKey) {
-                dbUpdateData[`/robloxUsernames/${oldUsernameKey}`] = null; // Remove old username
-            }
-            if (newUsernameKey) {
-                 const newUsernameRef = ref(db, `robloxUsernames/${newUsernameKey}`);
-                 const snapshot = await get(newUsernameRef);
-                 if (snapshot.exists() && snapshot.val() !== uid) {
-                     throw new Error("Username Roblox ini sudah digunakan oleh pengguna lain.");
-                 }
-                dbUpdateData[`/robloxUsernames/${newUsernameKey}`] = uid; // Claim new one
-            }
-        }
-        
-        // Only perform update if there are changes
         if (Object.keys(dbUpdateData).length > 0) {
-             await update(ref(db), dbUpdateData);
+            const userRef = doc(db, 'users', uid);
+            await updateDoc(userRef, dbUpdateData);
         }
 
         if (Object.keys(authUpdateData).length > 0) {
@@ -141,15 +139,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         setUser(prevUser => {
             if (!prevUser) return null;
-            const updatedUser = { ...prevUser, ...userData };
-            // Ensure properties set to null or undefined in userData are handled
-            Object.keys(userData).forEach(key => {
-                const typedKey = key as keyof User;
-                if(userData[typedKey] === null || userData[typedKey] === undefined) {
-                    delete updatedUser[typedKey];
-                }
-            });
-            return updatedUser;
+            return { ...prevUser, ...userData };
         });
   
     } catch (error) {

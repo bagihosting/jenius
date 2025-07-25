@@ -4,7 +4,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Gift, Loader2 } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import { ref, onValue } from 'firebase/database';
+import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { User } from '@/lib/types';
 
@@ -19,13 +19,9 @@ export default function AdminDashboardPage() {
             return;
         }
 
-        const usersRef = ref(db, 'users');
-        const unsubscribe = onValue(usersRef, (snapshot) => {
-            if (snapshot.exists()) {
-                setUserCount(Object.keys(snapshot.val()).length);
-            } else {
-                setUserCount(0);
-            }
+        const usersRef = collection(db, 'users');
+        const unsubscribe = onSnapshot(usersRef, (querySnapshot) => {
+            setUserCount(querySnapshot.size);
             setIsLoading(false);
         }, (error) => {
             console.error("Firebase user count read failed:", error);

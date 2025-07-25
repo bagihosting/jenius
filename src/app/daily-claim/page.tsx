@@ -11,9 +11,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import type { Grade, Semester } from '@/lib/types';
+import type { Grade } from '@/lib/types';
 import { claimDailyBonusAction } from '@/app/actions';
 import { Confetti } from '@/components/Confetti';
+import type { Timestamp } from 'firebase/firestore';
 
 type ClaimStatus = 'loading' | 'ready' | 'cooldown' | 'claimed';
 
@@ -50,20 +51,19 @@ export default function DailyClaimPage() {
     setIsClient(true);
   }, []);
 
-  const checkClaimStatus = useCallback((lastClaimTime?: number | null) => {
-    // A lastClaimTime of undefined means user data is still loading
-    if (lastClaimTime === undefined) {
+  const checkClaimStatus = useCallback((lastClaimTimestamp?: number | null) => {
+    if (lastClaimTimestamp === undefined) {
       setClaimStatus('loading');
       return;
     }
 
-    if (!lastClaimTime) {
+    if (!lastClaimTimestamp) {
       setClaimStatus('ready');
       return;
     }
     
     // 23 hour cooldown
-    const nextClaimTime = lastClaimTime + 23 * 60 * 60 * 1000;
+    const nextClaimTime = lastClaimTimestamp + 23 * 60 * 60 * 1000;
     const now = Date.now();
 
     if (now >= nextClaimTime) {
@@ -94,11 +94,9 @@ export default function DailyClaimPage() {
 
   useEffect(() => {
     if (isClient && user) {
-      // Pass the timestamp (as a number) to the check function
-      const lastClaimTimestamp = user.lastClaimedAt ? new Date(user.lastClaimedAt).getTime() : null;
-      checkClaimStatus(lastClaimTimestamp);
+      const lastClaimTime = user.lastClaimedAt ? (user.lastClaimedAt as any).toDate().getTime() : null;
+      checkClaimStatus(lastClaimTime);
     } else if (isClient && !loading) {
-      // Handle case where user is loaded but null
       checkClaimStatus(null);
     }
   }, [isClient, user, loading, checkClaimStatus]);
@@ -117,12 +115,10 @@ export default function DailyClaimPage() {
       });
       setClaimStatus('claimed');
       setAwardedBonus(result.bonus);
-      // Manually update user context to reflect new points and claim time
-      // This provides instant UI feedback while waiting for DB to sync
       const updatedBonus = (user.bonusPoints || 0) + result.bonus;
-      // We use a new Date().toISOString() here for immediate client-side reflection.
+      // We use a new Date() here for immediate client-side reflection.
       // The server uses serverTimestamp(), which is the source of truth.
-      const updatedClaimTime = new Date().toISOString();
+      const updatedClaimTime = new Date();
       updateUser({ bonusPoints: updatedBonus, lastClaimedAt: updatedClaimTime });
     } else {
       toast({
@@ -130,14 +126,11 @@ export default function DailyClaimPage() {
         description: result.error || "Terjadi kesalahan. Coba lagi nanti.",
         variant: "destructive",
       });
-      // Re-check status if server provides cooldown info, which might happen
-      // if client and server clocks are slightly out of sync.
       if (result.nextClaim) {
-          checkClaimStatus(new Date(result.nextClaim).getTime());
+          checkClaimStatus(result.nextClaim);
       } else {
-          // If claim failed for other reasons, just re-evaluate current state
-          const lastClaimTimestamp = user.lastClaimedAt ? new Date(user.lastClaimedAt).getTime() : null;
-          checkClaimStatus(lastClaimTimestamp);
+          const lastClaimTime = user.lastClaimedAt ? (user.lastClaimedAt as any).toDate().getTime() : null;
+          checkClaimStatus(lastClaimTime);
       }
     }
   };

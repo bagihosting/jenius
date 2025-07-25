@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
-import { ref, onValue, get } from 'firebase/database';
+import { doc, onSnapshot, getDoc } from 'firebase/firestore';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -46,10 +46,10 @@ export default function UpgradePage() {
   // Fetch upgrade info from database
   useEffect(() => {
     if (db) {
-        const infoRef = ref(db, 'appSettings/upgradeInfo');
-        get(infoRef).then((snapshot) => {
-            if (snapshot.exists()) {
-                setUpgradeInfo(snapshot.val());
+        const infoRef = doc(db, 'appSettings', 'upgradeInfo');
+        getDoc(infoRef).then((docSnap) => {
+            if (docSnap.exists()) {
+                setUpgradeInfo(docSnap.data() as UpgradeInfo);
             }
         }).catch((error) => {
             console.error("Failed to fetch upgrade info:", error);
@@ -67,10 +67,10 @@ export default function UpgradePage() {
     if (user?.role === 'mahasiswa') {
       setUpgradeStatus('approved');
     } else if (user && db) {
-      const requestRef = ref(db, `upgradeRequests/${user.uid}`);
-      const unsubscribe = onValue(requestRef, (snapshot) => {
-        if (snapshot.exists()) {
-          const request: UpgradeRequest = snapshot.val();
+      const requestRef = doc(db, `upgradeRequests`, user.uid);
+      const unsubscribe = onSnapshot(requestRef, (docSnap) => {
+        if (docSnap.exists()) {
+          const request = docSnap.data() as UpgradeRequest;
           if (request.status === 'pending') {
             setUpgradeStatus('pending');
           }

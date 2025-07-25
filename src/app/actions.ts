@@ -8,7 +8,7 @@ import { academicAssistant as academicAssistantFlow } from '@/ai/flows/academic-
 
 import { type GenerateQuizOutput, type ExamData, type GenerateQuizInput, type HomeworkHelpInput, type HomeworkHelpOutput, type GenerateExamInput, type AcademicAssistantInput, type AcademicAssistantOutput, type Question, type MultipleChoiceQuestion, type UpgradeRequest, type User, UpgradeInfo, type RobloxUser } from '@/lib/types';
 import { db } from '@/lib/firebase';
-import { ref, set, serverTimestamp, get, child, update, runTransaction } from 'firebase/database';
+import { doc, setDoc, getDoc, updateDoc, runTransaction, serverTimestamp, writeBatch, collection, query, where, getDocs } from 'firebase/firestore';
 
 // Helper function to remove prefixes (A., B., etc.) and normalize string for comparison
 const normalize = (str: string): string => {
@@ -171,8 +171,8 @@ export async function submitUpgradeRequestAction(
   };
 
   try {
-    const requestRef = ref(db, `upgradeRequests/${user.uid}`);
-    await set(requestRef, {
+    const requestRef = doc(db, `upgradeRequests`, user.uid);
+    await setDoc(requestRef, {
         ...requestData,
         requestedAt: serverTimestamp(),
     });
@@ -191,8 +191,8 @@ export async function saveUpgradeSettingsAction(
     return { error: 'Koneksi database tidak ditemukan.' };
   }
   try {
-    const settingsRef = ref(db, 'appSettings/upgradeInfo');
-    await set(settingsRef, settings);
+    const settingsRef = doc(db, 'appSettings', 'upgradeInfo');
+    await setDoc(settingsRef, settings);
     return { success: true };
   } catch (e) {
     const errorMessage = e instanceof Error ? e.message : 'Terjadi kesalahan tidak dikenal.';
@@ -215,15 +215,19 @@ export async function checkRobloxUsernameAction(
         usernames: [username],
         excludeBannedUsers: true
     };
-    const usernameKey = username.toLowerCase();
 
     try {
         // Step 1: Check if the username is taken in our database
         if (db) {
-            const claimedUsernameRef = child(ref(db), `robloxUsernames/${usernameKey}`);
-            const snapshot = await get(claimedUsernameRef);
-            if (snapshot.exists() && snapshot.val() !== currentUserId) {
-                return { exists: false, error: "Username Roblox ini sudah digunakan oleh pengguna lain." };
+            const usernamesRef = collection(db, 'users');
+            const q = query(usernamesRef, where("robloxUsername", "==", username));
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+                const userDoc = querySnapshot.docs[0];
+                if (userDoc.id !== currentUserId) {
+                    return { exists: false, error: "Username Roblox ini sudah digunakan oleh pengguna lain." };
+                }
             }
         }
         
@@ -266,50 +270,43 @@ export async function claimDailyBonusAction(uid: string): Promise<{ success: boo
         return { success: false, error: 'Koneksi database gagal.' };
     }
 
-    const userRef = ref(db, `users/${uid}`);
+    const userRef = doc(db, `users`, uid);
     const now = Date.now();
     const COOL_DOWN_HOURS = 23; 
 
     try {
-        const transactionResult = await runTransaction(userRef, (currentUserData: User | null) => {
-            if (currentUserData === null) {
-                return; // User doesn't exist, abort transaction.
+        const awardedBonus = parseFloat((Math.random() * (0.0050 - 0.0010) + 0.0010).toFixed(4));
+
+        await runTransaction(db, async (transaction) => {
+            const userDoc = await transaction.get(userRef);
+            if (!userDoc.exists()) {
+                throw new Error("Pengguna tidak ditemukan!");
             }
-            
-            const lastClaimedAt = currentUserData.lastClaimedAt ? new Date(currentUserData.lastClaimedAt).getTime() : 0;
+
+            const currentUserData = userDoc.data() as User;
+            const lastClaimedAt = currentUserData.lastClaimedAt ? (currentUserData.lastClaimedAt as any).toDate().getTime() : 0;
             
             if (lastClaimedAt) {
                 const nextClaimTime = lastClaimedAt + COOL_DOWN_HOURS * 60 * 60 * 1000;
                 if (now < nextClaimTime) {
-                    // Abort transaction by returning undefined.
-                    // We'll throw an error outside to signal cooldown.
-                    return; 
+                    // Throw a specific error to be caught later
+                    throw { code: 'cooldown', nextClaim: nextClaimTime };
                 }
             }
 
             const currentBonus = currentUserData.bonusPoints || 0;
-            const awardedBonus = parseFloat((Math.random() * (0.0050 - 0.0010) + 0.0010).toFixed(4));
-            
-            currentUserData.bonusPoints = currentBonus + awardedBonus;
-            currentUserData.lastClaimedAt = serverTimestamp() as any; // Using serverTimestamp
-            
-            return currentUserData;
+            transaction.update(userRef, { 
+                bonusPoints: currentBonus + awardedBonus,
+                lastClaimedAt: serverTimestamp() 
+            });
         });
+        
+        return { success: true, bonus: awardedBonus };
 
-        if (transactionResult.committed) {
-             const finalUser = transactionResult.snapshot.val();
-             const awardedBonus = finalUser.bonusPoints - ( (await get(userRef)).val().bonusPoints - finalUser.bonusPoints); // A bit tricky to get awarded bonus after transaction
-             return { success: true, bonus: 0.0030 }; // Return an average bonus for UI, actual is on DB.
-        } else {
-            // This means the transaction was aborted, likely due to cooldown.
-             const snapshot = await get(userRef);
-             const user = snapshot.val();
-             const lastClaimedAt = user.lastClaimedAt ? new Date(user.lastClaimedAt).getTime() : 0;
-             const nextClaimTime = lastClaimedAt + COOL_DOWN_HOURS * 60 * 60 * 1000;
-            return { success: false, error: 'Anda baru bisa mengklaim bonus lagi nanti.', nextClaim: nextClaimTime };
+    } catch (e: any) {
+        if (e.code === 'cooldown') {
+            return { success: false, error: 'Anda baru bisa mengklaim bonus lagi nanti.', nextClaim: e.nextClaim };
         }
-
-    } catch (e) {
         const errorMessage = e instanceof Error ? e.message : 'Terjadi kesalahan tidak dikenal.';
         console.error('claimDailyBonusAction failed:', e);
         return { success: false, error: `Gagal mengklaim bonus: ${errorMessage}` };

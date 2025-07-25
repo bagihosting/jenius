@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Trophy, Loader2, Crown } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { db } from '@/lib/firebase';
-import { ref, onValue, query, orderByChild, limitToLast } from 'firebase/database';
+import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import type { User } from '@/lib/types';
 import { useAuth } from '@/context/AuthContext';
 
@@ -28,34 +28,28 @@ export function LeaderboardCard() {
           return;
       }
       
-      // Change from 'users' to the public 'leaderboard' node
-      const leaderboardRef = ref(db, 'leaderboard'); 
-      // Query to get top 5 users by bonusPoints
-      const topUsersQuery = query(leaderboardRef, orderByChild('bonusPoints'), limitToLast(5));
+      const usersRef = collection(db, 'users'); 
+      const topUsersQuery = query(usersRef, orderBy('bonusPoints', 'desc'), limit(5));
       
-      const unsubscribe = onValue(topUsersQuery, (snapshot) => {
+      const unsubscribe = onSnapshot(topUsersQuery, (querySnapshot) => {
         const usersData: User[] = [];
-        if (snapshot.exists()) {
-          snapshot.forEach((childSnapshot) => {
-            const user = childSnapshot.val();
-            // Only add users who have some points to the leaderboard
-            if (user.bonusPoints > 0) {
-               usersData.push({ uid: childSnapshot.key!, ...user });
-            }
-          });
+        if (!querySnapshot.empty) {
+            querySnapshot.forEach((doc) => {
+                const user = doc.data();
+                if (user.bonusPoints > 0) {
+                   usersData.push({ uid: doc.id, ...user } as User);
+                }
+            });
         }
-        // Sort in descending order and set state
-        setLeaderboard(usersData.sort((a, b) => (b.bonusPoints || 0) - (a.bonusPoints || 0)));
+        setLeaderboard(usersData);
         setIsLoading(false);
       }, (error) => {
           console.error("Firebase Leaderboard read failed:", error);
           setIsLoading(false);
       });
 
-      // Cleanup subscription on component unmount
       return () => unsubscribe();
     } else if (isClient && !authLoading && !isAuthenticated) {
-        // If user is not authenticated, don't try to load leaderboard
         setIsLoading(false);
     }
   }, [isClient, authLoading, isAuthenticated]);

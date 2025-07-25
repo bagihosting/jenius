@@ -18,7 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { auth, db, isFirebaseConfigured } from '@/lib/firebase';
 import { createUserWithEmailAndPassword, updateProfile, deleteUser } from 'firebase/auth';
-import { ref, set, get, child, update } from 'firebase/database';
+import { doc, setDoc, getDoc, writeBatch, collection, query, where, getDocs } from 'firebase/firestore';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import type { SchoolType } from '@/lib/types';
 
@@ -68,14 +68,15 @@ export default function RegisterPage() {
     }
     
     const { name, username, email, password, schoolType, schoolName } = data;
-    const usernameKey = username.toLowerCase();
     
     let createdUser = null;
 
     try {
-      const usernameRef = child(ref(db), `usernames/${usernameKey}`);
-      const usernameSnapshot = await get(usernameRef);
-      if (usernameSnapshot.exists()) {
+      const usernamesRef = collection(db, 'users');
+      const q = query(usernamesRef, where("username", "==", username));
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
         form.setError("username", { type: "manual", message: "Username ini sudah digunakan. Silakan pilih yang lain." });
         setIsLoading(false);
         return;
@@ -102,12 +103,9 @@ export default function RegisterPage() {
         progress: {},
       };
 
-      const updates: { [key: string]: any } = {};
-      updates[`/users/${createdUser.uid}`] = userData;
-      updates[`/usernames/${usernameKey}`] = { uid: createdUser.uid };
-
-      await update(ref(db), updates);
-
+      const userDocRef = doc(db, 'users', createdUser.uid);
+      await setDoc(userDocRef, userData);
+      
       toast({
           title: "Pendaftaran Berhasil!",
           description: isAdmin ? "Akun Admin Anda telah dibuat. Mengarahkan ke login..." : "Akun Anda telah dibuat. Mengarahkan ke login...",
@@ -132,8 +130,8 @@ export default function RegisterPage() {
         } else if (error.code === 'auth/weak-password') {
             errorMessage = 'Password terlalu lemah. Gunakan minimal 6 karakter.';
             form.setError("password", { type: "manual", message: errorMessage });
-        } else if (error.code === 'PERMISSION_DENIED') {
-            errorMessage = 'Akses ditolak. Pastikan aturan keamanan Firebase Anda sudah benar dan coba lagi.'
+        } else if (error.code === 'permission-denied') {
+            errorMessage = 'Akses ditolak. Pastikan aturan keamanan Firestore Anda sudah benar dan coba lagi.'
         }
 
         toast({

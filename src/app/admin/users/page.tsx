@@ -33,7 +33,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Edit, Trash2 } from 'lucide-react';
 import type { User } from '@/lib/types';
 import { db } from '@/lib/firebase';
-import { ref, onValue, update, remove } from 'firebase/database';
+import { collection, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { UserForm, userSchema } from '@/components/UserForm';
 import { useAuth } from '@/context/AuthContext';
@@ -73,18 +73,13 @@ export default function UsersPage() {
     }
 
     setIsLoading(true);
-    const usersRef = ref(db, 'users');
-    const unsubscribe = onValue(usersRef, (snapshot) => {
-        if (snapshot.exists()) {
-            const data = snapshot.val();
-            const userList = Object.keys(data).map((key) => ({
-                uid: key,
-                ...data[key],
-            }));
-            setUsers(userList);
-        } else {
-            setUsers([]);
-        }
+    const usersRef = collection(db, 'users');
+    const unsubscribe = onSnapshot(usersRef, (querySnapshot) => {
+        const userList: User[] = [];
+        querySnapshot.forEach((doc) => {
+            userList.push({ uid: doc.id, ...doc.data() } as User);
+        });
+        setUsers(userList);
         setIsLoading(false);
     }, (error) => {
         console.error("Firebase user list read failed:", error);
@@ -106,15 +101,15 @@ export default function UsersPage() {
   };
   
   const handleDelete = async (uid: string) => {
-    if (window.confirm("Apakah Anda yakin ingin menghapus pengguna ini? Tindakan ini tidak dapat diurungkan dan akan menghapus data dari Realtime Database. Pengguna Firebase Auth tidak akan terhapus.")) {
+    if (window.confirm("Apakah Anda yakin ingin menghapus pengguna ini? Tindakan ini tidak dapat diurungkan dan akan menghapus data dari Firestore. Pengguna Firebase Auth tidak akan terhapus.")) {
       if (!db) {
         toast({ title: 'Koneksi database gagal', variant: 'destructive' });
         return;
       }
       try {
-        await remove(ref(db, `users/${uid}`));
+        await deleteDoc(doc(db, 'users', uid));
         toast({ title: 'Pengguna berhasil dihapus dari database' });
-        // No need to manually update state, onValue will handle it.
+        // No need to manually update state, onSnapshot will handle it.
       } catch (error) {
         toast({ title: 'Gagal menghapus pengguna', variant: 'destructive' });
         console.error(error);
@@ -130,7 +125,7 @@ export default function UsersPage() {
       }
       
       try {
-        const userRef = ref(db, `users/${editingUser.uid}`);
+        const userRef = doc(db, 'users', editingUser.uid);
         
         // Prepare data for update, removing password if it's empty
         const { password, ...updateData } = values;
@@ -138,7 +133,7 @@ export default function UsersPage() {
         // Ensure bonusPoints is a number
         updateData.bonusPoints = Number(updateData.bonusPoints) || 0;
 
-        await update(userRef, updateData);
+        await updateDoc(userRef, updateData);
         
         toast({ title: "Pengguna berhasil diperbarui" });
         
@@ -207,7 +202,7 @@ export default function UsersPage() {
                             <SheetHeader>
                                 <SheetTitle>Edit Pengguna</SheetTitle>
                                 <SheetDescription>
-                                  Ubah detail pengguna di bawah ini. Perubahan akan disimpan di Realtime Database.
+                                  Ubah detail pengguna di bawah ini. Perubahan akan disimpan di Firestore.
                                 </SheetDescription>
                             </SheetHeader>
                             <UserForm form={form} onSubmit={onSubmit} editingUser={editingUser}>

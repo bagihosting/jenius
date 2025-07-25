@@ -11,7 +11,7 @@ import { Loader2, Settings, Save, Banknote } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
-import { ref, onValue } from 'firebase/database';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -56,11 +56,11 @@ export default function SettingsPage() {
         }
 
         setIsLoadingData(true);
-        const settingsRef = ref(db, 'appSettings/upgradeInfo');
+        const settingsRef = doc(db, 'appSettings', 'upgradeInfo');
         
-        const unsubscribe = onValue(settingsRef, (snapshot) => {
-            if (snapshot.exists()) {
-                form.reset(snapshot.val());
+        const unsubscribe = onSnapshot(settingsRef, (doc) => {
+            if (doc.exists()) {
+                form.reset(doc.data());
             }
             setIsLoadingData(false);
         }, (error) => {

@@ -2,56 +2,6 @@
 {
   "rules": {
     ".read": false,
-    ".write": false,
-
-    "users": {
-      ".indexOn": ["role", "robloxUsername", "bonusPoints"],
-      ".read": "root.child('users').child(auth.uid).child('role').val() === 'admin'",
-      "$uid": {
-        ".read": "auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin'",
-        ".write": "auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin'",
-        "role": {
-          ".write": "root.child('users').child(auth.uid).child('role').val() === 'admin'"
-        },
-        "bonusPoints": {
-           ".read": "auth.uid === $uid",
-           ".write": "auth.uid === $uid",
-           ".validate": "newData.isNumber() && (!data.exists() || newData.val() >= data.val())"
-        },
-        "lastClaimedAt": {
-           ".read": "auth.uid === $uid",
-           ".write": "auth.uid === $uid",
-           ".validate": "newData.isNumber() && (!data.exists() || newData.val() > data.val()) && newData.val() <= now + 1000"
-        }
-      }
-    },
-    "usernames": {
-      ".read": "auth.uid != null",
-      "$username": {
-        ".write": "!data.exists() && newData.child('uid').val() === auth.uid"
-      }
-    },
-    "robloxUsernames": {
-      ".read": "auth.uid != null",
-      "$username": {
-        ".write": "auth.uid != null && (!data.exists() || data.val() === auth.uid)"
-      }
-    },
-    "upgradeRequests": {
-      ".read": "root.child('users').child(auth.uid).child('role').val() === 'admin'",
-      "$uid": {
-        ".write": "auth.uid === $uid && (!data.exists() || data.child('status').val() !== 'approved')",
-        ".read": "auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin'"
-      }
-    },
-    "appSettings": {
-      ".read": "auth.uid != null",
-      ".write": "root.child('users').child(auth.uid).child('role').val() === 'admin'"
-    },
-    "leaderboard": {
-      ".read": "auth.uid != null",
-      ".write": false,
-      ".indexOn": "bonusPoints"
-    }
+    ".write": false
   }
 }

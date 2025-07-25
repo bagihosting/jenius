@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth, db, isFirebaseConfigured } from '@/lib/firebase';
-import { ref, get } from "firebase/database";
+import { doc, getDoc } from "firebase/firestore";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function LoginPage() {
@@ -46,20 +46,20 @@ export default function LoginPage() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      const userRef = ref(db, `users/${user.uid}`);
-      const snapshot = await get(userRef);
+      const userRef = doc(db, 'users', user.uid);
+      const docSnap = await getDoc(userRef);
       
       let redirectPath = '/belajar';
       
-      if (snapshot.exists()) {
-        const userData = snapshot.val();
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
         if (userData.role === 'admin') {
           redirectPath = '/admin/dashboard';
         } else if (userData.role === 'mahasiswa') {
             redirectPath = '/mahasiswa/dashboard';
         }
       } else {
-        console.warn(`User with UID ${user.uid} is in Auth but not in Realtime DB.`);
+        console.warn(`User with UID ${user.uid} is in Auth but not in Firestore.`);
       }
       
       toast({
