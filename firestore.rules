@@ -1,9 +1,10 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions to make rules cleaner and more reusable.
+    // Helper functions to make rules cleaner and more readable
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -12,55 +13,38 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
     
-    function getRole() {
-      // Safely get the user's role. Returns 'user' if not found or no role is set.
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
-    }
-
     function isAdmin() {
-      return getRole() == 'admin';
+      // Check the role of the user making the request from their own document in Firestore
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
     // Rules for the 'users' collection
     match /users/{userId} {
-      // Users can get their own document, admins can get any.
+      // READ: Admins can read any user doc. Users can only read their own.
       allow get: if isOwner(userId) || isAdmin();
-      // Admins can list all users.
+      
+      // LIST: Only admins can list all users. This prevents users from discovering other users.
       allow list: if isAdmin();
-      
-      // Users can only create their own user document.
-      allow create: if isOwner(userId);
-      
-      // Users can update their own document, admins can update any.
-      allow update: if isOwner(userId) || isAdmin();
-      
-      // Users can delete their own account, admins can delete any.
-      allow delete: if isOwner(userId) || isAdmin();
 
-      // Deeper validation on write operations (create, update)
-      allow write: if
-        // VALIDATION 1: Role Security
-        // On create, role must be 'user'.
-        // On update, role can only be changed by an admin.
-        (request.method == 'create' && request.resource.data.role == 'user') ||
-        (request.method == 'update' && (request.resource.data.role == resource.data.role || isAdmin()))
-        &&
-        // VALIDATION 2: Bonus Points
-        // Cannot be negative and can only be increased by the user (or set by admin).
-        request.resource.data.bonusPoints >= 0 &&
-        (isAdmin() || !exists(resource) || request.resource.data.bonusPoints >= resource.data.bonusPoints)
-        &&
-        // VALIDATION 3: Last Claimed Time
-        // Cannot be set to a future date and can only be moved forward by the user.
-        request.resource.data.lastClaimedAt <= request.time &&
-        (isAdmin() || !exists(resource) || request.resource.data.lastClaimedAt > resource.data.lastClaimedAt);
+      // CREATE: A user can only create their own document.
+      allow create: if isOwner(userId)
+                    // Validation on create: Role must be 'user' and bonusPoints must be 0.
+                    && request.resource.data.role == 'user'
+                    && request.resource.data.bonusPoints == 0;
+
+      // UPDATE: Admins can update any user. Users can only update their own document.
+      allow update: if isOwner(userId) || isAdmin();
+
+      // DELETE: Only admins can delete user documents.
+      allow delete: if isAdmin();
     }
     
     // Rules for the 'upgradeRequests' collection
     match /upgradeRequests/{userId} {
       // Users can create and read their own request.
-      allow get, create: if isOwner(userId);
-      // Admins can see all requests and can update/delete them.
+      allow create, get: if isOwner(userId);
+      
+      // Admins can see all requests (list) and can update/delete them.
       allow list, update, delete: if isAdmin();
     }
     
@@ -70,12 +54,13 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
     
-    // Rules for the 'leaderboard' collection
+    // Rules for the 'leaderboard' collection, which is a denormalized, public-readable collection.
     match /leaderboard/{document=**} {
-    	// Any authenticated user can read the leaderboard for display purposes.
-    	allow read: if isAuthenticated();
+      // Any authenticated user can read (get or list) the leaderboard.
+      allow read: if isAuthenticated();
+      
       // No client should ever write to the leaderboard directly.
-      // This must be handled by a trusted server environment (e.g., Cloud Functions).
+      // This should be handled by a trusted server environment (e.g., Cloud Functions).
       allow write: if false;
     }
   }

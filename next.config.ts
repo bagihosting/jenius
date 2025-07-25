@@ -14,9 +14,6 @@ const nextConfig: NextConfig = {
         hostname: 'storage.googleapis.com',
       }
     ],
-     // Allow data URIs
-    dangerouslyAllowSVG: true,
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 };
 
