@@ -169,7 +169,7 @@ export interface UpgradeRequest {
   universityName: string;
   major: string;
   status: 'pending' | 'approved' | 'rejected';
-  requestedAt: Timestamp | Date; // Can be Timestamp or Date object
+  requestedAt: Timestamp; // Standardize to Firestore Timestamp
 }
 
 //========= APP SETTINGS TYPES =========//

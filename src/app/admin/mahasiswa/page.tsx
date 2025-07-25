@@ -20,7 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Loader2, CheckCircle, XCircle, GraduationCap } from 'lucide-react';
 import { db } from '@/lib/firebase';
-import { collection, query, where, onSnapshot, doc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, updateDoc, deleteDoc, writeBatch, Timestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { type UpgradeRequest } from '@/lib/types';
@@ -52,11 +52,9 @@ export default function MahasiswaManagementPage() {
         const requestList: UpgradeRequest[] = [];
         querySnapshot.forEach((doc) => {
             const data = doc.data();
-            // Convert Firestore Timestamp to Date, then to string for sorting
-            const requestedAt = data.requestedAt?.toDate ? data.requestedAt.toDate() : new Date();
-            requestList.push({ ...data, uid: doc.id, requestedAt: requestedAt.toISOString() } as UpgradeRequest);
+            requestList.push({ ...data, uid: doc.id } as UpgradeRequest);
         });
-        setRequests(requestList.sort((a,b) => new Date(b.requestedAt as string).getTime() - new Date(a.requestedAt as string).getTime()));
+        setRequests(requestList.sort((a,b) => b.requestedAt.toMillis() - a.requestedAt.toMillis()));
         setIsLoading(false);
     }, (error) => {
         console.error("Firebase requests read failed:", error);
@@ -77,7 +75,10 @@ export default function MahasiswaManagementPage() {
       const userRef = doc(db, 'users', request.uid);
       batch.update(userRef, {
           role: 'mahasiswa',
-          major: request.major
+          major: request.major,
+          // Clear school-related fields
+          schoolName: '',
+          schoolType: ''
       });
 
       const requestRef = doc(db, 'upgradeRequests', request.uid);
@@ -159,7 +160,7 @@ export default function MahasiswaManagementPage() {
                         <div className="text-sm text-muted-foreground">{req.major}</div>
                     </TableCell>
                     <TableCell>
-                        {req.requestedAt ? format(new Date(req.requestedAt as string), "d MMM yyyy, HH:mm") : '-'}
+                        {req.requestedAt ? format(req.requestedAt.toDate(), "d MMM yyyy, HH:mm") : '-'}
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary" className="text-yellow-600 border-yellow-300 bg-yellow-50">

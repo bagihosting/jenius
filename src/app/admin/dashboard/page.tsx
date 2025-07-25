@@ -4,9 +4,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Gift, Loader2 } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, getCountFromServer } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import type { User } from '@/lib/types';
 
 export default function AdminDashboardPage() {
     const [userCount, setUserCount] = useState(0);
@@ -19,17 +18,20 @@ export default function AdminDashboardPage() {
             return;
         }
 
-        const usersRef = collection(db, 'users');
-        const unsubscribe = onSnapshot(usersRef, (querySnapshot) => {
-            setUserCount(querySnapshot.size);
-            setIsLoading(false);
-        }, (error) => {
-            console.error("Firebase user count read failed:", error);
-            setIsLoading(false);
-        });
+        const fetchUserCount = async () => {
+            try {
+                const usersRef = collection(db, 'users');
+                const snapshot = await getCountFromServer(usersRef);
+                setUserCount(snapshot.data().count);
+            } catch (error) {
+                console.error("Firebase user count read failed:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
-        // Cleanup the listener when the component unmounts
-        return () => unsubscribe();
+        fetchUserCount();
+
     }, []);
 
     if (isLoading) {
