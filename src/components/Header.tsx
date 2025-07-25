@@ -12,7 +12,8 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 export function Header() {
   const { isAuthenticated, user, loading, logout } = useAuth();
-  const [isClient, useState] = useEffect(() => {
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
     setIsClient(true);
   }, []);
 
@@ -44,7 +45,7 @@ export function Header() {
                         <Button asChild>
                             <Link href={dashboardHref}>
                                 <LayoutDashboard />
-                                Go to Dashboard
+                                <span className="hidden sm:inline-block ml-2">Go to Dashboard</span>
                             </Link>
                         </Button>
                         <ProfileDialog>
