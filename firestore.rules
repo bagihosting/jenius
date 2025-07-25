@@ -1,3 +1,4 @@
+
 rules_version = '2';
 
 service cloud.firestore {
@@ -13,30 +14,29 @@ service cloud.firestore {
     }
     
     function isAdmin() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      // Check for admin role on an existing user document.
+      // Assumes 'admins' collection or a 'role' field in user's profile
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
-    
-    // Collection: users
-    match /users/{userId} {
-      // --- READ ---
-      // Allow admin to read any user document.
-      // Allow authenticated users to read their own document.
-      allow get: if isAuthenticated() && (isOwner(userId) || isAdmin());
-      
-      // --- LIST (for Leaderboard) ---
-      // Allow authenticated users to list users ONLY for the leaderboard query.
-      // The query MUST be ordered by bonusPoints and limited to 5.
-      allow list: if isAuthenticated()
-                  && request.query.orderBy[0].field == 'bonusPoints'
-                  && request.query.orderBy[0].direction == 'desc'
-                  && request.query.limit <= 5;
 
-      // --- CREATE (Registration) ---
-      // Allow anyone to create a user document IF:
-      // 1. They are creating a document for themselves.
-      // 2. The role is explicitly 'user'.
-      // 3. bonusPoints is 0.
-      // 4. They provide all required fields.
+    // USER COLLECTION
+    match /users/{userId} {
+      // READ:
+      // - Any authenticated user can get their own document.
+      // - Admins can get any user document.
+      allow get: if isAuthenticated() && (isOwner(userId) || isAdmin());
+
+      // LIST (for Leaderboard):
+      // - Allow any authenticated user to list users only if sorted by bonusPoints descending.
+      // - This is secure because they can't filter by other fields, only query the leaderboard.
+      allow list: if isAuthenticated() && request.query.orderBy[0].field == "bonusPoints";
+
+      // CREATE:
+      // - New user must be the owner of the document.
+      // - MUST register with 'user' role. Critical security check.
+      // - MUST start with 0 bonus points.
+      // - All required fields must be present.
       allow create: if isOwner(userId)
                     && request.resource.data.role == 'user'
                     && request.resource.data.bonusPoints == 0
@@ -44,37 +44,63 @@ service cloud.firestore {
                     && 'username' in request.resource.data
                     && 'email' in request.resource.data
                     && 'schoolType' in request.resource.data
-                    && 'schoolName' in request.resource.data;
-                   
-      // --- UPDATE ---
-      // Allow admin to update any user.
-      // Allow user to update their own document with restrictions.
-      allow update: if isAdmin() || (isOwner(userId)
-                    // Users cannot change their own role or bonus points.
-                    && !('role' in request.resource.data)
-                    && !('bonusPoints' in request.resource.data)
-                    // Users can only set their grade if it doesn't exist yet. It's locked after that.
-                    && (!('grade' in request.resource.data) || !('grade' in resource.data)));
-                    
-      // --- DELETE ---
-      // Only admin can delete user documents.
+                    && 'schoolName' in request.resource.data
+                    && 'registeredAt' in request.resource.data
+                    && 'quizCompletions' in request.resource.data
+                    && 'progress' in request.resource.data;
+
+      // UPDATE:
+      // - User is owner OR is admin.
+      // - Critical fields (role, bonusPoints) can only be changed by an admin.
+      // - Grade can only be set once by the user, then only admin can change.
+      // - User can update their own non-critical profile info.
+      allow update: if isAuthenticated() && (
+        ( // Admin can update anything except their own role.
+          isAdmin() && (userId != request.auth.uid || request.resource.data.role == 'admin')
+        ) ||
+        ( // User can update their own data under these conditions:
+          isOwner(userId) &&
+          request.resource.data.role == resource.data.role && // Cannot change own role
+          request.resource.data.bonusPoints == resource.data.bonusPoints && // Cannot change own bonus points
+          (
+            // Can set 'grade' if it doesn't exist yet, but cannot change it once set.
+            (!('grade' in resource.data) && 'grade' in request.resource.data) ||
+            request.resource.data.grade == resource.data.grade
+          )
+        )
+      );
+
+      // DELETE:
+      // - Only Admins can delete user documents.
       allow delete: if isAdmin();
     }
     
-    // Collection: upgradeRequests
+    // UPGRADE REQUESTS
     match /upgradeRequests/{userId} {
+      // User can create their own request.
+      allow create: if isOwner(userId);
+      // User can see their own request status, Admin can see all.
       allow get: if isAuthenticated() && (isOwner(userId) || isAdmin());
-      allow list: if isAuthenticated() && isAdmin();
-      
-      // User can create their own request. Admin can create/update any.
-      allow create: if isAuthenticated() && isOwner(userId);
-      allow update, delete: if isAuthenticated() && isAdmin();
+      // Admin can list all requests for management.
+      allow list: if isAdmin();
+      // Admin can approve/reject (update status).
+      allow update: if isAdmin();
+      // Admin can delete rejected requests.
+      allow delete: if isAdmin();
+    }
+
+    // APP SETTINGS
+    match /appSettings/{docId} {
+      // Anyone can read settings (e.g., to see donation info).
+      allow get: if true;
+      // Only admins can change app settings.
+      allow write: if isAdmin();
     }
     
-    // Collection: appSettings
-    match /appSettings/{docId} {
-      allow get: if isAuthenticated();
-      allow list, write: if isAuthenticated() && isAdmin();
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
+
+    

@@ -21,6 +21,8 @@ import { createUserWithEmailAndPassword, updateProfile, deleteUser } from 'fireb
 import { doc, setDoc, getDoc, writeBatch, collection, query, where, getDocs } from 'firebase/firestore';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import type { SchoolType } from '@/lib/types';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+
 
 const schoolTypes: { id: SchoolType; name: string }[] = [
   { id: 'SDN', name: 'SD Negeri' },
@@ -38,7 +40,7 @@ const registerSchema = z.object({
     .regex(/^[a-z0-9_]+$/, 'Username hanya boleh berisi huruf kecil, angka, dan garis bawah (_).'),
   email: z.string().email({ message: 'Email tidak valid.' }),
   password: z.string().min(6, { message: 'Password harus memiliki setidaknya 6 karakter.' }),
-  schoolType: z.enum(['SDN', 'SDIT', 'MI', 'SMP', 'MTs', 'SMA', 'MA']),
+  schoolType: z.enum(['SDN', 'SDIT', 'MI', 'SMP', 'MTs', 'SMA', 'MA'], { required_error: 'Jenis sekolah harus dipilih.' }),
   schoolName: z.string().min(3, { message: 'Nama sekolah harus diisi.' }),
 });
 
@@ -52,6 +54,13 @@ export default function RegisterPage() {
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+        name: '',
+        username: '',
+        email: '',
+        password: '',
+        schoolName: '',
+    }
   });
 
   useEffect(() => {
@@ -165,48 +174,98 @@ export default function RegisterPage() {
     }
     
     return (
+     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleRegister)} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="name">Nama Lengkap</Label>
-          <Input id="name" placeholder="Nama Lengkap Anda" {...form.register('name')} />
-          {form.formState.errors.name && <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>}
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="username">Username</Label>
-          <Input id="username" placeholder="pilih_username_unik" {...form.register('username')} />
-          {form.formState.errors.username && <p className="text-sm text-destructive">{form.formState.errors.username.message}</p>}
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="email@anda.com" {...form.register('email')} />
-          {form.formState.errors.email && <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>}
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" placeholder="Minimal 6 karakter" {...form.register('password')} />
-          {form.formState.errors.password && <p className="text-sm text-destructive">{form.formState.errors.password.message}</p>}
-        </div>
-         <div className="space-y-2">
-          <Label htmlFor="schoolType">Jenis Sekolah</Label>
-          <Select onValueChange={(value) => form.setValue('schoolType', value as any)}>
-              <SelectTrigger id="schoolType">
-                <SelectValue placeholder="Pilih jenis sekolah..." />
-              </SelectTrigger>
-            <SelectContent>
-              {schoolTypes.map(st => <SelectItem key={st.id} value={st.id}>{st.name}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          {form.formState.errors.schoolType && <p className="text-sm text-destructive">{form.formState.errors.schoolType.message}</p>}
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="schoolName">Nama Sekolah</Label>
-          <Input id="schoolName" placeholder="Contoh: SDN Merdeka 5" {...form.register('schoolName')} />
-          {form.formState.errors.schoolName && <p className="text-sm text-destructive">{form.formState.errors.schoolName.message}</p>}
-        </div>
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nama Lengkap</FormLabel>
+              <FormControl>
+                <Input placeholder="Nama Lengkap Anda" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="username"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Username</FormLabel>
+              <FormControl>
+                <Input placeholder="pilih_username_unik" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input type="email" placeholder="email@anda.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <Input type="password" placeholder="Minimal 6 karakter" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+            control={form.control}
+            name="schoolType"
+            render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Jenis Sekolah</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Pilih jenis sekolah..." />
+                            </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            {schoolTypes.map(st => <SelectItem key={st.id} value={st.id}>{st.name}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                    <FormMessage />
+                </FormItem>
+            )}
+        />
+        <FormField
+          control={form.control}
+          name="schoolName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nama Sekolah</FormLabel>
+              <FormControl>
+                <Input placeholder="Contoh: SDN Merdeka 5" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <Button type="submit" className="w-full" disabled={isLoading || !isFirebaseConfigured}>
           {isLoading ? <Loader2 className="animate-spin" /> : 'Daftar Sekarang'}
         </Button>
       </form>
+    </Form>
     );
   };
 
@@ -230,3 +289,5 @@ export default function RegisterPage() {
     </div>
   );
 }
+
+    
