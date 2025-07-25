@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { useRouter } from 'next/navigation';
 import type { User } from '@/lib/types';
 import { onAuthStateChanged, signOut, updatePassword as updateAuthPassword, updateProfile } from 'firebase/auth';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db, isFirebaseConfigured } from '@/lib/firebase';
 
 interface AuthContextType {
@@ -45,22 +45,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
             if (docSnap.exists()) {
                 const dbUser = docSnap.data();
+                // --- SYNCHRONIZATION LOGIC ---
+                // Prioritize Firebase Auth data for name and photoUrl as the source of truth,
+                // then fall back to Firestore data.
                 setUser({
                     ...dbUser,
                     uid: firebaseUser.uid,
-                    email: firebaseUser.email || '',
+                    email: firebaseUser.email || dbUser.email || '',
                     name: firebaseUser.displayName || dbUser.name || 'User',
                     photoUrl: firebaseUser.photoURL || dbUser.photoUrl,
                 } as User);
             } else {
-                setUser({
-                    uid: firebaseUser.uid,
-                    email: firebaseUser.email || '',
-                    name: firebaseUser.displayName || 'Pengguna Baru',
-                    username: 'pengguna_baru', // Add required username property
-                    role: 'user',
-                });
-                console.warn(`User data not found in DB for UID: ${firebaseUser.uid}.`);
+                 // This case should be rare if registration is safeguarded.
+                setUser(null);
+                console.warn(`User data not found in DB for UID: ${firebaseUser.uid}. Logging out.`);
+                await signOut(auth);
             }
         } catch (error) {
             console.error("Firestore read failed:", error);
@@ -128,17 +127,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
+        // --- SYNCHRONIZATION LOGIC ---
+        // 1. Update Firestore first.
         if (Object.keys(dbUpdateData).length > 0) {
             const userRef = doc(db, 'users', uid);
             // Use setDoc with merge: true to handle both creation and update.
             // This prevents "No document to update" errors if the document doesn't exist yet.
             await setDoc(userRef, dbUpdateData, { merge: true });
         }
-
+        
+        // 2. Then, update Firebase Auth profile.
         if (Object.keys(authUpdateData).length > 0) {
             await updateProfile(currentUser, authUpdateData);
         }
         
+        // 3. Finally, update local state for immediate UI feedback.
         setUser(prevUser => {
             if (!prevUser) return null;
             return { ...prevUser, ...userData };

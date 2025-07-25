@@ -119,6 +119,7 @@ export default function RegisterPage() {
         console.error("Registration error:", error);
         let errorMessage = "Terjadi kesalahan saat pendaftaran. Silakan coba lagi.";
 
+        // --- SAFEGUARD: Cleanup user if DB write fails ---
         if (createdUser) {
             await deleteUser(createdUser).catch(delErr => {
                 console.error("Failed to cleanup created user:", delErr);
