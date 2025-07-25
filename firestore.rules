@@ -4,7 +4,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions to make rules cleaner and more readable
+    // ========== HELPER FUNCTIONS ==========
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -12,56 +12,69 @@ service cloud.firestore {
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
-    
-    function isAdmin() {
-      // Check the role of the user making the request from their own document in Firestore
-      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+
+    function getRole(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data.role;
     }
 
-    // Rules for the 'users' collection
+    function isAdmin() {
+      // Check role of the user making the request.
+      // Use exists() to prevent errors if the user document doesn't exist yet.
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) && getRole(request.auth.uid) == 'admin';
+    }
+    
+    // ========== COLLECTION: users ==========
     match /users/{userId} {
-      // READ: Admins can read any user doc. Users can only read their own.
+      // --- READ ---
+      // Allow reading own document or if user is an admin.
       allow get: if isOwner(userId) || isAdmin();
+
+      // --- LIST (for leaderboard) ---
+      // Allow authenticated users to list users ONLY for the leaderboard query.
+      // This is a specific rule to enable the leaderboard feature securely.
+      allow list: if isAuthenticated() && request.query.orderBy[0].field == "bonusPoints" && request.query.limit <= 5;
       
-      // LIST: Only admins can list all users. This prevents users from discovering other users.
+      // Allow admin to list all users without restrictions.
       allow list: if isAdmin();
+      
+      // --- CREATE ---
+      // Allow user creation only if the user is the owner of the document.
+      allow create: if isOwner(userId) &&
+                      // Ensure the role is set to 'user' during creation. Prevents self-promotion to admin.
+                      request.resource.data.role == 'user' &&
+                      // Ensure bonus points start at 0.
+                      request.resource.data.bonusPoints == 0;
 
-      // CREATE: A user can only create their own document.
-      allow create: if isOwner(userId)
-                    // Validation on create: Role must be 'user' and bonusPoints must be 0.
-                    && request.resource.data.role == 'user'
-                    && request.resource.data.bonusPoints == 0;
-
-      // UPDATE: Admins can update any user. Users can only update their own document.
-      allow update: if isOwner(userId) || isAdmin();
-
-      // DELETE: Only admins can delete user documents.
+      // --- UPDATE ---
+      // Allow users to update their own document, with restrictions.
+      allow update: if isOwner(userId) &&
+                      // A user cannot change their own role.
+                      request.resource.data.role == resource.data.role &&
+                      // A user cannot change their own bonus points. This must be done by a trusted server/admin.
+                      request.resource.data.bonusPoints == resource.data.bonusPoints;
+      
+      // Admins can update any user document without restrictions.
+      allow update: if isAdmin();
+      
+      // --- DELETE ---
+      // Only admins can delete user documents.
       allow delete: if isAdmin();
     }
-    
-    // Rules for the 'upgradeRequests' collection
+
+    // ========== COLLECTION: upgradeRequests ==========
     match /upgradeRequests/{userId} {
       // Users can create and read their own request.
       allow create, get: if isOwner(userId);
-      
-      // Admins can see all requests (list) and can update/delete them.
+      // Admins can see all requests, and update/delete them.
       allow list, update, delete: if isAdmin();
     }
-    
-    // Rules for the 'appSettings' collection
+
+    // ========== COLLECTION: appSettings ==========
     match /appSettings/{setting} {
-      // Only admins can read or write application settings.
-      allow read, write: if isAdmin();
-    }
-    
-    // Rules for the 'leaderboard' collection, which is a denormalized, public-readable collection.
-    match /leaderboard/{document=**} {
-      // Any authenticated user can read (get or list) the leaderboard.
-      allow read: if isAuthenticated();
-      
-      // No client should ever write to the leaderboard directly.
-      // This should be handled by a trusted server environment (e.g., Cloud Functions).
-      allow write: if false;
+      // Any authenticated user can read the settings (e.g., to see donation info).
+      allow get: if isAuthenticated();
+      // Only admins can write application settings.
+      allow write: if isAdmin();
     }
   }
 }
