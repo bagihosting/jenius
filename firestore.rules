@@ -1,84 +1,91 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    //======================================
-    // Helper Functions
-    //======================================
+    // ========== HELPER FUNCTIONS ==========
     function isAuthenticated() {
       return request.auth != null;
     }
 
     function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
+      return request.auth.uid == userId;
+    }
+
+    function getUserData(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data;
     }
     
     function isAdmin() {
-      // Check if the requesting user has the 'admin' role in their own user document.
-      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      // Check role from existing user document in Firestore.
+      return isAuthenticated() && getUserData(request.auth.uid).role == 'admin';
     }
     
-    function isExistingUser(userId) {
-    	return exists(/databases/$(database)/documents/users/$(userId));
+    function isNewUser() {
+      // Check if the user document does not exist yet.
+    	return !exists(/databases/$(database)/documents/users/$(request.auth.uid));
     }
+    
+    // ========== COLLECTION RULES ==========
 
-    //======================================
-    // Collection: users
-    //======================================
+    // --- Users Collection ---
     match /users/{userId} {
-      // --- CREATE ---
-      // Anyone can create their own user document (registration).
-      // Validation ensures they can't assign themselves special roles or points.
-      allow create: if isOwner(userId)
-                    && request.resource.data.role == 'user'
-                    && request.resource.data.bonusPoints == 0;
-      
-      // --- READ ---
-      // Admins can get any user doc. Users can only get their own.
-      allow get: if isAdmin() || isOwner(userId);
+      // ACCESS CONTROL: Who can do what?
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin(); // Only admins can list all users.
 
-      // --- UPDATE ---
-      // Users can update their own document, but with strict validation.
-      // Admins can update any user document without these restrictions.
-      allow update: if isAdmin() || (
-                      isOwner(userId) &&
-                      // Users cannot change their own role, email, or username.
-                      request.resource.data.role == resource.data.role &&
-                      request.resource.data.email == resource.data.email &&
-                      request.resource.data.username == resource.data.username &&
-                      // Users cannot directly change their bonus points.
-                      request.resource.data.bonusPoints == resource.data.bonusPoints
-                    );
-      
-      // --- DELETE ---
-      // Only admins can delete user documents from Firestore.
-      allow delete: if isAdmin();
-      
-      // --- LIST (for Leaderboard) ---
-      // This rule specifically allows the leaderboard query.
-      // Any authenticated user can list users IF the query is ordered by bonusPoints.
-      // This is secure because it doesn't allow arbitrary listing of all users.
-      allow list: if isAuthenticated() && request.query.orderBy == 'bonusPoints';
+      // VALIDATION: What data is valid?
+      allow create: if isOwner(userId) &&
+                       // On creation, role MUST be 'user'
+                       request.resource.data.role == 'user' &&
+                       // On creation, bonusPoints MUST be 0
+                       request.resource.data.bonusPoints == 0;
+                       
+      allow update: if isOwner(userId) || isAdmin();
+
+      // Granular field validation on any write operation
+      allow write: if
+          // Ensure username cannot be changed after creation
+          (isNewUser() || request.resource.data.username == resource.data.username) &&
+          
+          // Role can only be changed by an admin, not by the user.
+          // On update, the role can only change if the requester is an admin.
+          (request.resource.data.role == resource.data.role || isAdmin()) &&
+
+          // Ensure only admins can update sensitive fields like quiz completions
+          (request.resource.data.quizCompletions == resource.data.quizCompletions || isAdmin()) &&
+
+          // Bonus points can only be updated by admins or via a server-side process (which would use admin privileges).
+          // Users cannot update their own bonus points.
+          (request.resource.data.bonusPoints == resource.data.bonusPoints || isAdmin()) &&
+
+          // Grade can be set by the user if it doesn't exist, but only an admin can change it later.
+          (resource.data.grade == null || request.resource.data.grade == resource.data.grade || isAdmin());
+
+      allow delete: if isAdmin(); // Only admins can delete user documents.
     }
     
-    //======================================
-    // Collection: upgradeRequests
-    //======================================
+    // --- Leaderboard Query (scoped to users collection) ---
+    // This rule specifically allows the leaderboard query to function without exposing other user data.
+    match /users/{userId} {
+       allow list: if isAuthenticated() &&
+                     request.query.orderBy[0].field == 'bonusPoints' &&
+                     request.query.limit <= 5;
+    }
+
+    // --- Upgrade Requests Collection ---
     match /upgradeRequests/{userId} {
-        // Users can create and read their own request.
-        allow create, get: if isOwner(userId);
-        
-        // Admins can see all requests, and update/delete them.
-        allow list, update, delete: if isAdmin();
+      // Users can create and read their own request.
+      allow create, read: if isOwner(userId);
+      // Admins can manage all requests.
+      allow list, update, delete: if isAdmin();
     }
-    
-    //======================================
-    // Collection: appSettings
-    //======================================
+
+    // --- App Settings Collection ---
     match /appSettings/{setting} {
-        // Only admins can read or write application settings.
-        allow read, write: if isAdmin();
+      // Only admins can read or write application-wide settings.
+      allow read, write: if isAdmin();
     }
   }
 }

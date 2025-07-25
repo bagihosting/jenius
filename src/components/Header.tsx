@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { BookHeart, LogIn, LayoutDashboard, User, Loader2, UserPlus, LogOut } from 'lucide-react';
@@ -13,9 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 export function Header() {
   const { isAuthenticated, user, loading, logout } = useAuth();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
+  const [isClient, useState] = useEffect(() => {
     setIsClient(true);
   }, []);
 
@@ -36,7 +33,6 @@ export function Header() {
               <BookHeart className="h-8 w-8 text-primary" />
               <span>Ayah Jenius</span>
             </Link>
-            <p className="text-sm text-muted-foreground hidden md:block">Your Fun Learning Partner</p>
           </div>
           <div className="flex items-center gap-2">
             {!isClient || loading ? (
@@ -61,9 +57,9 @@ export function Header() {
                             </Avatar>
                             </Button>
                         </ProfileDialog>
-                        <Button onClick={logout} variant="outline" size="icon" className="shrink-0">
+                        <Button onClick={logout} variant="outline" className="shrink-0">
                             <LogOut />
-                            <span className="sr-only">Logout</span>
+                            <span className="hidden sm:inline-block ml-2">Logout</span>
                         </Button>
                    </>
                 ) : (

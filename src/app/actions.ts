@@ -16,6 +16,14 @@ const normalize = (str: string): string => {
     return str.replace(/^[A-D]\.\s*/, '').trim().toLowerCase();
 };
 
+// Helper to check for duplicate options
+const hasDuplicateOptions = (options: string[]): boolean => {
+    if (!Array.isArray(options)) return true; // Invalid options format
+    const normalizedOptions = options.map(opt => normalize(opt));
+    const uniqueOptions = new Set(normalizedOptions);
+    return uniqueOptions.size !== normalizedOptions.length;
+}
+
 export async function generateQuizAction(
   input: GenerateQuizInput
 ): Promise<{ data?: GenerateQuizOutput; error?: string }> {
@@ -30,7 +38,11 @@ export async function generateQuizAction(
     const validatedQuiz = quizData.quiz.map(q => {
         if (!q.options || !Array.isArray(q.options) || q.options.length < 4) {
             console.error('Soal tidak valid: Pilihan jawaban kurang dari 4.', q);
-            return null; // Tandai soal sebagai tidak valid
+            return null; // Mark question as invalid
+        }
+        if (hasDuplicateOptions(q.options)) {
+            console.error('Soal tidak valid: Terdapat pilihan jawaban yang duplikat.', q);
+            return null;
         }
         if (!q.correctAnswer) {
             console.error('Soal tidak valid: Tidak ada jawaban benar.', q);
@@ -38,22 +50,18 @@ export async function generateQuizAction(
         }
 
         const normalizedCorrectAnswerFromAI = normalize(q.correctAnswer);
-        
-        // Cari opsi yang cocok setelah dinormalisasi
         const matchingOption = q.options.find(opt => normalize(opt) === normalizedCorrectAnswerFromAI);
 
         if (matchingOption) {
-            // Koreksi `correctAnswer` agar sama persis dengan opsi yang ada
+            // Correct `correctAnswer` to match the existing option exactly
             q.correctAnswer = matchingOption;
             return q;
         } else {
-            // Jika tidak ada opsi yang cocok sama sekali, soal ini cacat.
             console.error('Soal tidak valid: Jawaban benar tidak ditemukan di dalam pilihan.', q);
             return null;
         }
-    }).filter((q): q is Question => q !== null); // Hapus semua soal yang tidak valid
+    }).filter((q): q is Question => q !== null); // Remove all invalid questions
 
-    // Jika setelah validasi, tidak ada soal yang tersisa atau jumlahnya berkurang, tolak seluruh kuis.
     if (validatedQuiz.length !== quizData.quiz.length) {
         throw new Error('Ayah Jenius membuat beberapa soal yang tidak akurat. Silakan coba buat kuis lagi untuk mendapatkan hasil yang lebih baik.');
     }
@@ -99,21 +107,24 @@ export async function generateExamAction(
       throw new Error('Menerima format soal ujian yang tidak valid atau tidak lengkap dari Ayah Jenius.');
     }
     
-    // Clean and validate multiple choice answers
     const validatedMultipleChoice = examData.multipleChoice.map(q => {
         if (!q.options || !Array.isArray(q.options) || q.options.length < 4) {
             console.error('Soal PG tidak valid: Pilihan jawaban kurang dari 4.', q);
+            return null;
+        }
+        if (hasDuplicateOptions(q.options)) {
+            console.error('Soal PG tidak valid: Terdapat pilihan jawaban yang duplikat.', q);
             return null;
         }
         
         const matchingOption = q.options.find(opt => normalize(opt) === normalize(q.correctAnswer));
 
         if (matchingOption) {
-            q.correctAnswer = matchingOption; // Koreksi jawaban agar sama persis
+            q.correctAnswer = matchingOption; // Correct the answer to match exactly
             return q;
         } else {
             console.error('Soal PG tidak valid: Jawaban benar tidak ada di pilihan.', q);
-            return null; // Tandai sebagai tidak valid
+            return null;
         }
     }).filter((q): q is MultipleChoiceQuestion => q !== null);
 
