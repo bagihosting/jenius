@@ -1,4 +1,3 @@
-
 rules_version = '2';
 
 service cloud.firestore {
@@ -14,34 +13,43 @@ service cloud.firestore {
     }
     
     function isAdmin() {
+      // Check the user's role from their own document in the database.
+      // This requires the user to have read access to their own document.
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
     
-    function isExistingUser() {
-    	return exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    // Checks if the data being written is valid for a user document.
+    function isValidUserData(data) {
+      return data.name is string && data.username is string && data.email is string;
     }
 
     // Rules for the 'users' collection
     match /users/{userId} {
-      // Admins can read/write any user document
-      // Users can only read/write their own document
-      allow read, update, delete: if isAdmin() || isOwner(userId);
-      // Anyone can create a user document (for registration) if they are the owner
-      allow create: if isOwner(userId);
+      // Allow reading the entire collection (list) only for admins.
+      allow list: if isAdmin();
+      
+      // Users can read their own data. Admins can read any user's data.
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Users can update their own data. Admins can update any user's data.
+      allow update: if (isOwner(userId) || isAdmin())
+                    && isValidUserData(request.resource.data)
+                    // Validation Rules for updates:
+                    // 1. Role can only be changed by an admin.
+                    && (request.resource.data.role == resource.data.role || isAdmin())
+                    // 2. Bonus points can only be increased or set by an admin.
+                    && (request.resource.data.bonusPoints >= resource.data.bonusPoints || isAdmin())
+                    // 3. Last claimed time can only be moved forward or set by an admin.
+                    && (request.resource.data.lastClaimedAt >= resource.data.lastClaimedAt || isAdmin());
 
-      // Field-specific validations on write
-      allow write: if 
-            // Role can only be changed by an admin, and cannot be set by a user during creation
-            (request.resource.data.role == resource.data.role || isAdmin()) &&
-            // Bonus points can only be increased, not set arbitrarily high or decreased by user
-            (request.resource.data.bonusPoints >= resource.data.bonusPoints || isAdmin()) &&
-            // Last claimed time can only be moved forward
-            (request.resource.data.lastClaimedAt >= resource.data.lastClaimedAt || resource.data.lastClaimedAt == null || isAdmin());
-    }
-    
-    // Rules for reading the entire 'users' collection
-    match /users/{document=**} {
-        allow list: if isAdmin();
+      // New users can create their own document.
+      allow create: if isOwner(userId)
+                     && isValidUserData(request.resource.data)
+                     // Validation on create: Role must be 'user'. Prevents self-promotion to admin.
+                     && request.resource.data.role == 'user';
+      
+      // Admins can delete users. (Regular users cannot delete their own accounts via this rule).
+      allow delete: if isAdmin();
     }
     
     // Rules for the 'upgradeRequests' collection
@@ -59,16 +67,15 @@ service cloud.firestore {
     }
     
     // Rules for the 'leaderboard' collection
-    match /leaderboard/{userId} {
-    	// The leaderboard is a public-readable collection, denormalized for performance.
-      // Any authenticated user can read it.
+    match /leaderboard/{entry} {
+      // Any authenticated user can read the leaderboard data.
     	allow read: if isAuthenticated();
       // No client should ever write to the leaderboard directly.
-      // This should be handled by a trusted server environment (e.g., Cloud Functions).
       allow write: if false;
     }
-     match /leaderboard/{document=**} {
-        allow list: if isAuthenticated();
+    match /leaderboard/{document=**} {
+      // Allow authenticated users to list the documents in the leaderboard collection.
+      allow list: if isAuthenticated();
     }
   }
 }
