@@ -3,7 +3,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions to make rules cleaner
+    // Helper functions to make rules cleaner and more reusable.
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -12,70 +12,71 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
     
-    function isAdmin() {
-      // Check the user's role from their own document in the database.
-      // This requires the user to have read access to their own document.
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    function getRole() {
+      // Safely get the user's role. Returns 'user' if not found or no role is set.
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
     }
-    
-    // Checks if the data being written is valid for a user document.
-    function isValidUserData(data) {
-      return data.name is string && data.username is string && data.email is string;
+
+    function isAdmin() {
+      return getRole() == 'admin';
     }
 
     // Rules for the 'users' collection
     match /users/{userId} {
-      // Allow reading the entire collection (list) only for admins.
+      // Users can get their own document, admins can get any.
+      allow get: if isOwner(userId) || isAdmin();
+      // Admins can list all users.
       allow list: if isAdmin();
       
-      // Users can read their own data. Admins can read any user's data.
-      allow read: if isOwner(userId) || isAdmin();
+      // Users can only create their own user document.
+      allow create: if isOwner(userId);
       
-      // Users can update their own data. Admins can update any user's data.
-      allow update: if (isOwner(userId) || isAdmin())
-                    && isValidUserData(request.resource.data)
-                    // Validation Rules for updates:
-                    // 1. Role can only be changed by an admin.
-                    && (request.resource.data.role == resource.data.role || isAdmin())
-                    // 2. Bonus points can only be increased or set by an admin.
-                    && (request.resource.data.bonusPoints >= resource.data.bonusPoints || isAdmin())
-                    // 3. Last claimed time can only be moved forward or set by an admin.
-                    && (request.resource.data.lastClaimedAt >= resource.data.lastClaimedAt || isAdmin());
+      // Users can update their own document, admins can update any.
+      allow update: if isOwner(userId) || isAdmin();
+      
+      // Users can delete their own account, admins can delete any.
+      allow delete: if isOwner(userId) || isAdmin();
 
-      // New users can create their own document.
-      allow create: if isOwner(userId)
-                     && isValidUserData(request.resource.data)
-                     // Validation on create: Role must be 'user'. Prevents self-promotion to admin.
-                     && request.resource.data.role == 'user';
-      
-      // Admins can delete users. (Regular users cannot delete their own accounts via this rule).
-      allow delete: if isAdmin();
+      // Deeper validation on write operations (create, update)
+      allow write: if
+        // VALIDATION 1: Role Security
+        // On create, role must be 'user'.
+        // On update, role can only be changed by an admin.
+        (request.method == 'create' && request.resource.data.role == 'user') ||
+        (request.method == 'update' && (request.resource.data.role == resource.data.role || isAdmin()))
+        &&
+        // VALIDATION 2: Bonus Points
+        // Cannot be negative and can only be increased by the user (or set by admin).
+        request.resource.data.bonusPoints >= 0 &&
+        (isAdmin() || !exists(resource) || request.resource.data.bonusPoints >= resource.data.bonusPoints)
+        &&
+        // VALIDATION 3: Last Claimed Time
+        // Cannot be set to a future date and can only be moved forward by the user.
+        request.resource.data.lastClaimedAt <= request.time &&
+        (isAdmin() || !exists(resource) || request.resource.data.lastClaimedAt > resource.data.lastClaimedAt);
     }
     
     // Rules for the 'upgradeRequests' collection
     match /upgradeRequests/{userId} {
-        // Users can create and read their own request
-        allow create, read: if isOwner(userId);
-        // Admins can see all requests and can update/delete them
-        allow list, update, delete: if isAdmin();
+      // Users can create and read their own request.
+      allow get, create: if isOwner(userId);
+      // Admins can see all requests and can update/delete them.
+      allow list, update, delete: if isAdmin();
     }
     
     // Rules for the 'appSettings' collection
     match /appSettings/{setting} {
-        // Only admins can read or write application settings
-        allow read, write: if isAdmin();
+      // Only admins can read or write application settings.
+      allow read, write: if isAdmin();
     }
     
     // Rules for the 'leaderboard' collection
-    match /leaderboard/{entry} {
-      // Any authenticated user can read the leaderboard data.
+    match /leaderboard/{document=**} {
+    	// Any authenticated user can read the leaderboard for display purposes.
     	allow read: if isAuthenticated();
       // No client should ever write to the leaderboard directly.
+      // This must be handled by a trusted server environment (e.g., Cloud Functions).
       allow write: if false;
-    }
-    match /leaderboard/{document=**} {
-      // Allow authenticated users to list the documents in the leaderboard collection.
-      allow list: if isAuthenticated();
     }
   }
 }
