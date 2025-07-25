@@ -85,13 +85,6 @@ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="proyek-anda.appspot.com"
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="..."
 NEXT_PUBLIC_FIREBASE_APP_ID="1:..."
 NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID="G-..."
-
-# URL Realtime Database
-# Anda bisa mendapatkan ini dari konsol Firebase di bagian Realtime Database
-NEXT_PUBLIC_FIREBASE_DATABASE_URL="https://ayah-jenius-default-rtdb.asia-southeast1.firebasedatabase.app/"
-
-# Variabel lain (jika ada)
-# ...
 ```
 
 Simpan file dan keluar dari editor (di `nano`, tekan `Ctrl+X`, lalu `Y`, lalu `Enter`).
