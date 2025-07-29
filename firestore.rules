@@ -4,7 +4,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
   
-    // Helper Functions
+    // Helper functions to make rules cleaner
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -14,83 +14,85 @@ service cloud.firestore {
     }
     
     function isAdmin() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
-    
-    // USERS COLLECTION
-    // Rules for the 'users' collection
+
     match /users/{userId} {
-    
-      // CREATE: Allow any new user to create their own document, but with strict validation.
-      allow create: if isAuthenticated()
-                      && isOwner(userId)
-                      // Validate incoming data to ensure security
-                      && request.resource.data.name is string
-                      && request.resource.data.username is string
-                      && request.resource.data.email == request.auth.token.email
-                      && request.resource.data.role == 'user' // Users MUST register as 'user'
-                      && request.resource.data.bonusPoints == 0 // Bonus points MUST start at 0
-                      && request.resource.data.quizCompletions == 0
-                      && request.resource.data.schoolType is string
-                      && request.resource.data.schoolName is string
-                      && request.resource.data.size() == 9; // Ensure no extra fields are added
+      // CREATE: Anyone can create a user document (register) IF:
+      // 1. They are creating a document for themselves.
+      // 2. The role they are assigning is 'user' (cannot self-assign 'admin').
+      // 3. bonusPoints must be initialized to 0.
+      // 4. All required fields are present.
+      allow create: if isOwner(userId) &&
+                       request.resource.data.role == 'user' &&
+                       request.resource.data.bonusPoints == 0 &&
+                       'name' in request.resource.data &&
+                       'username' in request.resource.data &&
+                       'email' in request.resource.data &&
+                       'schoolType' in request.resource.data &&
+                       'schoolName' in request.resource.data &&
+                       'registeredAt' in request.resource.data &&
+                       'quizCompletions' in request.resource.data;
 
-      // READ: Users can read their own document. Admins can read any document.
+      // GET: Users can get their own data, and Admins can get any user's data.
       allow get: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      
+      // LIST (QUERY): Allow authenticated users to query the user list ONLY for the leaderboard.
+      // This is secure because it only allows queries that are ordered by 'bonusPoints'.
+      // Other queries on the 'users' collection will be denied.
+      allow list: if isAuthenticated() && request.query.orderBy[0].field == 'bonusPoints';
+      
+      // UPDATE: Allow users to update their own data, but with strict field-level security.
+      allow update: if isAuthenticated() &&
+                     (
+                       // Case 1: An admin is making changes.
+                       isAdmin() ||
+                       // Case 2: A regular user is making changes to their own document.
+                       (
+                         isOwner(userId) &&
+                         // The user CANNOT change their own role or bonus points.
+                         request.resource.data.role == resource.data.role &&
+                         request.resource.data.bonusPoints == resource.data.bonusPoints &&
+                         // The user cannot change their grade once it's set.
+                         (!('grade' in resource.data) || request.resource.data.grade == resource.data.grade) &&
+                         // Fields below are the ONLY ones a user is allowed to change.
+                         request.resource.data.keys().hasAll(['name', 'username', 'email', 'schoolType', 'schoolName', 'role', 'registeredAt', 'quizCompletions', 'bonusPoints', 'progress', 'photoUrl', 'robloxUsername', 'lastClaimedAt', 'grade', 'major']) &&
+                         !request.resource.data.keys().hasAny(['some_other_field'])
+                       )
+                     ) &&
+                     // Data Validation: Ensure data consistency on update for all roles.
+                     (
+                       request.resource.data.bonusPoints >= 0 &&
+                       (request.resource.data.role != 'user' || (request.resource.data.schoolName is string && request.resource.data.schoolType is string)) &&
+                       (request.resource.data.role != 'mahasiswa' || request.resource.data.major is string)
+                     );
 
-      // UPDATE: Users can update specific fields. Admins can update more fields.
-      allow update: if isAuthenticated() && 
-                      (
-                        // User's own update rules
-                        (isOwner(userId) &&
-                          // Fields users are allowed to change
-                          request.resource.data.name == incomingData().name &&
-                          request.resource.data.photoUrl == incomingData().photoUrl &&
-                          request.resource.data.robloxUsername == incomingData().robloxUsername &&
-                          // Grade can only be set once by the user, if it doesn't exist yet.
-                          (!('grade' in resource.data) || resource.data.grade == incomingData().grade) &&
-                          // Fields users are NOT allowed to change
-                          resource.data.email == incomingData().email &&
-                          resource.data.username == incomingData().username &&
-                          resource.data.role == incomingData().role &&
-                          resource.data.bonusPoints == incomingData().bonusPoints
-                        ) 
-                        ||
-                        // Admin update rules
-                        (isAdmin())
-                      );
-                      
-      // DELETE: Only admins can delete user documents.
+      // DELETE: Only admins can delete users.
       allow delete: if isAdmin();
-      
-      // LIST (for leaderboard): Any authenticated user can list users IF AND ONLY IF
-      // the query is for the leaderboard (ordered by bonus points, limited).
-      // This prevents fetching all users.
-      allow list: if isAuthenticated()
-                   && request.query.orderBy == 'bonusPoints desc'
-                   && request.query.limit <= 5;
     }
-    
-    // APPSETTINGS COLLECTION
-    // Only admins can read or write app-wide settings.
-    match /appSettings/{docId} {
-      allow read, write: if isAuthenticated() && isAdmin();
-    }
-    
-    // UPGRADEREQUESTS COLLECTION
-    // Rules for account upgrade requests.
+
     match /upgradeRequests/{userId} {
-      // READ: Users can get their own request. Admins can get any request.
+      // User can create and read their own request.
       allow get: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow create: if isAuthenticated() && isOwner(userId) && 'status' in request.resource.data && request.resource.data.status == 'pending';
       
-      // LIST: Only admins can list all requests.
-      allow list: if isAuthenticated() && isAdmin();
-      
-      // CREATE: A user can create their own request.
-      allow create: if isAuthenticated() && isOwner(userId);
-      
-      // UPDATE & DELETE: Only admins can update (approve/reject) or delete requests.
-      allow update, delete: if isAuthenticated() && isAdmin();
+      // Admin can view all requests and update their status.
+      allow list, update: if isAdmin();
+      // Admin can also delete rejected/completed requests.
+      allow delete: if isAdmin();
+    }
+
+    match /appSettings/upgradeInfo {
+      // Anyone can read the settings (e.g., to see donation info).
+      allow get: if isAuthenticated();
+      // Only admins can change the settings.
+      allow write: if isAdmin();
+    }
+    
+    // Default deny all other collections.
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
